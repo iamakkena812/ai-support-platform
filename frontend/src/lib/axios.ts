@@ -1,8 +1,10 @@
 /**
- * Axios instance for the application.
+ * Shared Axios client.
  *
- * Creates the shared HTTP client used throughout
- * the frontend.
+ * Creates the application's shared HTTP client used
+ * by all API services.
+ *
+ * Configuration is loaded from Vite environment variables.
  */
 
 import axios from "axios";
@@ -12,7 +14,9 @@ import axios from "axios";
  */
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 30_000,
+  timeout: Number(
+    import.meta.env.VITE_API_TIMEOUT ?? 30000,
+  ),
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
