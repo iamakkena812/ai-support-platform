@@ -1,0 +1,29 @@
+"""Project module constants."""
+
+from __future__ import annotations
+
+PROJECT_NAME_MIN_LENGTH = 3
+PROJECT_NAME_MAX_LENGTH = 100
+
+PROJECT_DESCRIPTION_MAX_LENGTH = 1000
+
+PROJECT_KEY_MIN_LENGTH = 2
+PROJECT_KEY_MAX_LENGTH = 10
+
+DEFAULT_PROJECT_LIMIT = 100
+DEFAULT_PROJECT_OFFSET = 0
+
+PROJECT_STATUS_ACTIVE = "active"
+PROJECT_STATUS_ARCHIVED = "archived"
+
+PROJECT_STATUSES: tuple[str, ...] = (
+    PROJECT_STATUS_ACTIVE,
+    PROJECT_STATUS_ARCHIVED,
+)
+
+PROJECT_NOT_FOUND = "Project not found."
+PROJECT_ALREADY_EXISTS = "Project already exists."
+PROJECT_NAME_ALREADY_EXISTS = "Project name already exists."
+PROJECT_KEY_ALREADY_EXISTS = "Project key already exists."
+PROJECT_ARCHIVED = "Project is archived."
+PROJECT_ACCESS_DENIED = "Access denied to project."

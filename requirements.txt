@@ -1,0 +1,13 @@
+-e .
+
+black
+
+ruff
+
+mypy
+
+pytest
+
+pytest-cov
+
+pre-commit

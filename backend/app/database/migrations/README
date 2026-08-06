@@ -1,0 +1,21 @@
+Database migration scripts managed by Alembic.
+
+Create migration:
+
+alembic revision --autogenerate -m "create users table"
+
+Apply latest migration:
+
+alembic upgrade head
+
+Rollback one migration:
+
+alembic downgrade -1
+
+Show current revision:
+
+alembic current
+
+Show migration history:
+
+alembic history
