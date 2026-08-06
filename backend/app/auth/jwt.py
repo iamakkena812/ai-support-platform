@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-import jwt
+from jose import JWTError, jwt
 
 SECRET_KEY = "your-secret-key-change-in-production"
 ALGORITHM = "HS256"
@@ -38,9 +38,16 @@ def create_access_token(
 def decode_access_token(
     token: str,
 ) -> dict[str, Any]:
-    """Decode and validate a JWT."""
-    return jwt.decode(
-        token,
-        SECRET_KEY,
-        algorithms=[ALGORITHM],
-    )
+    """Decode and validate a JWT.
+
+    Raises:
+        JWTError: If the token is invalid or expired.
+    """
+    try:
+        return jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+        )
+    except JWTError:
+        raise
