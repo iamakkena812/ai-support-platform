@@ -7,6 +7,8 @@ from app.models.role_permission import RolePermission
 from app.models.ticket import Ticket
 from app.models.user import User
 from app.models.user_role import UserRole
+from app.models.comment import Comment
+from app.models.project import Project
 from app.workflows.models import (
     Workflow,
     WorkflowAction,
