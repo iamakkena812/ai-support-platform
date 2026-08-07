@@ -36,29 +36,36 @@ export interface TicketTableProps {
 /**
  * Returns badge classes for the ticket status.
  *
- * @param status - Ticket status.
+ * @param status Ticket status.
  * @returns CSS classes.
  */
 const getStatusClassName = (
   status: Ticket["status"],
 ): string => {
-  switch (status) {
-    case "new":
-      return "bg-slate-100 text-slate-800";
 
-    case "open":
+  switch (status) {
+
+    case "OPEN":
       return "bg-blue-100 text-blue-800";
 
-    case "in_progress":
+
+    case "IN_PROGRESS":
       return "bg-indigo-100 text-indigo-800";
 
-    case "pending":
+
+    case "WAITING":
       return "bg-yellow-100 text-yellow-800";
 
-    case "resolved":
+
+    case "RESOLVED":
       return "bg-green-100 text-green-800";
 
-    case "closed":
+
+    case "CLOSED":
+      return "bg-gray-100 text-gray-800";
+
+
+    default:
       return "bg-gray-100 text-gray-800";
   }
 };
@@ -66,24 +73,33 @@ const getStatusClassName = (
 /**
  * Returns badge classes for the ticket priority.
  *
- * @param priority - Ticket priority.
+ * @param priority Ticket priority.
  * @returns CSS classes.
  */
 const getPriorityClassName = (
   priority: Ticket["priority"],
 ): string => {
+
   switch (priority) {
-    case "low":
+
+    case "LOW":
       return "bg-green-100 text-green-800";
 
-    case "medium":
+
+    case "MEDIUM":
       return "bg-yellow-100 text-yellow-800";
 
-    case "high":
+
+    case "HIGH":
       return "bg-orange-100 text-orange-800";
 
-    case "urgent":
+
+    case "URGENT":
       return "bg-red-100 text-red-800";
+
+
+    default:
+      return "bg-gray-100 text-gray-800";
   }
 };
 
@@ -156,7 +172,7 @@ export const TicketTable: FC<TicketTableProps> = ({
                   </div>
 
                   <div className="text-sm text-gray-500">
-                    {ticket.ticketNumber}
+                    #{ticket.id.slice(0, 8)}
                   </div>
                 </div>
               </td>
@@ -166,7 +182,7 @@ export const TicketTable: FC<TicketTableProps> = ({
               </td>
 
               <td className="px-4 py-4 text-sm text-gray-700">
-                {ticket.assignee?.name ?? "Unassigned"}
+                {ticket.assignedUserName ?? "Unassigned"}
               </td>
 
               <td className="px-4 py-4">

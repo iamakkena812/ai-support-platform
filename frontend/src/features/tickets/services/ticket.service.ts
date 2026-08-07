@@ -1,95 +1,102 @@
 /**
- * Ticket service.
+ * Ticket service module.
  *
- * Provides the service layer between the UI and the
- * ticket API client.
+ * Provides business operations
+ * for ticket management.
  */
 
 import {
-  createTicket,
-  deleteTicket,
-  getTicket,
-  getTickets,
-  getTicketStatistics,
-  updateTicket,
+  ticketApi,
 } from "../api/ticket.api";
 
 import type {
-  CreateTicketRequest,
+  CreateTicketPayload,
   Ticket,
-  TicketListQuery,
+  TicketQueryFilters,
   TicketListResponse,
-  TicketStatistics,
-  UpdateTicketRequest,
+  UpdateTicketPayload,
 } from "../types/ticket.types";
+
 
 /**
  * Ticket service.
  */
 export const ticketService = {
+
   /**
-   * Retrieves all tickets.
+   * Get tickets.
    *
-   * @param query - Ticket query parameters.
-   * @returns Paginated ticket response.
+   * @param query Ticket query.
+   * @returns Ticket list.
    */
   async getTickets(
-    query?: TicketListQuery,
+    query?: TicketQueryFilters,
   ): Promise<TicketListResponse> {
-    return getTickets(query);
+    return ticketApi.getTickets(
+      query,
+    );
   },
 
+
   /**
-   * Retrieves a ticket.
+   * Get ticket by id.
    *
-   * @param ticketId - Ticket identifier.
+   * @param id Ticket identifier.
    * @returns Ticket.
    */
-  async getTicket(ticketId: string): Promise<Ticket> {
-    return getTicket(ticketId);
+  async getTicket(
+    id: string,
+  ): Promise<Ticket> {
+    return ticketApi.getTicket(
+      id,
+    );
   },
 
+
   /**
-   * Creates a ticket.
+   * Create ticket.
    *
-   * @param payload - Ticket creation payload.
+   * @param payload Ticket payload.
    * @returns Created ticket.
    */
   async createTicket(
-    payload: CreateTicketRequest,
+    payload: CreateTicketPayload,
   ): Promise<Ticket> {
-    return createTicket(payload);
+    return ticketApi.createTicket(
+      payload,
+    );
   },
 
+
   /**
-   * Updates a ticket.
+   * Update ticket.
    *
-   * @param ticketId - Ticket identifier.
-   * @param payload - Ticket update payload.
+   * @param id Ticket identifier.
+   * @param payload Update payload.
    * @returns Updated ticket.
    */
   async updateTicket(
-    ticketId: string,
-    payload: UpdateTicketRequest,
+    id: string,
+    payload: UpdateTicketPayload,
   ): Promise<Ticket> {
-    return updateTicket(ticketId, payload);
+    return ticketApi.updateTicket(
+      id,
+      payload,
+    );
   },
 
-  /**
-   * Deletes a ticket.
-   *
-   * @param ticketId - Ticket identifier.
-   */
-  async deleteTicket(ticketId: string): Promise<void> {
-    return deleteTicket(ticketId);
-  },
 
   /**
-   * Retrieves ticket statistics.
+   * Delete ticket.
    *
-   * @returns Ticket statistics.
+   * @param id Ticket identifier.
    */
-  async getTicketStatistics(): Promise<TicketStatistics> {
-    return getTicketStatistics();
+  async deleteTicket(
+    id: string,
+  ): Promise<void> {
+    await ticketApi.deleteTicket(
+      id,
+    );
   },
+
 };

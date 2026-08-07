@@ -25,10 +25,17 @@ import {
   ForgotPasswordPage,
   LoginPage,
   ResetPasswordPage,
+
   CustomersPage,
   CustomerDetailsPage,
   CreateCustomerPage,
   EditCustomerPage,
+
+  TicketsPage,
+  TicketDetailsPage,
+  CreateTicketPage,
+  EditTicketPage,
+
 } from "./lazy-routes";
 
 import {
@@ -36,12 +43,14 @@ import {
   PUBLIC_ROUTES,
 } from "./route-config";
 
+
 /**
  * Application router.
  *
  * @returns Application routes.
  */
 export function AppRouter(): React.JSX.Element {
+
   return (
     <Suspense
       fallback={
@@ -50,7 +59,9 @@ export function AppRouter(): React.JSX.Element {
         </div>
       }
     >
+
       <Routes>
+
         {/* Public */}
 
         <Route
@@ -64,6 +75,7 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
+
         <Route
           path={
             PUBLIC_ROUTES.FORGOT_PASSWORD
@@ -74,6 +86,7 @@ export function AppRouter(): React.JSX.Element {
             </PublicRoute>
           }
         />
+
 
         <Route
           path={
@@ -87,7 +100,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
 
-        {/* Protected */}
+        {/* Dashboard */}
 
         <Route
           path={
@@ -114,6 +127,7 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
+
         <Route
           path={
             `${PROTECTED_ROUTES.CUSTOMERS}/create`
@@ -124,6 +138,7 @@ export function AppRouter(): React.JSX.Element {
             </ProtectedRoute>
           }
         />
+
 
         <Route
           path={
@@ -136,6 +151,7 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
+
         <Route
           path={
             `${PROTECTED_ROUTES.CUSTOMERS}/:id/edit`
@@ -143,6 +159,56 @@ export function AppRouter(): React.JSX.Element {
           element={
             <ProtectedRoute>
               <EditCustomerPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* Tickets */}
+
+        <Route
+          path={
+            PROTECTED_ROUTES.TICKETS
+          }
+          element={
+            <ProtectedRoute>
+              <TicketsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.TICKETS}/create`
+          }
+          element={
+            <ProtectedRoute>
+              <CreateTicketPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.TICKETS}/:id`
+          }
+          element={
+            <ProtectedRoute>
+              <TicketDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.TICKETS}/:id/edit`
+          }
+          element={
+            <ProtectedRoute>
+              <EditTicketPage />
             </ProtectedRoute>
           }
         />
@@ -161,7 +227,9 @@ export function AppRouter(): React.JSX.Element {
             />
           }
         />
+
       </Routes>
+
     </Suspense>
   );
 }

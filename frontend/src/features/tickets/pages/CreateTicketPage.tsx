@@ -39,7 +39,7 @@ export function CreateTicketPage(): React.JSX.Element {
         values.customerId,
       projectId:
         values.projectId,
-      assigneeId:
+     assignedTo:
         values.assigneeId,
       title: values.title,
       description:

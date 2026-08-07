@@ -1,42 +1,57 @@
 /**
- * React Query hook for retrieving a single ticket.
+ * Single ticket query hook.
  *
- * Provides cached access to an individual ticket.
+ * Provides ticket details
+ * fetching functionality.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+} from "@tanstack/react-query";
 
-import { ticketService } from "../services/ticket.service";
-import type { Ticket } from "../types/ticket.types";
+import {
+  ticketService,
+} from "../services/ticket.service";
+
+import type {
+  Ticket,
+} from "../types/ticket.types";
+
 
 /**
- * Query key factory for ticket queries.
+ * Ticket query key.
  */
-export const ticketQueryKeys = {
-  /**
-   * Root query key.
-   */
-  all: ["tickets"] as const,
+const TICKET_QUERY_KEY =
+  "ticket";
 
-  /**
-   * Detail query key.
-   *
-   * @param ticketId - Ticket identifier.
-   * @returns Query key.
-   */
-  detail: (ticketId: string) =>
-    [...ticketQueryKeys.all, "detail", ticketId] as const,
-};
 
 /**
- * Retrieves a single ticket.
+ * Use ticket hook.
  *
- * @param ticketId - Ticket identifier.
- * @returns React Query result.
+ * @param id Ticket identifier.
+ * @returns Ticket query result.
  */
-export const useTicket = (ticketId: string) =>
-  useQuery<Ticket>({
-    queryKey: ticketQueryKeys.detail(ticketId),
-    queryFn: () => ticketService.getTicket(ticketId),
-    enabled: ticketId.trim().length > 0,
+export function useTicket(
+  id?: string,
+) {
+  return useQuery<Ticket>({
+    queryKey: [
+      TICKET_QUERY_KEY,
+      id,
+    ],
+
+    queryFn: async () => {
+      if (!id) {
+        throw new Error(
+          "Ticket id is required",
+        );
+      }
+
+      return ticketService.getTicket(
+        id,
+      );
+    },
+
+    enabled: Boolean(id),
   });
+}

@@ -1,112 +1,123 @@
 /**
- * Ticket API client.
+ * Ticket API module.
  *
- * Provides low-level HTTP operations for ticket resources.
+ * Handles ticket HTTP requests.
  */
 
-import { apiClient } from "../../../api/axios/client";
+import {
+  apiClient,
+} from "../../../api/axios/client";
 
 import type {
-  CreateTicketRequest,
+  CreateTicketPayload,
   Ticket,
-  TicketListQuery,
+  TicketQueryFilters,
   TicketListResponse,
-  TicketStatistics,
-  UpdateTicketRequest,
+  UpdateTicketPayload,
 } from "../types/ticket.types";
 
-/**
- * Tickets API endpoint.
- */
-const BASE_PATH = "/tickets";
 
 /**
- * Retrieves a paginated list of tickets.
- *
- * @param query - Ticket query parameters.
- * @returns Ticket list response.
+ * Ticket API endpoint.
  */
-export const getTickets = async (
-  query?: TicketListQuery,
-): Promise<TicketListResponse> => {
-  const { data } = await apiClient.get<TicketListResponse>(BASE_PATH, {
-    params: query,
-  });
+const TICKET_ENDPOINT = "/tickets";
 
-  return data;
-};
 
 /**
- * Retrieves a ticket by identifier.
- *
- * @param ticketId - Ticket identifier.
- * @returns Ticket.
+ * Ticket API object.
  */
-export const getTicket = async (ticketId: string): Promise<Ticket> => {
-  const { data } = await apiClient.get<Ticket>(
-    `${BASE_PATH}/${ticketId}`,
-  );
+export const ticketApi = {
 
-  return data;
-};
+  /**
+   * Get tickets.
+   *
+   * @param query Ticket query parameters.
+   * @returns Ticket list response.
+   */
+  async getTickets(
+    query?: TicketQueryFilters,
+  ): Promise<TicketListResponse> {
+    const response =
+      await apiClient.get<TicketListResponse>(
+        TICKET_ENDPOINT,
+        {
+          params: query,
+        },
+      );
 
-/**
- * Creates a new ticket.
- *
- * @param payload - Ticket creation request.
- * @returns Created ticket.
- */
-export const createTicket = async (
-  payload: CreateTicketRequest,
-): Promise<Ticket> => {
-  const { data } = await apiClient.post<Ticket>(
-    BASE_PATH,
-    payload,
-  );
+    return response.data;
+  },
 
-  return data;
-};
 
-/**
- * Updates an existing ticket.
- *
- * @param ticketId - Ticket identifier.
- * @param payload - Ticket update request.
- * @returns Updated ticket.
- */
-export const updateTicket = async (
-  ticketId: string,
-  payload: UpdateTicketRequest,
-): Promise<Ticket> => {
-  const { data } = await apiClient.put<Ticket>(
-    `${BASE_PATH}/${ticketId}`,
-    payload,
-  );
+  /**
+   * Get ticket by identifier.
+   *
+   * @param id Ticket identifier.
+   * @returns Ticket.
+   */
+  async getTicket(
+    id: string,
+  ): Promise<Ticket> {
+    const response =
+      await apiClient.get<Ticket>(
+        `${TICKET_ENDPOINT}/${id}`,
+      );
 
-  return data;
-};
+    return response.data;
+  },
 
-/**
- * Deletes a ticket.
- *
- * @param ticketId - Ticket identifier.
- */
-export const deleteTicket = async (
-  ticketId: string,
-): Promise<void> => {
-  await apiClient.delete(`${BASE_PATH}/${ticketId}`);
-};
 
-/**
- * Retrieves ticket statistics.
- *
- * @returns Ticket statistics.
- */
-export const getTicketStatistics =
-  async (): Promise<TicketStatistics> => {
-    const { data } = await apiClient.get<TicketStatistics>(
-      `${BASE_PATH}/statistics`,
+  /**
+   * Create ticket.
+   *
+   * @param payload Ticket payload.
+   * @returns Created ticket.
+   */
+  async createTicket(
+    payload: CreateTicketPayload,
+  ): Promise<Ticket> {
+    const response =
+      await apiClient.post<Ticket>(
+        TICKET_ENDPOINT,
+        payload,
+      );
+
+    return response.data;
+  },
+
+
+  /**
+   * Update ticket.
+   *
+   * @param id Ticket identifier.
+   * @param payload Update payload.
+   * @returns Updated ticket.
+   */
+  async updateTicket(
+    id: string,
+    payload: UpdateTicketPayload,
+  ): Promise<Ticket> {
+    const response =
+      await apiClient.patch<Ticket>(
+        `${TICKET_ENDPOINT}/${id}`,
+        payload,
+      );
+
+    return response.data;
+  },
+
+
+  /**
+   * Delete ticket.
+   *
+   * @param id Ticket identifier.
+   */
+  async deleteTicket(
+    id: string,
+  ): Promise<void> {
+    await apiClient.delete(
+      `${TICKET_ENDPOINT}/${id}`,
     );
+  },
 
-    return data;
-  };
+};

@@ -88,7 +88,7 @@ export function DeleteTicketDialog({
             </div>
 
             <div className="mt-1 text-sm text-gray-600">
-              {ticket.ticketNumber}
+              {ticket.id.slice(0, 8)}
             </div>
           </div>
 

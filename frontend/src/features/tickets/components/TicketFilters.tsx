@@ -1,252 +1,298 @@
 /**
  * Ticket filters component.
+ *
+ * Displays search and filter controls
+ * for the tickets list.
  */
 
 import {
-  useEffect,
   useState,
 } from "react";
 
+import {
+  Filter,
+  Search,
+} from "lucide-react";
+
+import {
+  Input,
+  Select,
+} from "../../../components/ui";
+
 import type {
-  TicketFilterValues,
-  TicketPriority,
-  TicketStatus,
-  TicketType,
+  TicketQueryFilters,
 } from "../types/ticket.types";
+
+
+/**
+ * Select option.
+ */
+export interface TicketFilterOption {
+
+  /**
+   * Option label.
+   */
+  readonly label: string;
+
+
+  /**
+   * Option value.
+   */
+  readonly value: string;
+}
+
 
 /**
  * Component properties.
  */
 export interface TicketFiltersProps {
+
   /**
    * Initial filter values.
    */
-  readonly initialValue?: TicketFilterValues;
+  readonly initialValue?: TicketQueryFilters;
+
 
   /**
-   * Filter change handler.
+   * Filter change callback.
    */
-  readonly onChange: (
-    filters: TicketFilterValues,
+  readonly onChange?: (
+    filters: TicketQueryFilters,
   ) => void;
 }
 
+
 /**
- * Ticket filters.
+ * Status options.
+ */
+const STATUS_OPTIONS: readonly TicketFilterOption[] = [
+  {
+    label: "All Statuses",
+    value: "",
+  },
+  {
+    label: "Open",
+    value: "OPEN",
+  },
+  {
+    label: "In Progress",
+    value: "IN_PROGRESS",
+  },
+  {
+    label: "Waiting",
+    value: "WAITING",
+  },
+  {
+    label: "Resolved",
+    value: "RESOLVED",
+  },
+  {
+    label: "Closed",
+    value: "CLOSED",
+  },
+];
+
+
+/**
+ * Priority options.
+ */
+const PRIORITY_OPTIONS: readonly TicketFilterOption[] = [
+  {
+    label: "All Priorities",
+    value: "",
+  },
+  {
+    label: "Low",
+    value: "LOW",
+  },
+  {
+    label: "Medium",
+    value: "MEDIUM",
+  },
+  {
+    label: "High",
+    value: "HIGH",
+  },
+  {
+    label: "Urgent",
+    value: "URGENT",
+  },
+];
+
+
+/**
+ * Type options.
+ */
+const TYPE_OPTIONS: readonly TicketFilterOption[] = [
+  {
+    label: "All Types",
+    value: "",
+  },
+  {
+    label: "Incident",
+    value: "incident",
+  },
+  {
+    label: "Service Request",
+    value: "service_request",
+  },
+  {
+    label: "Bug",
+    value: "bug",
+  },
+  {
+    label: "Task",
+    value: "task",
+  },
+  {
+    label: "Question",
+    value: "question",
+  },
+  {
+    label: "Feature Request",
+    value: "feature_request",
+  },
+];
+
+
+/**
+ * Ticket filters component.
+ *
+ * @param props Component properties.
+ * @returns Ticket filters.
  */
 export function TicketFilters({
   initialValue,
   onChange,
 }: TicketFiltersProps): React.JSX.Element {
-  const [search, setSearch] =
-    useState("");
 
-  const [status, setStatus] =
-    useState<TicketStatus | "">("");
+  const [
+    filters,
+    setFilters,
+  ] = useState<TicketQueryFilters>(
+    initialValue ?? {},
+  );
 
-  const [priority, setPriority] =
-    useState<TicketPriority | "">("");
 
-  const [type, setType] =
-    useState<TicketType | "">("");
+  function updateFilters(
+    value: TicketQueryFilters,
+  ): void {
 
-  useEffect(() => {
-    if (!initialValue) {
-      return;
-    }
+    const updated = {
+      ...filters,
+      ...value,
+    };
 
-    setSearch(
-      initialValue.search ?? "",
+    setFilters(updated);
+
+    onChange?.(
+      updated,
     );
+  }
 
-    setStatus(
-      initialValue.status ?? "",
-    );
-
-    setPriority(
-      initialValue.priority ?? "",
-    );
-
-    setType(
-      initialValue.type ?? "",
-    );
-  }, [initialValue]);
-
-  useEffect(() => {
-    onChange({
-      search:
-        search.trim() === ""
-          ? undefined
-          : search,
-      status:
-        status === ""
-          ? undefined
-          : status,
-      priority:
-        priority === ""
-          ? undefined
-          : priority,
-      type:
-        type === ""
-          ? undefined
-          : type,
-    });
-  }, [
-    search,
-    status,
-    priority,
-    type,
-    onChange,
-  ]);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="grid gap-4 md:grid-cols-4">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Search
-          </label>
+    <section className="rounded-lg border bg-white p-4 shadow-sm">
 
-          <input
-            type="text"
-            placeholder="Search tickets..."
-            value={search}
-            onChange={(event) =>
-              setSearch(
-                event.target.value,
-              )
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
+      <div className="mb-4 flex items-center gap-2">
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Status
-          </label>
+        <Filter
+          size={18}
+          className="text-slate-600"
+        />
 
-          <select
-            value={status}
-            onChange={(event) =>
-              setStatus(
-                event.target
-                  .value as TicketStatus | "",
-              )
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          >
-            <option value="">
-              All
-            </option>
+        <h2 className="font-semibold text-slate-900">
+          Filters
+        </h2>
 
-            <option value="new">
-              New
-            </option>
-
-            <option value="open">
-              Open
-            </option>
-
-            <option value="in_progress">
-              In Progress
-            </option>
-
-            <option value="pending">
-              Pending
-            </option>
-
-            <option value="resolved">
-              Resolved
-            </option>
-
-            <option value="closed">
-              Closed
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Priority
-          </label>
-
-          <select
-            value={priority}
-            onChange={(event) =>
-              setPriority(
-                event.target
-                  .value as TicketPriority | "",
-              )
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          >
-            <option value="">
-              All
-            </option>
-
-            <option value="low">
-              Low
-            </option>
-
-            <option value="medium">
-              Medium
-            </option>
-
-            <option value="high">
-              High
-            </option>
-
-            <option value="urgent">
-              Urgent
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Type
-          </label>
-
-          <select
-            value={type}
-            onChange={(event) =>
-              setType(
-                event.target
-                  .value as TicketType | "",
-              )
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          >
-            <option value="">
-              All
-            </option>
-
-            <option value="incident">
-              Incident
-            </option>
-
-            <option value="service_request">
-              Service Request
-            </option>
-
-            <option value="bug">
-              Bug
-            </option>
-
-            <option value="task">
-              Task
-            </option>
-
-            <option value="question">
-              Question
-            </option>
-
-            <option value="feature_request">
-              Feature Request
-            </option>
-          </select>
-        </div>
       </div>
-    </div>
+
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+
+
+        <div className="relative">
+
+          <Search
+            size={16}
+            className="absolute left-3 top-3 text-slate-400"
+          />
+
+          <Input
+            placeholder="Search tickets..."
+            value={
+              filters.search ?? ""
+            }
+            onChange={(event) =>
+              updateFilters({
+                search:
+                  event.target.value,
+              })
+            }
+            className="pl-10"
+          />
+
+        </div>
+
+
+        <Select
+          value={
+            filters.status ?? ""
+          }
+          options={
+            STATUS_OPTIONS
+          }
+          placeholder="All Statuses"
+          onChange={(event) =>
+            updateFilters({
+              status:
+                event.target.value
+                  ? event.target.value as TicketQueryFilters["status"]
+                  : undefined,
+            })
+          }
+        />
+
+
+        <Select
+          value={
+            filters.priority ?? ""
+          }
+          options={
+            PRIORITY_OPTIONS
+          }
+          placeholder="All Priorities"
+          onChange={(event) =>
+            updateFilters({
+              priority:
+                event.target.value
+                  ? event.target.value as TicketQueryFilters["priority"]
+                  : undefined,
+            })
+          }
+        />
+
+
+        <Select
+          value={
+            filters.type ?? ""
+          }
+          options={
+            TYPE_OPTIONS
+          }
+          placeholder="All Types"
+          onChange={(event) =>
+            updateFilters({
+              type:
+                event.target.value
+                  ? event.target.value as TicketQueryFilters["type"]
+                  : undefined,
+            })
+          }
+        />
+
+      </div>
+
+    </section>
   );
 }

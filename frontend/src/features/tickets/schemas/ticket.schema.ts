@@ -1,145 +1,276 @@
 /**
  * Ticket validation schemas.
  *
- * Provides Zod schemas and inferred types for ticket forms and API payloads.
+ * Defines Zod schemas for
+ * ticket forms and API payloads.
  */
 
-import { z } from "zod";
+import {
+  z,
+} from "zod";
+
 
 /**
  * Ticket status schema.
  */
-export const ticketStatusSchema = z.enum([
-  "new",
-  "open",
-  "in_progress",
-  "pending",
-  "resolved",
-  "closed",
-]);
+export const ticketStatusSchema =
+  z.enum([
+    "new",
+    "open",
+    "in_progress",
+    "pending",
+    "resolved",
+    "closed",
+  ]);
+
 
 /**
  * Ticket priority schema.
  */
-export const ticketPrioritySchema = z.enum([
-  "low",
-  "medium",
-  "high",
-  "urgent",
-]);
+export const ticketPrioritySchema =
+  z.enum([
+    "low",
+    "medium",
+    "high",
+    "urgent",
+  ]);
+
 
 /**
  * Ticket type schema.
  */
-export const ticketTypeSchema = z.enum([
-  "incident",
-  "service_request",
-  "bug",
-  "task",
-  "question",
-  "feature_request",
-]);
+export const ticketTypeSchema =
+  z.enum([
+    "incident",
+    "service_request",
+    "bug",
+    "task",
+    "question",
+    "feature_request",
+  ]);
+
 
 /**
- * Ticket creation schema.
+ * Create ticket validation schema.
  */
-export const createTicketSchema = z.object({
-  title: z
-    .string()
-    .trim()
-    .min(3, "Title must contain at least 3 characters.")
-    .max(200, "Title cannot exceed 200 characters."),
+export const createTicketSchema =
+  z.object({
+    /**
+     * Ticket title.
+     */
+    title: z
+      .string()
+      .min(
+        3,
+        "Title must contain at least 3 characters",
+      ),
 
-  description: z
-    .string()
-    .trim()
-    .min(10, "Description must contain at least 10 characters.")
-    .max(5000, "Description cannot exceed 5000 characters."),
 
-  type: ticketTypeSchema,
+    /**
+     * Ticket description.
+     */
+    description: z
+      .string()
+      .min(
+        10,
+        "Description must contain at least 10 characters",
+      ),
 
-  priority: ticketPrioritySchema,
 
-  customerId: z.uuid(),
+    /**
+     * Ticket type.
+     */
+    type: ticketTypeSchema,
 
-  projectId: z
-    .uuid()
-    .nullable()
-    .optional(),
 
-  organizationId: z
-    .uuid()
-    .nullable()
-    .optional(),
+    /**
+     * Ticket priority.
+     */
+    priority: ticketPrioritySchema,
 
-  assigneeId: z
-    .uuid()
-    .nullable()
-    .optional(),
-});
 
-/**
- * Ticket update schema.
- */
-export const updateTicketSchema = createTicketSchema
-  .partial()
-  .extend({
-    status: ticketStatusSchema.optional(),
+    /**
+     * Customer identifier.
+     */
+    customerId: z
+      .string()
+      .uuid(
+        "Invalid customer identifier",
+      ),
+
+
+    /**
+     * Project identifier.
+     */
+    projectId: z
+      .string()
+      .uuid(
+        "Invalid project identifier",
+      )
+      .nullable()
+      .optional(),
+
+
+    /**
+     * Organization identifier.
+     */
+    organizationId: z
+      .string()
+      .uuid(
+        "Invalid organization identifier",
+      )
+      .nullable()
+      .optional(),
+
+
+    /**
+     * Assignee identifier.
+     */
+    assigneeId: z
+      .string()
+      .uuid(
+        "Invalid assignee identifier",
+      )
+      .nullable()
+      .optional(),
   });
+
+
+/**
+ * Update ticket validation schema.
+ */
+export const updateTicketSchema =
+  z.object({
+
+    /**
+     * Ticket title.
+     */
+    title: z
+      .string()
+      .min(
+        3,
+        "Title must contain at least 3 characters",
+      )
+      .optional(),
+
+
+    /**
+     * Ticket description.
+     */
+    description: z
+      .string()
+      .min(
+        10,
+        "Description must contain at least 10 characters",
+      )
+      .optional(),
+
+
+    /**
+     * Ticket status.
+     */
+    status:
+      ticketStatusSchema.optional(),
+
+
+    /**
+     * Ticket priority.
+     */
+    priority:
+      ticketPrioritySchema.optional(),
+
+
+    /**
+     * Ticket type.
+     */
+    type:
+      ticketTypeSchema.optional(),
+
+
+    /**
+     * Project identifier.
+     */
+    projectId: z
+      .string()
+      .uuid(
+        "Invalid project identifier",
+      )
+      .nullable()
+      .optional(),
+
+
+    /**
+     * Assignee identifier.
+     */
+    assigneeId: z
+      .string()
+      .uuid(
+        "Invalid assignee identifier",
+      )
+      .nullable()
+      .optional(),
+
+  });
+
 
 /**
  * Ticket filter schema.
  */
-export const ticketFiltersSchema = z.object({
-  search: z.string().trim().optional(),
+export const ticketFilterSchema =
+  z.object({
 
-  status: ticketStatusSchema.optional(),
+    /**
+     * Search term.
+     */
+    search:
+      z.string().optional(),
 
-  priority: ticketPrioritySchema.optional(),
 
-  type: ticketTypeSchema.optional(),
+    /**
+     * Status filter.
+     */
+    status:
+      ticketStatusSchema.optional(),
 
-  customerId: z.uuid().optional(),
 
-  projectId: z.uuid().optional(),
+    /**
+     * Priority filter.
+     */
+    priority:
+      ticketPrioritySchema.optional(),
 
-  assigneeId: z.uuid().optional(),
-});
 
-/**
- * Ticket list query schema.
- */
-export const ticketListQuerySchema = z.object({
-  page: z
-    .number()
-    .int()
-    .positive()
-    .default(1),
+    /**
+     * Type filter.
+     */
+    type:
+      ticketTypeSchema.optional(),
 
-  pageSize: z
-    .number()
-    .int()
-    .positive()
-    .max(100)
-    .default(10),
-});
 
-/**
- * Ticket form values.
- */
-export type CreateTicketFormValues = z.infer<typeof createTicketSchema>;
+    /**
+     * Customer identifier.
+     */
+    customerId:
+      z.string()
+        .uuid()
+        .optional(),
 
-/**
- * Ticket update values.
- */
-export type UpdateTicketFormValues = z.infer<typeof updateTicketSchema>;
 
-/**
- * Ticket filter values.
- */
-export type TicketFilterFormData = z.infer<typeof ticketFiltersSchema>;
+    /**
+     * Project identifier.
+     */
+    projectId:
+      z.string()
+        .uuid()
+        .optional(),
 
-/**
- * Ticket query values.
- */
-export type TicketListQueryValues = z.infer<typeof ticketListQuerySchema>;
+
+    /**
+     * Assignee identifier.
+     */
+    assigneeId:
+      z.string()
+        .uuid()
+        .optional(),
+
+  });

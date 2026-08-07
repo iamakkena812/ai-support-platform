@@ -1,8 +1,8 @@
 /**
- * React Query hooks for ticket collection operations.
+ * Tickets query hook.
  *
- * Provides hooks for listing, creating, updating,
- * deleting, and retrieving ticket statistics.
+ * Provides ticket list
+ * fetching functionality.
  */
 
 import {
@@ -11,133 +11,113 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { ticketQueryKeys } from "./useTicket";
-import { ticketService } from "../services/ticket.service";
+import {
+  ticketService,
+} from "../services/ticket.service";
 
 import type {
-  CreateTicketRequest,
-  Ticket,
-  TicketListQuery,
+  CreateTicketPayload,
+  UpdateTicketPayload,
   TicketListResponse,
-  TicketStatistics,
-  UpdateTicketRequest,
+  TicketQueryFilters,
 } from "../types/ticket.types";
 
 /**
- * Statistics query key.
+ * Tickets query key.
  */
-const ticketStatisticsQueryKey = [
-  ...ticketQueryKeys.all,
-  "statistics",
-] as const;
+const TICKETS_QUERY_KEY =
+  "tickets";
+
 
 /**
- * Retrieves a paginated list of tickets.
- *
- * @param query - Ticket list query.
- * @returns React Query result.
+ * Use tickets hook options.
  */
-export const useTickets = (
-  query?: TicketListQuery,
-) =>
-  useQuery<TicketListResponse>({
-    queryKey: [...ticketQueryKeys.all, "list", query] as const,
-    queryFn: () => ticketService.getTickets(query),
-  });
-
-/**
- * Retrieves ticket statistics.
- *
- * @returns React Query result.
- */
-export const useTicketStatistics = () =>
-  useQuery<TicketStatistics>({
-    queryKey: ticketStatisticsQueryKey,
-    queryFn: () => ticketService.getTicketStatistics(),
-  });
-
-/**
- * Creates a ticket.
- *
- * @returns Mutation.
- */
-export const useCreateTicket = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<Ticket, Error, CreateTicketRequest>({
-    mutationFn: (payload) =>
-      ticketService.createTicket(payload),
-
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ticketQueryKeys.all,
-      });
-    },
-  });
-};
-
-/**
- * Update ticket variables.
- */
-interface UpdateTicketVariables {
-  /**
-   * Ticket identifier.
-   */
-  ticketId: string;
+export interface UseTicketsOptions {
 
   /**
-   * Update payload.
+   * Ticket filters.
    */
-  payload: UpdateTicketRequest;
+  readonly filters?: TicketQueryFilters;
+}
+
+
+/**
+ * Use tickets hook.
+ *
+ * @param options Query options.
+ * @returns Tickets query result.
+ */
+export function useTickets(
+  options?: UseTicketsOptions,
+) {
+  return useQuery<TicketListResponse>({
+    queryKey: [
+      TICKETS_QUERY_KEY,
+      options?.filters,
+    ],
+
+    queryFn: async () =>
+      ticketService.getTickets(
+        options?.filters,
+      ),
+  });
 }
 
 /**
- * Updates a ticket.
- *
- * @returns Mutation.
+ * Create ticket mutation hook.
  */
-export const useUpdateTicket = () => {
-  const queryClient = useQueryClient();
+export function useCreateTicket() {
 
-  return useMutation<
-    Ticket,
-    Error,
-    UpdateTicketVariables
-  >({
-    mutationFn: ({ ticketId, payload }) =>
-      ticketService.updateTicket(ticketId, payload),
+  const queryClient =
+    useQueryClient();
 
-    onSuccess: async (_, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ticketQueryKeys.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ticketQueryKeys.detail(
-            variables.ticketId,
-          ),
-        }),
-      ]);
-    },
-  });
-};
-
-/**
- * Deletes a ticket.
- *
- * @returns Mutation.
- */
-export const useDeleteTicket = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<void, Error, string>({
-    mutationFn: (ticketId) =>
-      ticketService.deleteTicket(ticketId),
+  return useMutation({
+    mutationFn:
+      (payload: CreateTicketPayload) =>
+        ticketService.createTicket(
+          payload,
+        ),
 
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ticketQueryKeys.all,
+        queryKey: [
+          "tickets",
+        ],
       });
     },
   });
-};
+}
+
+/**
+ * Update ticket mutation hook.
+ */
+export function useUpdateTicket() {
+
+  const queryClient =
+    useQueryClient();
+
+
+  return useMutation({
+    mutationFn:
+      ({
+        id,
+        payload,
+      }: {
+        id: string;
+        payload: UpdateTicketPayload;
+      }) =>
+        ticketService.updateTicket(
+          id,
+          payload,
+        ),
+
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: [
+          "tickets",
+        ],
+      });
+    },
+  });
+}

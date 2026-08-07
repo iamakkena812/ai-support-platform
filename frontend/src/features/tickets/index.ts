@@ -4,11 +4,7 @@
 
 export * from "./api/ticket.api";
 
-export * from "./components/DeleteTicketDialog";
-export * from "./components/TicketCard";
-export * from "./components/TicketFilters";
-export * from "./components/TicketForm";
-export * from "./components/TicketTable";
+export * from "./components";
 
 export * from "./hooks/useTicket";
 export * from "./hooks/useTickets";

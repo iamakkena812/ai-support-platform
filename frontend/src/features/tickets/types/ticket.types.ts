@@ -1,28 +1,34 @@
 /**
  * Ticket domain types.
  *
- * Defines the TypeScript models used throughout the Tickets feature.
- * These types represent the frontend domain model and API contracts.
+ * Defines ticket entities,
+ * filters, and payload contracts.
  */
 
+
 /**
- * Ticket status values.
+ * Ticket status.
  */
 export type TicketStatus =
-  | "new"
-  | "open"
-  | "in_progress"
-  | "pending"
-  | "resolved"
-  | "closed";
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "WAITING"
+  | "RESOLVED"
+  | "CLOSED";
+
 
 /**
- * Ticket priority values.
+ * Ticket priority.
  */
-export type TicketPriority = "low" | "medium" | "high" | "urgent";
+export type TicketPriority =
+  | "LOW"
+  | "MEDIUM"
+  | "HIGH"
+  | "URGENT";
+
 
 /**
- * Ticket type values.
+ * Ticket type.
  */
 export type TicketType =
   | "incident"
@@ -32,259 +38,411 @@ export type TicketType =
   | "question"
   | "feature_request";
 
-/**
- * Sort direction.
- */
-export type SortDirection = "asc" | "desc";
 
 /**
- * Lightweight user reference.
+ * User reference.
  */
 export interface UserReference {
-  /** User identifier. */
-  id: string;
 
-  /** Full name. */
-  name: string;
+  /**
+   * User identifier.
+   */
+  readonly id: string;
 
-  /** Email address. */
-  email?: string | null;
+
+  /**
+   * User name.
+   */
+  readonly name: string;
+
+
+  /**
+   * User email.
+   */
+  readonly email?: string;
 }
 
+
 /**
- * Lightweight customer reference.
+ * Customer reference.
  */
 export interface CustomerReference {
-  /** Customer identifier. */
-  id: string;
 
-  /** Customer name. */
-  name: string;
+  /**
+   * Customer identifier.
+   */
+  readonly id: string;
+
+
+  /**
+   * Customer name.
+   */
+  readonly name: string;
 }
 
+
 /**
- * Lightweight organization reference.
+ * Organization reference.
  */
 export interface OrganizationReference {
-  /** Organization identifier. */
-  id: string;
 
-  /** Organization name. */
-  name: string;
+  /**
+   * Organization identifier.
+   */
+  readonly id: string;
+
+
+  /**
+   * Organization name.
+   */
+  readonly name: string;
 }
+
 
 /**
- * Lightweight project reference.
+ * Project reference.
  */
 export interface ProjectReference {
-  /** Project identifier. */
-  id: string;
 
-  /** Project name. */
-  name: string;
+  /**
+   * Project identifier.
+   */
+  readonly id: string;
+
+
+  /**
+   * Project name.
+   */
+  readonly name: string;
 }
+
 
 /**
  * Ticket entity.
  */
 export interface Ticket {
-  /** Ticket identifier. */
-  id: string;
 
-  /** Human-readable ticket number. */
-  ticketNumber: string;
+  /**
+   * Ticket identifier.
+   */
+  readonly id: string;
 
-  /** Ticket title. */
-  title: string;
 
-  /** Ticket description. */
-  description: string;
+  /**
+   * Ticket number.
+   */
+  readonly ticketNumber: string;
 
-  /** Ticket status. */
-  status: TicketStatus;
 
-  /** Ticket priority. */
-  priority: TicketPriority;
+  /**
+   * Ticket title.
+   */
+  readonly title: string;
 
-  /** Ticket classification. */
-  type: TicketType;
 
-  /** Organization. */
-  organization?: OrganizationReference | null;
+  /**
+   * Ticket description.
+   */
+  readonly description: string;
 
-  /** Customer. */
-  customer?: CustomerReference | null;
 
-  /** Related project. */
-  project?: ProjectReference | null;
+  /**
+   * Ticket status.
+   */
+  readonly status: TicketStatus;
 
-  /** Assigned user. */
-  assignee?: UserReference | null;
 
-  /** User who created the ticket. */
-  createdBy?: UserReference | null;
+  /**
+   * Ticket priority.
+   */
+  readonly priority: TicketPriority;
 
-  /** Creation timestamp. */
-  createdAt: string;
 
-  /** Last update timestamp. */
-  updatedAt: string;
+  /**
+   * Ticket type.
+   */
+  readonly type: TicketType;
 
-  /** Resolution timestamp. */
-  resolvedAt?: string | null;
 
-  /** Close timestamp. */
-  closedAt?: string | null;
+  /**
+   * Customer.
+   */
+  readonly customer?: CustomerReference | null;
+
+
+  /**
+   * Customer identifier.
+   */
+  readonly customerId: string;
+
+
+  /**
+   * Organization.
+   */
+  readonly organization?: OrganizationReference | null;
+
+
+  /**
+   * Organization identifier.
+   */
+  readonly organizationId?: string | null;
+
+
+  /**
+   * Project.
+   */
+  readonly project?: ProjectReference | null;
+
+
+  /**
+   * Project identifier.
+   */
+  readonly projectId?: string | null;
+
+
+  /**
+   * Assigned user.
+   */
+  readonly assignee?: UserReference | null;
+
+
+  /**
+   * Assigned user identifier.
+   */
+  readonly assignedTo?: string | null;
+
+
+  /**
+   * Assigned user name.
+   */
+  readonly assignedUserName?: string;
+
+
+  /**
+   * Created user.
+   */
+  readonly createdBy?: UserReference | null;
+
+
+  /**
+   * Created date.
+   */
+  readonly createdAt: string | Date;
+
+
+  /**
+   * Updated date.
+   */
+  readonly updatedAt: string | Date;
+
+
+  /**
+   * Resolved date.
+   */
+  readonly resolvedAt?: string | Date | null;
+
+
+  /**
+   * Closed date.
+   */
+  readonly closedAt?: string | Date | null;
 }
 
-/**
- * Payload for creating a ticket.
- */
-export interface CreateTicketRequest {
-  /** Ticket title. */
-  title: string;
-
-  /** Ticket description. */
-  description: string;
-
-  /** Ticket type. */
-  type: TicketType;
-
-  /** Ticket priority. */
-  priority: TicketPriority;
-
-  /** Customer identifier. */
-  customerId: string;
-
-  /** Project identifier. */
-  projectId?: string | null;
-
-  /** Organization identifier. */
-  organizationId?: string | null;
-
-  /** Assignee identifier. */
-  assigneeId?: string | null;
-}
 
 /**
- * Payload for updating a ticket.
- */
-export interface UpdateTicketRequest {
-  /** Ticket title. */
-  title?: string;
-
-  /** Ticket description. */
-  description?: string;
-
-  /** Ticket status. */
-  status?: TicketStatus;
-
-  /** Ticket priority. */
-  priority?: TicketPriority;
-
-  /** Ticket type. */
-  type?: TicketType;
-
-  /** Project identifier. */
-  projectId?: string | null;
-
-  /** Assignee identifier. */
-  assigneeId?: string | null;
-}
-
-/**
- * Ticket filter parameters.
+ * Ticket filters.
  */
 export interface TicketFilterValues {
-  /** Search term. */
-  search?: string;
 
-  /** Status filter. */
-  status?: TicketStatus;
+  /**
+   * Search text.
+   */
+  readonly search?: string;
 
-  /** Priority filter. */
-  priority?: TicketPriority;
 
-  /** Type filter. */
-  type?: TicketType;
+  /**
+   * Status.
+   */
+  readonly status?: TicketStatus;
 
-  /** Customer identifier. */
-  customerId?: string;
 
-  /** Project identifier. */
-  projectId?: string;
+  /**
+   * Priority.
+   */
+  readonly priority?: TicketPriority;
 
-  /** Assignee identifier. */
-  assigneeId?: string;
+
+  /**
+   * Type.
+   */
+  readonly type?: TicketType;
+
+
+  /**
+   * Customer identifier.
+   */
+  readonly customerId?: string;
+
+
+  /**
+   * Project identifier.
+   */
+  readonly projectId?: string;
+
+
+  /**
+   * Assigned user.
+   */
+  readonly assignedTo?: string;
+
+
+  /**
+   * Page.
+   */
+  readonly page?: number;
+
+
+  /**
+   * Limit.
+   */
+  readonly limit?: number;
 }
 
+
 /**
- * Ticket sorting options.
+ * Alias for query filters.
  */
-export interface TicketSort {
-  /** Field name. */
-  field: keyof Ticket;
+export type TicketQueryFilters =
+  TicketFilterValues;
 
-  /** Sort direction. */
-  direction: SortDirection;
-}
 
 /**
- * Ticket list query parameters.
- */
-export interface TicketListQuery {
-  /** Page number. */
-  page?: number;
-
-  /** Page size. */
-  pageSize?: number;
-
-  /** Filters. */
-  filters?: TicketFilterValues;
-
-  /** Sorting. */
-  sort?: TicketSort;
-}
-
-/**
- * Paginated ticket response.
+ * Ticket list response.
  */
 export interface TicketListResponse {
-  /** Returned tickets. */
-  items: Ticket[];
 
-  /** Total records. */
-  total: number;
+  /**
+   * Tickets.
+   */
+  readonly items: readonly Ticket[];
 
-  /** Current page. */
-  page: number;
 
-  /** Page size. */
-  pageSize: number;
+  /**
+   * Total records.
+   */
+  readonly total: number;
 
-  /** Total pages. */
-  totalPages: number;
+
+  /**
+   * Current page.
+   */
+  readonly page: number;
+
+
+  /**
+   * Page size.
+   */
+  readonly limit: number;
 }
 
+
 /**
- * Ticket statistics.
+ * Create ticket payload.
  */
-export interface TicketStatistics {
-  /** Total tickets. */
-  total: number;
+export interface CreateTicketPayload {
 
-  /** Open tickets. */
-  open: number;
+  /**
+   * Ticket title.
+   */
+  readonly title: string;
 
-  /** In-progress tickets. */
-  inProgress: number;
 
-  /** Pending tickets. */
-  pending: number;
+  /**
+   * Description.
+   */
+  readonly description: string;
 
-  /** Resolved tickets. */
-  resolved: number;
 
-  /** Closed tickets. */
-  closed: number;
+  /**
+   * Ticket type.
+   */
+  readonly type: TicketType;
+
+
+  /**
+   * Customer identifier.
+   */
+  readonly customerId: string;
+
+
+  /**
+   * Priority.
+   */
+  readonly priority: TicketPriority;
+
+
+  /**
+   * Project identifier.
+   */
+  readonly projectId?: string | null;
+
+
+  /**
+   * Organization identifier.
+   */
+  readonly organizationId?: string | null;
+
+
+  /**
+   * Assigned user.
+   */
+  readonly assignedTo?: string | null;
+}
+
+
+/**
+ * Update ticket payload.
+ */
+export interface UpdateTicketPayload {
+
+  /**
+   * Ticket title.
+   */
+  readonly title?: string;
+
+
+  /**
+   * Description.
+   */
+  readonly description?: string;
+
+
+  /**
+   * Status.
+   */
+  readonly status?: TicketStatus;
+
+
+  /**
+   * Priority.
+   */
+  readonly priority?: TicketPriority;
+
+
+  /**
+   * Ticket type.
+   */
+  readonly type?: TicketType;
+
+
+  /**
+   * Project identifier.
+   */
+  readonly projectId?: string | null;
+
+
+  /**
+   * Assigned user.
+   */
+  readonly assignedTo?: string | null;
 }

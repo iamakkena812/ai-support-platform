@@ -81,10 +81,10 @@ export function TicketForm({
     useState<TicketType>("incident");
 
   const [priority, setPriority] =
-    useState<TicketPriority>("medium");
+    useState<TicketPriority>("MEDIUM");
 
   const [status, setStatus] =
-    useState<TicketStatus>("new");
+    useState<TicketStatus>("OPEN");
 
   useEffect(() => {
     if (!initialValue) {
@@ -92,19 +92,19 @@ export function TicketForm({
     }
 
     setOrganizationId(
-      initialValue.organization?.id ?? "",
+      initialValue.organizationId ?? "",
     );
 
     setCustomerId(
-      initialValue.customer?.id ?? "",
+      initialValue.customerId ?? "",
     );
 
     setProjectId(
-      initialValue.project?.id ?? "",
+      "",
     );
 
     setAssigneeId(
-      initialValue.assignee?.id ?? "",
+      initialValue.assignedTo ?? "",
     );
 
     setTitle(

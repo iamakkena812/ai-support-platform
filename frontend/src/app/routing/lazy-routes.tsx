@@ -115,3 +115,54 @@ export const EditCustomerPage = lazy(
     };
   },
 );
+
+export const TicketsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/tickets/pages/TicketsPage"
+    );
+
+    return {
+      default: module.TicketsPage,
+    };
+  },
+);
+
+
+export const TicketDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/tickets/pages/TicketDetailsPage"
+    );
+
+    return {
+      default: module.TicketDetailsPage,
+    };
+  },
+);
+
+
+export const CreateTicketPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/tickets/pages/CreateTicketPage"
+    );
+
+    return {
+      default: module.CreateTicketPage,
+    };
+  },
+);
+
+
+export const EditTicketPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/tickets/pages/EditTicketPage"
+    );
+
+    return {
+      default: module.EditTicketPage,
+    };
+  },
+);

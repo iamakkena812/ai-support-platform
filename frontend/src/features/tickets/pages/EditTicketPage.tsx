@@ -39,14 +39,14 @@ export function EditTicketPage(): React.JSX.Element {
     values: TicketFormValues,
   ): Promise<void> => {
     await updateTicketMutation.mutateAsync({
-      ticketId,
+      id:ticketId,
       payload: {
         title: values.title,
         description: values.description,
         status: values.status,
         type: values.type,
         priority: values.priority,
-        assigneeId: values.assigneeId,
+        assignedTo: values.assigneeId,
         projectId: values.projectId,
       },
     });
