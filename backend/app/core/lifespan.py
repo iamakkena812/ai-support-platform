@@ -7,13 +7,12 @@ from collections.abc import Awaitable, Callable
 from fastapi import FastAPI
 from sqlalchemy import text
 
+# Import all models so SQLAlchemy registers them
+import app.database.model_registry  # noqa: F401
 from app.config.logging import get_logger
 from app.config.settings import settings
 from app.database.base import Base
 from app.database.engine import engine
-
-# Import all models so SQLAlchemy registers them
-from app.models import *
 
 logger = get_logger(__name__)
 
@@ -23,7 +22,7 @@ async def startup(app: FastAPI) -> None:
     logger.info("Starting %s...", settings.APP_NAME)
 
     app.state.settings = settings
-    
+
     logger.info("Creating database tables...")
 
     Base.metadata.create_all(bind=engine)

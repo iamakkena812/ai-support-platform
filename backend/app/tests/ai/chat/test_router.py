@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from app.ai.chat.router import router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from app.ai.chat.router import router
 
 
 def create_app() -> TestClient:

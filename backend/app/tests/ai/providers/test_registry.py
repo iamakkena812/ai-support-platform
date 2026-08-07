@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import cast
 
 import pytest
+
 from app.ai.constants import AIProvider
 from app.ai.exceptions import AIProviderError
 from app.ai.providers.base import AIProvider as BaseProvider

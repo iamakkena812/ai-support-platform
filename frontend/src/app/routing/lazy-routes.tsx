@@ -166,3 +166,54 @@ export const EditTicketPage = lazy(
     };
   },
 );
+
+export const CommentsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/comments/pages/CommentsPage"
+    );
+
+    return {
+      default: module.CommentsPage,
+    };
+  },
+);
+
+
+export const CommentDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/comments/pages/CommentDetailsPage"
+    );
+
+    return {
+      default: module.CommentDetailsPage,
+    };
+  },
+);
+
+
+export const CreateCommentPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/comments/pages/CreateCommentPage"
+    );
+
+    return {
+      default: module.CreateCommentPage,
+    };
+  },
+);
+
+
+export const EditCommentPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/comments/pages/EditCommentPage"
+    );
+
+    return {
+      default: module.EditCommentPage,
+    };
+  },
+);

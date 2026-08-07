@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
+
 from app.ai.chat.constants import ConversationStatus
 from app.ai.chat.exceptions import ConversationNotFoundError
 from app.ai.chat.models import Conversation, ConversationMessage

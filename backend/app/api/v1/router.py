@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from fastapi import APIRouter
+
 from app.ai.documents.router import router as document_router
 from app.ai.embeddings.router import router as embeddings_router
 from app.ai.ingestion.router import router as ingestion_router
@@ -16,6 +18,7 @@ from app.audit.router import router as audit_router
 from app.auth.router import router as auth_router
 from app.comments.router import router as comment_router
 from app.customers.router import router as customer_router
+from app.dashboard.router import router as dashboard_router
 from app.email.router import router as email_router
 from app.files.router import router as file_router
 from app.notifications.router import router as notification_router
@@ -26,7 +29,6 @@ from app.teams.router import router as teams_router
 from app.tickets.router import router as ticket_router
 from app.users.router import router as user_router
 from app.workflows.router import router as workflows_router
-from fastapi import APIRouter
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -49,6 +51,7 @@ api_router.include_router(ticket_router)
 api_router.include_router(comment_router)
 api_router.include_router(attachment_router)
 api_router.include_router(notification_router)
+api_router.include_router(dashboard_router)
 
 # ============================================================================
 # Business

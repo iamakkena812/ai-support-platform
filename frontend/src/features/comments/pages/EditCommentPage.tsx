@@ -39,11 +39,10 @@ export function EditCommentPage(): React.JSX.Element {
     values: CommentFormValues,
   ): Promise<void> => {
     await updateCommentMutation.mutateAsync({
-      commentId,
+      id: commentId,
       payload: {
         content: values.content,
-        isInternal:
-          values.isInternal,
+        isInternal: values.isInternal,
       },
     });
 

@@ -5,12 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from math import ceil
 
+from fastapi import Query
+
 from app.config.constants import (
     DEFAULT_PAGE,
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
 )
-from fastapi import Query
 
 
 @dataclass(slots=True, frozen=True)

@@ -11,14 +11,12 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { commentQueryKeys } from "./useComment";
 import { commentService } from "../services/comment.service";
+import { commentQueryKeys } from "./useComment";
 
 import type {
   Comment,
   CommentListQuery,
-  CommentListResponse,
-  CommentStatistics,
   CreateCommentRequest,
   UpdateCommentRequest,
 } from "../types/comment.types";
@@ -31,16 +29,17 @@ const commentStatisticsQueryKey = [
   "statistics",
 ] as const;
 
+
 /**
- * Retrieves a paginated list of comments.
+ * Retrieves paginated comments.
  *
- * @param query - Comment list query.
+ * @param query Comment list query.
  * @returns React Query result.
  */
 export const useComments = (
   query?: CommentListQuery,
 ) =>
-  useQuery<CommentListResponse>({
+  useQuery({
     queryKey: [
       ...commentQueryKeys.all,
       "list",
@@ -51,62 +50,61 @@ export const useComments = (
       commentService.getComments(query),
   });
 
+
 /**
  * Retrieves comment statistics.
  *
  * @returns React Query result.
  */
-export const useCommentStatistics =
-  () =>
-    useQuery<CommentStatistics>({
-      queryKey:
-        commentStatisticsQueryKey,
+export const useCommentStatistics = () =>
+  useQuery({
+    queryKey: commentStatisticsQueryKey,
 
-      queryFn: () =>
-        commentService.getCommentStatistics(),
-    });
+    queryFn: () =>
+      commentService.getCommentStatistics(),
+  });
+
 
 /**
  * Creates a comment.
  *
  * @returns Mutation.
  */
-export const useCreateComment =
-  () => {
-    const queryClient =
-      useQueryClient();
+export const useCreateComment = () => {
+  const queryClient = useQueryClient();
 
-    return useMutation<
-      Comment,
-      Error,
-      CreateCommentRequest
-    >({
-      mutationFn: (
+  return useMutation<
+    Comment,
+    Error,
+    CreateCommentRequest
+  >({
+    mutationFn: (
+      payload,
+    ) =>
+      commentService.createComment(
         payload,
-      ) =>
-        commentService.createComment(
-          payload,
-        ),
+      ),
 
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(
-          {
-            queryKey:
-              commentQueryKeys.all,
-          },
-        );
-      },
-    });
-  };
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          commentQueryKeys.all,
+      });
+    },
+  });
+};
+
 
 /**
  * Update comment variables.
  */
 interface UpdateCommentVariables {
+
   /**
    * Comment identifier.
    */
-  readonly commentId: string;
+  readonly id: string;
+
 
   /**
    * Update payload.
@@ -114,84 +112,86 @@ interface UpdateCommentVariables {
   readonly payload: UpdateCommentRequest;
 }
 
+
 /**
  * Updates a comment.
  *
  * @returns Mutation.
  */
-export const useUpdateComment =
-  () => {
-    const queryClient =
-      useQueryClient();
+export const useUpdateComment = () => {
+  const queryClient = useQueryClient();
 
-    return useMutation<
-      Comment,
-      Error,
-      UpdateCommentVariables
-    >({
-      mutationFn: ({
-        commentId,
+  return useMutation<
+    Comment,
+    Error,
+    UpdateCommentVariables
+  >({
+
+    mutationFn: ({
+      id,
+      payload,
+    }) =>
+      commentService.updateComment(
+        id,
         payload,
-      }) =>
-        commentService.updateComment(
-          commentId,
-          payload,
-        ),
+      ),
 
-      onSuccess: async (
-        _,
-        variables,
-      ) => {
-        await Promise.all([
-          queryClient.invalidateQueries(
-            {
-              queryKey:
-                commentQueryKeys.all,
-            },
-          ),
 
-          queryClient.invalidateQueries(
-            {
-              queryKey:
-                commentQueryKeys.detail(
-                  variables.commentId,
-                ),
-            },
-          ),
-        ]);
-      },
-    });
-  };
+    onSuccess: async (
+      _data,
+      variables,
+    ) => {
+
+      await Promise.all([
+
+        queryClient.invalidateQueries({
+          queryKey:
+            commentQueryKeys.all,
+        }),
+
+
+        queryClient.invalidateQueries({
+          queryKey:
+            commentQueryKeys.detail(
+              variables.id,
+            ),
+        }),
+
+      ]);
+    },
+  });
+};
+
 
 /**
  * Deletes a comment.
  *
  * @returns Mutation.
  */
-export const useDeleteComment =
-  () => {
-    const queryClient =
-      useQueryClient();
+export const useDeleteComment = () => {
+  const queryClient = useQueryClient();
 
-    return useMutation<
-      void,
-      Error,
-      string
-    >({
-      mutationFn: (
-        commentId,
-      ) =>
-        commentService.deleteComment(
-          commentId,
-        ),
+  return useMutation<
+    void,
+    Error,
+    string
+  >({
 
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(
-          {
-            queryKey:
-              commentQueryKeys.all,
-          },
-        );
-      },
-    });
-  };
+    mutationFn: (
+      id,
+    ) =>
+      commentService.deleteComment(
+        id,
+      ),
+
+
+    onSuccess: async () => {
+
+      await queryClient.invalidateQueries({
+        queryKey:
+          commentQueryKeys.all,
+      });
+
+    },
+  });
+};

@@ -23,14 +23,16 @@ import type {
   UpdateCommentRequest,
 } from "../types/comment.types";
 
+
 /**
  * Comment service.
  */
 export const commentService = {
+
   /**
    * Retrieves all comments.
    *
-   * @param query - Comment query parameters.
+   * @param query Comment query parameters.
    * @returns Paginated comment response.
    */
   async getComments(
@@ -39,10 +41,11 @@ export const commentService = {
     return getComments(query);
   },
 
+
   /**
    * Retrieves a comment.
    *
-   * @param commentId - Comment identifier.
+   * @param commentId Comment identifier.
    * @returns Comment.
    */
   async getComment(
@@ -51,10 +54,11 @@ export const commentService = {
     return getComment(commentId);
   },
 
+
   /**
    * Creates a comment.
    *
-   * @param payload - Comment creation payload.
+   * @param payload Comment creation payload.
    * @returns Created comment.
    */
   async createComment(
@@ -63,11 +67,12 @@ export const commentService = {
     return createComment(payload);
   },
 
+
   /**
    * Updates a comment.
    *
-   * @param commentId - Comment identifier.
-   * @param payload - Comment update payload.
+   * @param commentId Comment identifier.
+   * @param payload Comment update payload.
    * @returns Updated comment.
    */
   async updateComment(
@@ -80,16 +85,19 @@ export const commentService = {
     );
   },
 
+
   /**
    * Deletes a comment.
    *
-   * @param commentId - Comment identifier.
+   * @param commentId Comment identifier.
+   * @returns Promise completion.
    */
   async deleteComment(
     commentId: string,
   ): Promise<void> {
     return deleteComment(commentId);
   },
+
 
   /**
    * Retrieves comment statistics.
@@ -99,4 +107,5 @@ export const commentService = {
   async getCommentStatistics(): Promise<CommentStatistics> {
     return getCommentStatistics();
   },
+
 };

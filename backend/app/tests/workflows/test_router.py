@@ -5,10 +5,11 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+from fastapi.testclient import TestClient
+
 from app.main import app
 from app.workflows.dependencies import get_workflow_service
 from app.workflows.models import Workflow
-from fastapi.testclient import TestClient
 
 
 def test_create_workflow(

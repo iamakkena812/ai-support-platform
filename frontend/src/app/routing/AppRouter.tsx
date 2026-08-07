@@ -22,6 +22,7 @@ import {
 
 import {
   DashboardPage,
+
   ForgotPasswordPage,
   LoginPage,
   ResetPasswordPage,
@@ -35,6 +36,11 @@ import {
   TicketDetailsPage,
   CreateTicketPage,
   EditTicketPage,
+
+  CommentsPage,
+  CommentDetailsPage,
+  CreateCommentPage,
+  EditCommentPage,
 
 } from "./lazy-routes";
 
@@ -50,7 +56,6 @@ import {
  * @returns Application routes.
  */
 export function AppRouter(): React.JSX.Element {
-
   return (
     <Suspense
       fallback={
@@ -62,7 +67,7 @@ export function AppRouter(): React.JSX.Element {
 
       <Routes>
 
-        {/* Public */}
+        {/* Public Routes */}
 
         <Route
           path={
@@ -214,7 +219,57 @@ export function AppRouter(): React.JSX.Element {
         />
 
 
-        {/* Redirect */}
+        {/* Comments */}
+
+        <Route
+          path={
+            PROTECTED_ROUTES.COMMENTS
+          }
+          element={
+            <ProtectedRoute>
+              <CommentsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.COMMENTS}/create`
+          }
+          element={
+            <ProtectedRoute>
+              <CreateCommentPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.COMMENTS}/:id`
+          }
+          element={
+            <ProtectedRoute>
+              <CommentDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.COMMENTS}/:id/edit`
+          }
+          element={
+            <ProtectedRoute>
+              <EditCommentPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* Fallback */}
 
         <Route
           path="*"

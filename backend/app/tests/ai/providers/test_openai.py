@@ -4,6 +4,13 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+from openai.types.chat import (
+    ChatCompletion,
+    ChatCompletionMessage,
+)
+from openai.types.chat.chat_completion import Choice
+from openai.types.completion_usage import CompletionUsage
+
 from app.ai.constants import (
     AIModel,
     AIProvider,
@@ -16,12 +23,6 @@ from app.ai.schemas import (
     AIResponse,
     PromptMessage,
 )
-from openai.types.chat import (
-    ChatCompletion,
-    ChatCompletionMessage,
-)
-from openai.types.chat.chat_completion import Choice
-from openai.types.completion_usage import CompletionUsage
 
 
 @patch("app.ai.providers.openai.OpenAI")

@@ -5,11 +5,12 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy.orm import Session
+
 from app.models.organization import Organization
 from app.models.ticket import Ticket
 from app.sla.models import SLAEvent, SLAPolicy
 from app.sla.repository import SLARepository
-from sqlalchemy.orm import Session
 
 
 @pytest.fixture

@@ -5,6 +5,7 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
+
 from app.models.organization import Organization
 from app.workflows.constants import WorkflowAction, WorkflowCondition, WorkflowTrigger
 from app.workflows.exceptions import (

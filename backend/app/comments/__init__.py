@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from app.comments.models import Comment
 from app.comments.repository import CommentRepository
-from app.comments.router import router
 from app.comments.schemas import (
     CommentListResponse,
     CommentResponse,
@@ -21,5 +20,4 @@ __all__ = [
     "UpdateCommentRequest",
     "CommentResponse",
     "CommentListResponse",
-    "router",
 ]

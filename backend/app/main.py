@@ -6,8 +6,8 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.api.v1.router import api_router
 from app.common.exceptions import register_exception_handlers
 from app.config.logging import configure_logging
@@ -65,12 +65,17 @@ async def root() -> dict[str, str]:
         "status": "running",
     }
 
+
 print("REGISTERING EXCEPTION HANDLERS")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "https://ai-support-platform-g28r.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],

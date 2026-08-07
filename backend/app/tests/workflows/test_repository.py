@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from uuid import uuid4
 
+from sqlalchemy.orm import Session
+
 from app.models.organization import Organization
 from app.workflows.models import (
     Workflow,
@@ -11,7 +13,6 @@ from app.workflows.models import (
     WorkflowCondition,
 )
 from app.workflows.repository import WorkflowRepository
-from sqlalchemy.orm import Session
 
 
 def test_create_workflow(
