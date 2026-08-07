@@ -276,3 +276,171 @@ export const EditNotificationPage =
         }),
       ),
     );
+
+  export const AttachmentsPage =
+  lazy(
+    () =>
+      import(
+        "../../features/attachments/pages/AttachmentsPage"
+      ).then(
+        (module) => ({
+          default:
+            module.AttachmentsPage,
+        }),
+      ),
+  );
+
+
+export const CreateAttachmentPage =
+  lazy(
+    () =>
+      import(
+        "../../features/attachments/pages/CreateAttachmentPage"
+      ).then(
+        (module) => ({
+          default:
+            module.CreateAttachmentPage,
+        }),
+      ),
+  );
+
+
+export const EditAttachmentPage =
+  lazy(
+    () =>
+      import(
+        "../../features/attachments/pages/EditAttachmentPage"
+      ).then(
+        (module) => ({
+          default:
+            module.EditAttachmentPage,
+        }),
+      ),
+  );
+
+
+export const AttachmentDetailsPage =
+  lazy(
+    () =>
+      import(
+        "../../features/attachments/pages/AttachmentDetailsPage"
+      ).then(
+        (module) => ({
+          default:
+            module.AttachmentDetailsPage,
+        }),
+      ),
+  );
+
+  export const UsersPage =
+  lazy(
+    () =>
+      import(
+        "../../features/users/pages/UsersPage"
+      ).then(
+        (module) => ({
+          default:
+            module.UsersPage,
+        }),
+      ),
+  );
+
+
+export const UserDetailsPage =
+  lazy(
+    () =>
+      import(
+        "../../features/users/pages/UserDetailsPage"
+      ).then(
+        (module) => ({
+          default:
+            module.UserDetailsPage,
+        }),
+      ),
+  );
+
+
+export const CreateUserPage =
+  lazy(
+    () =>
+      import(
+        "../../features/users/pages/CreateUserPage"
+      ).then(
+        (module) => ({
+          default:
+            module.CreateUserPage,
+        }),
+      ),
+  );
+
+
+export const EditUserPage =
+  lazy(
+    () =>
+      import(
+        "../../features/users/pages/EditUserPage"
+      ).then(
+        (module) => ({
+          default:
+            module.EditUserPage,
+        }),
+      ),
+  );
+
+  /**
+ * Projects pages.
+ */
+export const ProjectsPage =
+lazy(
+  () =>
+    import(
+      "../../features/projects/pages/ProjectsPage"
+    ).then(
+      (module) => ({
+        default:
+          module.ProjectsPage,
+      }),
+    ),
+);
+
+
+export const CreateProjectPage =
+lazy(
+  () =>
+    import(
+      "../../features/projects/pages/CreateProjectPage"
+    ).then(
+      (module) => ({
+        default:
+          module.CreateProjectPage,
+      }),
+    ),
+);
+
+
+export const ProjectDetailsPage =
+lazy(
+  () =>
+    import(
+      "../../features/projects/pages/ProjectDetailsPage"
+    ).then(
+      (module) => ({
+        default:
+          module.ProjectDetailsPage,
+      }),
+    ),
+);
+
+
+export const EditProjectPage =
+lazy(
+  () =>
+    import(
+      "../../features/projects/pages/EditProjectPage"
+    ).then(
+      (module) => ({
+        default:
+          module.EditProjectPage,
+      }),
+    ),
+);

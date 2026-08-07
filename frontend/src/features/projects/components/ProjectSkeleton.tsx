@@ -1,62 +1,111 @@
 /**
  * Project skeleton component.
  *
- * Displays placeholder content while
- * project data is loading.
+ * Displays loading placeholders while
+ * project data is being fetched.
  */
 
-import {
-  Skeleton,
-} from "../../../components/feedback";
-
-import {
-  DashboardGrid,
-} from "../../dashboard/components";
 
 /**
- * Project skeleton component.
+ * Project skeleton.
  *
  * @returns Project skeleton component.
  */
 export function ProjectSkeleton(): React.JSX.Element {
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <Skeleton
-          variant="title"
-          width={320}
+
+    <div
+      className="space-y-6"
+    >
+
+      <div
+        className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+      >
+
+        <div
+          className="h-6 w-48 animate-pulse rounded bg-slate-200"
         />
 
-        <Skeleton
-          width={460}
+
+        <div
+          className="mt-3 h-4 w-72 animate-pulse rounded bg-slate-200"
         />
+
       </div>
 
-      {/* Statistics */}
-      <DashboardGrid>
-        {Array.from({
-          length: 5,
-        }).map((_, index) => (
-          <Skeleton
-            key={index}
-            variant="rectangle"
-            height={140}
-          />
-        ))}
-      </DashboardGrid>
 
-      {/* Filters */}
-      <Skeleton
-        variant="rectangle"
-        height={80}
-      />
+      <div
+        className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+      >
 
-      {/* Project table */}
-      <Skeleton
-        variant="rectangle"
-        height={560}
-      />
+        <div
+          className="grid gap-4 md:grid-cols-2"
+        >
+
+          {
+            Array.from(
+              {
+                length: 4,
+              },
+            ).map(
+              (
+                _,
+                index,
+              ) => (
+
+                <div
+                  key={
+                    index
+                  }
+                  className="h-20 animate-pulse rounded bg-slate-100"
+                />
+
+              ),
+            )
+          }
+
+        </div>
+
+      </div>
+
+
+      <div
+        className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+      >
+
+        <div
+          className="space-y-3"
+        >
+
+          {
+            Array.from(
+              {
+                length: 5,
+              },
+            ).map(
+              (
+                _,
+                index,
+              ) => (
+
+                <div
+                  key={
+                    index
+                  }
+                  className="h-5 animate-pulse rounded bg-slate-100"
+                />
+
+              ),
+            )
+          }
+
+        </div>
+
+      </div>
+
     </div>
+
   );
+
 }

@@ -20,59 +20,21 @@ import {
   UserStatusBadge,
 } from "./UserStatusBadge";
 
-/**
- * User row.
- */
-export interface UserTableRow {
-  /**
-   * User identifier.
-   */
-  readonly id: string;
+import type {
+  User,
+} from "../types/user.types";
 
-  /**
-   * Full name.
-   */
-  readonly name: string;
-
-  /**
-   * Email.
-   */
-  readonly email: string;
-
-  /**
-   * Phone.
-   */
-  readonly phone?: string;
-
-  /**
-   * Organization.
-   */
-  readonly organization?: string;
-
-  /**
-   * Avatar URL.
-   */
-  readonly avatarUrl?: string;
-
-  /**
-   * User roles.
-   */
-  readonly roles: readonly string[];
-
-  /**
-   * Status.
-   */
-  readonly status: string;
-}
 
 /**
  * Component properties.
  */
 export interface UserTableProps {
+
   /**
    * Users.
    */
-  readonly users: readonly UserTableRow[];
+  readonly users: readonly User[];
+
 
   /**
    * View callback.
@@ -81,12 +43,14 @@ export interface UserTableProps {
     id: string,
   ) => void;
 
+
   /**
    * Edit callback.
    */
   readonly onEdit?: (
     id: string,
   ) => void;
+
 
   /**
    * Delete callback.
@@ -96,103 +60,190 @@ export interface UserTableProps {
   ) => void;
 }
 
+
 /**
  * User table.
  *
  * @param props Component properties.
  * @returns User table component.
  */
-export function UserTable({
-  users,
-  onView,
-  onEdit,
-  onDelete,
-}: UserTableProps): React.JSX.Element {
+export function UserTable(
+  {
+    users,
+    onView,
+    onEdit,
+    onDelete,
+  }: UserTableProps,
+): React.JSX.Element {
+
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
-                User
-              </th>
+    <div
+      className="overflow-x-auto rounded-lg border border-slate-200 bg-white"
+    >
 
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
-                Organization
-              </th>
+      <table
+        className="min-w-full"
+      >
 
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
-                Roles
-              </th>
+        <thead
+          className="bg-slate-50"
+        >
 
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
-                Status
-              </th>
+          <tr>
 
-              <th className="w-20 px-6 py-4 text-right text-sm font-semibold text-slate-700">
-                Actions
-              </th>
-            </tr>
-          </thead>
+            <th
+              className="px-6 py-4 text-left text-sm font-semibold text-slate-700"
+            >
+              User
+            </th>
 
-          <tbody className="divide-y divide-slate-200">
-            {users.map(
+
+            <th
+              className="px-6 py-4 text-left text-sm font-semibold text-slate-700"
+            >
+              Organization
+            </th>
+
+
+            <th
+              className="px-6 py-4 text-left text-sm font-semibold text-slate-700"
+            >
+              Roles
+            </th>
+
+
+            <th
+              className="px-6 py-4 text-left text-sm font-semibold text-slate-700"
+            >
+              Status
+            </th>
+
+
+            <th
+              className="w-20 px-6 py-4 text-right text-sm font-semibold text-slate-700"
+            >
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody
+          className="divide-y divide-slate-200"
+        >
+
+          {
+            users.map(
               (user) => (
                 <tr
-                  key={user.id}
+                  key={
+                    user.id
+                  }
                   className="hover:bg-slate-50"
                 >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+
+                  <td
+                    className="px-6 py-4"
+                  >
+
+                    <div
+                      className="flex items-center gap-3"
+                    >
+
                       <UserAvatar
-                        name={user.name}
+                        name={
+                          user.fullName
+                        }
                         imageUrl={
-                          user.avatarUrl
+                          user.avatarUrl ?? undefined
                         }
                         size="sm"
                       />
 
+
                       <div>
-                        <div className="font-medium text-slate-900">
-                          {user.name}
+
+                        <div
+                          className="font-medium text-slate-900"
+                        >
+                          {
+                            user.fullName
+                          }
                         </div>
 
-                        <div className="text-sm text-slate-500">
-                          {user.email}
+
+                        <div
+                          className="text-sm text-slate-500"
+                        >
+                          {
+                            user.email
+                          }
                         </div>
 
-                        {user.phone ? (
-                          <div className="text-xs text-slate-400">
-                            {user.phone}
-                          </div>
-                        ) : null}
+
+                        {
+                          user.phone ? (
+                            <div
+                              className="text-xs text-slate-400"
+                            >
+                              {
+                                user.phone
+                              }
+                            </div>
+                          ) : null
+                        }
+
                       </div>
+
                     </div>
+
                   </td>
 
-                  <td className="px-6 py-4 text-sm text-slate-700">
-                    {user.organization ??
-                      "-"}
+
+                  <td
+                    className="px-6 py-4 text-sm text-slate-700"
+                  >
+                    {
+                      user.organization?.name ?? "-"
+                    }
                   </td>
 
-                  <td className="px-6 py-4">
+
+                  <td
+                    className="px-6 py-4"
+                  >
+
                     <UserRoles
                       roles={
-                        user.roles
+                        user.roles.map(
+                          (role) =>
+                            role.name,
+                        )
                       }
                     />
+
                   </td>
 
-                  <td className="px-6 py-4">
+
+                  <td
+                    className="px-6 py-4"
+                  >
+
                     <UserStatusBadge
                       status={
                         user.status
                       }
                     />
+
                   </td>
 
-                  <td className="px-6 py-4 text-right">
+
+                  <td
+                    className="px-6 py-4 text-right"
+                  >
+
                     <UserActions
                       onView={
                         onView
@@ -202,6 +253,7 @@ export function UserTable({
                               )
                           : undefined
                       }
+
                       onEdit={
                         onEdit
                           ? () =>
@@ -210,6 +262,7 @@ export function UserTable({
                               )
                           : undefined
                       }
+
                       onDelete={
                         onDelete
                           ? () =>
@@ -219,13 +272,18 @@ export function UserTable({
                           : undefined
                       }
                     />
+
                   </td>
+
                 </tr>
               ),
-            )}
-          </tbody>
-        </table>
-      </div>
+            )
+          }
+
+        </tbody>
+
+      </table>
+
     </div>
   );
 }

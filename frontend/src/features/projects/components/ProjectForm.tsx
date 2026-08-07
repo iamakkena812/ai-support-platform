@@ -1,325 +1,370 @@
 /**
  * Project form component.
  *
- * Displays a reusable form for
- * creating and editing projects.
+ * Provides reusable form UI for creating
+ * and updating projects.
  */
 
 import {
-  useState,
-} from "react";
+  useForm,
+} from "react-hook-form";
 
 import {
-  Button,
-  Input,
-  Select,
-} from "../../../components/ui";
+  zodResolver,
+} from "@hookform/resolvers/zod";
+
+import {
+  createProjectSchema,
+} from "../schemas/project.schema";
+
+import type {
+  z,
+} from "zod";
+
+import type {
+  CreateProjectRequest,
+  Project,
+} from "../types/project.types";
+
 
 /**
- * Status options.
+ * Project form values.
+ *
+ * Uses Zod inferred type to keep
+ * React Hook Form resolver compatible.
  */
-const STATUS_OPTIONS = [
-  {
-    label: "Planning",
-    value: "PLANNING",
-  },
-  {
-    label: "Active",
-    value: "ACTIVE",
-  },
-  {
-    label: "On Hold",
-    value: "ON_HOLD",
-  },
-  {
-    label: "Completed",
-    value: "COMPLETED",
-  },
-  {
-    label: "Cancelled",
-    value: "CANCELLED",
-  },
-] as const;
+export type ProjectFormValues =
+  z.infer<
+    typeof createProjectSchema
+  >;
+
 
 /**
- * Select option.
+ * Project form props.
  */
-export interface SelectOption {
-  /**
-   * Option label.
-   */
-  readonly label: string;
+interface ProjectFormProps {
 
   /**
-   * Option value.
+   * Initial project values.
    */
-  readonly value: string;
-}
+  readonly initialValue?: Project;
 
-/**
- * Form values.
- */
-export interface ProjectFormValues {
-  /**
-   * Project name.
-   */
-  readonly name: string;
 
   /**
-   * Description.
-   */
-  readonly description: string;
-
-  /**
-   * Organization identifier.
-   */
-  readonly organizationId: string;
-
-  /**
-   * Team identifier.
-   */
-  readonly teamId: string;
-
-  /**
-   * Owner identifier.
-   */
-  readonly ownerId: string;
-
-  /**
-   * Status.
-   */
-  readonly status: string;
-
-  /**
-   * Start date.
-   */
-  readonly startDate: string;
-
-  /**
-   * End date.
-   */
-  readonly endDate: string;
-}
-
-/**
- * Component properties.
- */
-export interface ProjectFormProps {
-  /**
-   * Initial values.
-   */
-  readonly initialValues?: Partial<ProjectFormValues>;
-
-  /**
-   * Organization options.
-   */
-  readonly organizations: readonly SelectOption[];
-
-  /**
-   * Team options.
-   */
-  readonly teams: readonly SelectOption[];
-
-  /**
-   * Owner options.
-   */
-  readonly owners: readonly SelectOption[];
-
-  /**
-   * Submit callback.
+   * Submit handler.
    */
   readonly onSubmit: (
-    values: ProjectFormValues,
-  ) => void | Promise<void>;
+    values: CreateProjectRequest,
+  ) => Promise<void>;
+
 
   /**
-   * Indicates submission state.
+   * Loading state.
    */
   readonly isSubmitting?: boolean;
-
-  /**
-   * Submit button label.
-   */
-  readonly submitLabel?: string;
 }
+
 
 /**
  * Project form component.
- *
- * @param props Component properties.
- * @returns Project form component.
  */
-export function ProjectForm({
-  initialValues,
-  organizations,
-  teams,
-  owners,
-  onSubmit,
-  isSubmitting = false,
-  submitLabel = "Save Project",
-}: ProjectFormProps): React.JSX.Element {
-  const [
-    values,
-    setValues,
-  ] = useState<ProjectFormValues>({
-    name:
-      initialValues?.name ?? "",
-    description:
-      initialValues?.description ?? "",
-    organizationId:
-      initialValues?.organizationId ??
-      "",
-    teamId:
-      initialValues?.teamId ?? "",
-    ownerId:
-      initialValues?.ownerId ?? "",
-    status:
-      initialValues?.status ??
-      "PLANNING",
-    startDate:
-      initialValues?.startDate ?? "",
-    endDate:
-      initialValues?.endDate ?? "",
-  });
+export function ProjectForm(
+  {
+    initialValue,
+    onSubmit,
+    isSubmitting = false,
+  }: ProjectFormProps,
+): React.JSX.Element {
 
-  function updateField<
-    K extends keyof ProjectFormValues,
-  >(
-    key: K,
-    value: ProjectFormValues[K],
-  ): void {
-    setValues(
-      (previous) => ({
-        ...previous,
-        [key]: value,
-      }),
+
+  const {
+    register,
+    handleSubmit,
+    formState: {
+      errors,
+    },
+  } =
+    useForm<ProjectFormValues>({
+
+      resolver:
+        zodResolver(
+          createProjectSchema,
+        ),
+
+
+      defaultValues:
+      {
+
+        organizationId:
+          initialValue
+            ?.organization
+            ?.id ?? "",
+
+
+        name:
+          initialValue
+            ?.name ?? "",
+
+
+        description:
+          initialValue
+            ?.description ?? "",
+
+
+        priority:
+          initialValue
+            ?.priority ?? "medium",
+
+
+        teamIds:
+          initialValue
+            ?.teams
+            .map(
+              (team) =>
+                team.id,
+            ) ?? [],
+
+
+        memberIds:
+          initialValue
+            ?.members
+            .map(
+              (member) =>
+                member.id,
+            ) ?? [],
+
+
+        startDate:
+          initialValue
+            ?.startDate ?? null,
+
+
+        endDate:
+          initialValue
+            ?.endDate ?? null,
+
+      },
+
+    });
+
+
+  /**
+   * Handles form submission.
+   *
+   * Converts mutable arrays from Zod
+   * into readonly arrays required by domain types.
+   */
+  async function submitHandler(
+    values: ProjectFormValues,
+  ): Promise<void> {
+
+    const payload: CreateProjectRequest =
+    {
+      ...values,
+
+      teamIds:
+        values.teamIds
+          ? [
+              ...values.teamIds,
+            ]
+          : undefined,
+
+
+      memberIds:
+        values.memberIds
+          ? [
+              ...values.memberIds,
+            ]
+          : undefined,
+    };
+
+
+    await onSubmit(
+      payload,
     );
+
   }
 
-  function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ): void {
-    event.preventDefault();
-    void onSubmit(values);
-  }
 
   return (
+
     <form
-      onSubmit={handleSubmit}
-      className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+      onSubmit={
+        handleSubmit(
+          submitHandler,
+        )
+      }
+      className="space-y-6"
     >
-      <div className="grid gap-6 md:grid-cols-2">
-        <Input
-          label="Project Name"
-          value={values.name}
-          onChange={(event) =>
-            updateField(
-              "name",
-              event.target.value,
-            )
-          }
-          required
-        />
 
-        <Select
-          label="Organization"
-          value={values.organizationId}
-          options={organizations}
-          placeholder="Select organization"
-          onChange={(event) =>
-            updateField(
-              "organizationId",
-              event.target.value,
-            )
-          }
-          required
-        />
+      <div>
 
-        <Select
-          label="Team"
-          value={values.teamId}
-          options={teams}
-          placeholder="Select team"
-          onChange={(event) =>
-            updateField(
-              "teamId",
-              event.target.value,
-            )
-          }
-          required
-        />
-
-        <Select
-          label="Project Owner"
-          value={values.ownerId}
-          options={owners}
-          placeholder="Select owner"
-          onChange={(event) =>
-            updateField(
-              "ownerId",
-              event.target.value,
-            )
-          }
-          required
-        />
-
-        <Input
-          label="Description"
-          value={values.description}
-          onChange={(event) =>
-            updateField(
-              "description",
-              event.target.value,
-            )
-          }
-          className="md:col-span-2"
-        />
-
-        <Select
-          label="Status"
-          value={values.status}
-          options={STATUS_OPTIONS}
-          onChange={(event) =>
-            updateField(
-              "status",
-              event.target.value,
-            )
-          }
-        />
-
-        <Input
-          label="Start Date"
-          type="date"
-          value={values.startDate}
-          onChange={(event) =>
-            updateField(
-              "startDate",
-              event.target.value,
-            )
-          }
-        />
-
-        <Input
-          label="End Date"
-          type="date"
-          value={values.endDate}
-          onChange={(event) =>
-            updateField(
-              "endDate",
-              event.target.value,
-            )
-          }
-        />
-      </div>
-
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          loading={isSubmitting}
+        <label
+          className="block text-sm font-medium"
         >
-          {submitLabel}
-        </Button>
+          Project Name
+        </label>
+
+
+        <input
+          {...register(
+            "name",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
+        />
+
+
+        {
+          errors.name && (
+
+            <p
+              className="text-sm text-red-600"
+            >
+              {
+                errors.name.message
+              }
+            </p>
+
+          )
+        }
+
       </div>
+
+
+      <div>
+
+        <label
+          className="block text-sm font-medium"
+        >
+          Organization Id
+        </label>
+
+
+        <input
+          {...register(
+            "organizationId",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
+        />
+
+      </div>
+
+
+      <div>
+
+        <label
+          className="block text-sm font-medium"
+        >
+          Description
+        </label>
+
+
+        <textarea
+          {...register(
+            "description",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
+          rows={4}
+        />
+
+      </div>
+
+
+      <div>
+
+        <label
+          className="block text-sm font-medium"
+        >
+          Priority
+        </label>
+
+
+        <select
+          {...register(
+            "priority",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
+        >
+
+          <option value="low">
+            Low
+          </option>
+
+          <option value="medium">
+            Medium
+          </option>
+
+          <option value="high">
+            High
+          </option>
+
+          <option value="critical">
+            Critical
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div>
+
+        <label
+          className="block text-sm font-medium"
+        >
+          Start Date
+        </label>
+
+
+        <input
+          type="date"
+          {...register(
+            "startDate",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
+        />
+
+      </div>
+
+
+      <div>
+
+        <label
+          className="block text-sm font-medium"
+        >
+          End Date
+        </label>
+
+
+        <input
+          type="date"
+          {...register(
+            "endDate",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
+        />
+
+      </div>
+
+
+      <button
+        type="submit"
+        disabled={
+          isSubmitting
+        }
+        className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+      >
+
+        {
+          isSubmitting
+            ? "Saving..."
+            : "Save Project"
+        }
+
+      </button>
+
+
     </form>
+
   );
 }

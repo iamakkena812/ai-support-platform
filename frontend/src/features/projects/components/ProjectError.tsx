@@ -1,71 +1,59 @@
 /**
  * Project error component.
  *
- * Displays an error state when
- * project data cannot be loaded.
+ * Displays an error message when projects
+ * cannot be loaded.
  */
 
-import {
-  AlertTriangle,
-  RotateCcw,
-} from "lucide-react";
 
 /**
  * Component properties.
  */
-export interface ProjectErrorProps {
-  /**
-   * Error object.
-   */
-  readonly error?: Error | null;
+interface ProjectErrorProps {
 
   /**
-   * Retry callback.
+   * Error message.
    */
-  readonly onRetry?: () => void;
+  readonly message: string;
+
 }
 
+
 /**
- * Project error component.
+ * Project error.
  *
  * @param props Component properties.
  * @returns Project error component.
  */
-export function ProjectError({
-  error,
-  onRetry,
-}: ProjectErrorProps): React.JSX.Element {
+export function ProjectError(
+  {
+    message,
+  }: ProjectErrorProps,
+): React.JSX.Element {
+
   return (
-    <div className="flex min-h-[420px] items-center justify-center">
-      <div className="w-full max-w-xl rounded-xl border border-red-200 bg-red-50 p-8 text-center shadow-sm">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-          <AlertTriangle
-            size={32}
-            className="text-red-600"
-          />
-        </div>
 
-        <h2 className="mt-6 text-2xl font-bold text-red-700">
-          Unable to Load Projects
-        </h2>
+    <div
+      className="rounded-lg border border-red-200 bg-red-50 p-6"
+    >
 
-        <p className="mt-3 text-sm text-red-600">
-          {error?.message ??
-            "An unexpected error occurred while loading project data."}
-        </p>
+      <h2
+        className="text-lg font-semibold text-red-700"
+      >
+        Unable to load projects
+      </h2>
 
-        {onRetry ? (
-          <button
-            type="button"
-            onClick={onRetry}
-            className="mt-8 inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-3 font-medium text-white transition hover:bg-red-700"
-          >
-            <RotateCcw size={18} />
 
-            Retry
-          </button>
-        ) : null}
-      </div>
+      <p
+        className="mt-2 text-sm text-red-600"
+      >
+        {
+          message
+        }
+      </p>
+
     </div>
+
   );
+
 }

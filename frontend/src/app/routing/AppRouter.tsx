@@ -22,11 +22,6 @@ import {
 
 import {
   DashboardPage,
-
-  ForgotPasswordPage,
-  LoginPage,
-  ResetPasswordPage,
-
   CustomersPage,
   CustomerDetailsPage,
   CreateCustomerPage,
@@ -43,9 +38,28 @@ import {
   EditCommentPage,
 
   NotificationsPage,
-  CreateNotificationPage,
   NotificationDetailsPage,
+  CreateNotificationPage,
   EditNotificationPage,
+
+  AttachmentsPage,
+  AttachmentDetailsPage,
+  CreateAttachmentPage,
+  EditAttachmentPage,
+
+  LoginPage,
+  ForgotPasswordPage,
+  ResetPasswordPage,
+
+  UsersPage,
+  CreateUserPage,
+  UserDetailsPage,
+  EditUserPage,
+
+  ProjectsPage,
+  CreateProjectPage,
+  ProjectDetailsPage,
+  EditProjectPage,
 
 } from "./lazy-routes";
 
@@ -324,6 +338,54 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
+       {/* Attachments */}
+
+          <Route
+            path={
+              PROTECTED_ROUTES.ATTACHMENTS
+            }
+            element={
+              <ProtectedRoute>
+                <AttachmentsPage />
+              </ProtectedRoute>
+            }
+          />
+
+
+          <Route
+            path={
+              `${PROTECTED_ROUTES.ATTACHMENTS}/create`
+            }
+            element={
+              <ProtectedRoute>
+                <CreateAttachmentPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path={
+              `${PROTECTED_ROUTES.ATTACHMENTS}/:id`
+            }
+            element={
+              <ProtectedRoute>
+                <AttachmentDetailsPage />
+              </ProtectedRoute>
+            }
+          />
+
+
+          <Route
+            path={
+              `${PROTECTED_ROUTES.ATTACHMENTS}/:id/edit`
+            }
+            element={
+              <ProtectedRoute>
+                <EditAttachmentPage />
+              </ProtectedRoute>
+            }
+          />     
+
         {/* Fallback */}
 
         <Route
@@ -337,6 +399,70 @@ export function AppRouter(): React.JSX.Element {
             />
           }
         />
+
+         {/* Users Routes */}
+
+        <Route
+          path="/users"
+          element={
+            <UsersPage />
+          }
+        />
+
+
+        <Route
+          path="/users/create"
+          element={
+            <CreateUserPage />
+          }
+        />
+
+
+        <Route
+          path="/users/:id"
+          element={
+            <UserDetailsPage />
+          }
+        />
+
+
+        <Route
+          path="/users/:id/edit"
+          element={
+            <EditUserPage />
+          }
+        /> 
+
+        <Route
+            path="/projects"
+            element={
+              <ProjectsPage />
+            }
+          />
+
+
+          <Route
+            path="/projects/create"
+            element={
+              <CreateProjectPage />
+            }
+          />
+
+
+          <Route
+            path="/projects/:id"
+            element={
+              <ProjectDetailsPage />
+            }
+          />
+
+
+          <Route
+            path="/projects/:id/edit"
+            element={
+              <EditProjectPage />
+            }
+          />
 
       </Routes>
 

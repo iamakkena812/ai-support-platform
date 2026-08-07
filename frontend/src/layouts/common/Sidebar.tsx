@@ -4,6 +4,8 @@
  * Main application navigation.
  */
 
+import type { ComponentType } from "react";
+
 import { NavLink } from "react-router-dom";
 
 import {
@@ -17,7 +19,9 @@ import {
   Settings,
   Shield,
   Ticket,
+  UserRound,
   Users,
+  Paperclip,
 } from "lucide-react";
 
 /**
@@ -26,7 +30,7 @@ import {
 interface NavigationItem {
   readonly label: string;
   readonly path: string;
-  readonly icon: React.ComponentType<{
+  readonly icon: ComponentType<{
     readonly className?: string;
   }>;
 }
@@ -53,7 +57,7 @@ const navigation: readonly NavigationItem[] = [
   {
     label: "Users",
     path: "/users",
-    icon: Users,
+    icon: UserRound,
   },
   {
     label: "Customers",
@@ -95,6 +99,11 @@ const navigation: readonly NavigationItem[] = [
     path: "/settings",
     icon: Settings,
   },
+  {
+    label: "Attachments",
+    path: "/attachments",
+    icon: Paperclip,
+  },
 ];
 
 /**
@@ -104,12 +113,10 @@ const navigation: readonly NavigationItem[] = [
  */
 export function Sidebar(): React.JSX.Element {
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-slate-200 bg-white shadow-sm">
-      {/* Logo */}
-
-      <div className="border-b border-slate-200 px-6 py-5">
-        <h1 className="text-xl font-bold text-slate-900">
-          AI Support
+    <aside className="flex h-full flex-col border-r border-slate-200 bg-white px-4 py-6">
+      <div className="mb-6">
+        <h1 className="text-lg font-bold text-slate-900">
+          AI Support Platform
         </h1>
 
         <p className="mt-1 text-xs text-slate-500">
@@ -118,16 +125,17 @@ export function Sidebar(): React.JSX.Element {
       </div>
 
       {/* Navigation */}
-
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      <nav className="flex-1">
         <ul className="space-y-1">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <li key={item.path}>
+          {navigation.map(
+            ({
+              label,
+              path,
+              icon: Icon,
+            }) => (
+              <li key={path}>
                 <NavLink
-                  to={item.path}
+                  to={path}
                   className={({ isActive }) =>
                     [
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
@@ -139,25 +147,20 @@ export function Sidebar(): React.JSX.Element {
                 >
                   <Icon className="h-5 w-5" />
 
-                  <span>{item.label}</span>
+                  <span>{label}</span>
                 </NavLink>
               </li>
-            );
-          })}
+            ),
+          )}
         </ul>
       </nav>
 
       {/* Footer */}
-
-      <div className="border-t border-slate-200 px-4 py-4">
-        <p className="text-center text-xs text-slate-500">
-          Enterprise AI Support
-        </p>
-
-        <p className="mt-1 text-center text-xs text-slate-400">
+      <footer>
+        <p className="mt-6 text-center text-xs text-slate-400">
           Version 1.0.0
         </p>
-      </div>
+      </footer>
     </aside>
   );
 }

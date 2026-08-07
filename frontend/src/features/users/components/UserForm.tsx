@@ -1,239 +1,238 @@
 /**
  * User form component.
  *
- * Displays a reusable form for
- * creating and editing users.
+ * Provides reusable form UI for creating
+ * and updating users.
  */
 
 import {
-  useState,
-} from "react";
+  useForm,
+} from "react-hook-form";
 
 import {
-  Button,
-  Input,
-  Select,
-} from "../../../components/ui";
+  zodResolver,
+} from "@hookform/resolvers/zod";
+
+import {
+  createUserSchema,
+} from "../schemas/user.schema";
+
+import type {
+  User,
+  CreateUserRequest,
+} from "../types/user.types";
+
 
 /**
- * Form values.
+ * User form values.
  */
-export interface UserFormValues {
-  /**
-   * Full name.
-   */
-  readonly fullName: string;
+export type UserFormValues =
+  CreateUserRequest;
 
-  /**
-   * Email.
-   */
-  readonly email: string;
-
-  /**
-   * Phone.
-   */
-  readonly phone: string;
-
-  /**
-   * Role.
-   */
-  readonly role: string;
-
-  /**
-   * Status.
-   */
-  readonly status: string;
-}
 
 /**
- * Component properties.
+ * User form props.
  */
-export interface UserFormProps {
-  /**
-   * Initial values.
-   */
-  readonly initialValues?: Partial<UserFormValues>;
+interface UserFormProps {
 
   /**
-   * Submit callback.
+   * Initial user values.
+   */
+  readonly initialValue?: User;
+
+
+  /**
+   * Submit handler.
    */
   readonly onSubmit: (
     values: UserFormValues,
-  ) => void | Promise<void>;
+  ) => Promise<void>;
+
 
   /**
-   * Indicates submission state.
+   * Loading state.
    */
   readonly isSubmitting?: boolean;
-
-  /**
-   * Submit button label.
-   */
-  readonly submitLabel?: string;
 }
 
+
 /**
- * User form.
- *
- * @param props Component properties.
- * @returns User form component.
+ * User form component.
  */
-export function UserForm({
-  initialValues,
-  onSubmit,
-  isSubmitting = false,
-  submitLabel = "Save User",
-}: UserFormProps): React.JSX.Element {
-  const [
-    values,
-    setValues,
-  ] = useState<UserFormValues>({
-    fullName:
-      initialValues?.fullName ?? "",
-    email:
-      initialValues?.email ?? "",
-    phone:
-      initialValues?.phone ?? "",
-    role:
-      initialValues?.role ?? "USER",
-    status:
-      initialValues?.status ?? "ACTIVE",
-  });
+export function UserForm(
+  {
+    initialValue,
+    onSubmit,
+    isSubmitting = false,
+  }: UserFormProps,
+): React.JSX.Element {
 
-  function updateField<
-    K extends keyof UserFormValues,
-  >(
-    key: K,
-    value: UserFormValues[K],
-  ): void {
-    setValues(
-      (previous) => ({
-        ...previous,
-        [key]: value,
-      }),
-    );
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: {
+      errors,
+    },
+  } =
+    useForm<CreateUserRequest>({
+      resolver:
+        zodResolver(
+          createUserSchema,
+        ),
 
-  function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ): void {
-    event.preventDefault();
-    void onSubmit(values);
-  }
+      defaultValues:
+      {
+        organizationId:
+          initialValue
+            ?.organization
+            ?.id ?? "",
+
+        firstName:
+          initialValue
+            ?.firstName ?? "",
+
+        lastName:
+          initialValue
+            ?.lastName ?? "",
+
+        email:
+          initialValue
+            ?.email ?? "",
+
+        password:
+          "",
+
+        roleIds:
+          initialValue
+            ?.roles
+            ?.map(
+              (role) =>
+                role.id,
+            ) ?? [],
+      },
+    });
+
 
   return (
     <form
-      onSubmit={handleSubmit}
-      className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+      onSubmit={
+        handleSubmit(
+          onSubmit,
+        )
+      }
+      className="space-y-6"
     >
-      <div className="grid gap-6 md:grid-cols-2">
-        <Input
-          label="Full Name"
-          value={values.fullName}
-          onChange={(event) =>
-            updateField(
-              "fullName",
-              event.target.value,
-            )
-          }
-          required
+
+      <div>
+        <label className="block text-sm font-medium">
+          First Name
+        </label>
+
+        <input
+          {...register(
+            "firstName",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
         />
 
-        <Input
-          label="Email"
+        {
+          errors.firstName && (
+            <p className="text-sm text-red-600">
+              {
+                errors.firstName.message
+              }
+            </p>
+          )
+        }
+      </div>
+
+
+      <div>
+        <label className="block text-sm font-medium">
+          Last Name
+        </label>
+
+        <input
+          {...register(
+            "lastName",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
+        />
+
+        {
+          errors.lastName && (
+            <p className="text-sm text-red-600">
+              {
+                errors.lastName.message
+              }
+            </p>
+          )
+        }
+      </div>
+
+
+      <div>
+        <label className="block text-sm font-medium">
+          Email
+        </label>
+
+        <input
           type="email"
-          value={values.email}
-          onChange={(event) =>
-            updateField(
-              "email",
-              event.target.value,
-            )
-          }
-          required
+          {...register(
+            "email",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
         />
-
-        <Input
-          label="Phone"
-          value={values.phone}
-          onChange={(event) =>
-            updateField(
-              "phone",
-              event.target.value,
-            )
-          }
-        />
-
-        <Select
-            label="Role"
-            value={values.role}
-            onChange={(event) =>
-                updateField(
-                "role",
-                event.target.value,
-                )
-            }
-            options={[
-                {
-                label: "Super Admin",
-                value: "SUPER_ADMIN",
-                },
-                {
-                label: "Administrator",
-                value: "ADMIN",
-                },
-                {
-                label: "Support Agent",
-                value: "AGENT",
-                },
-                {
-                label: "User",
-                value: "USER",
-                },
-            ]}
-            />
-
-        <Select
-            label="Status"
-            value={values.status}
-            onChange={(event) =>
-                updateField(
-                "status",
-                event.target.value,
-                )
-            }
-            options={[
-                {
-                label: "Active",
-                value: "ACTIVE",
-                },
-                {
-                label: "Inactive",
-                value: "INACTIVE",
-                },
-                {
-                label: "Pending",
-                value: "PENDING",
-                },
-                {
-                label: "Locked",
-                value: "LOCKED",
-                },
-                {
-                label: "Suspended",
-                value: "SUSPENDED",
-                },
-            ]}
-            />
       </div>
 
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          loading={isSubmitting}
-        >
-          {submitLabel}
-        </Button>
+
+      {
+        !initialValue && (
+          <div>
+            <label className="block text-sm font-medium">
+              Password
+            </label>
+
+            <input
+              type="password"
+              {...register(
+                "password",
+              )}
+              className="mt-1 w-full rounded border px-3 py-2"
+            />
+          </div>
+        )
+      }
+
+
+      <div>
+        <label className="block text-sm font-medium">
+          Organization Id
+        </label>
+
+        <input
+          {...register(
+            "organizationId",
+          )}
+          className="mt-1 w-full rounded border px-3 py-2"
+        />
       </div>
+
+
+      <button
+        type="submit"
+        disabled={
+          isSubmitting
+        }
+        className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+      >
+        {
+          isSubmitting
+            ? "Saving..."
+            : "Save User"
+        }
+      </button>
+
     </form>
   );
 }

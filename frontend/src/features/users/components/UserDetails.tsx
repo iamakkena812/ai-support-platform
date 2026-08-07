@@ -1,66 +1,25 @@
 /**
  * User details component.
  *
- * Displays detailed information
- * about a user.
+ * Displays complete information about a user.
  */
 
-import {
-  Building2,
-  Calendar,
-  Mail,
-  Phone,
-  Shield,
-} from "lucide-react";
+import type {
+  User,
+} from "../types/user.types";
 
-import {
-  UserStatusBadge,
-} from "./UserStatusBadge";
 
 /**
- * Component properties.
+ * User details props.
  */
 export interface UserDetailsProps {
-  /**
-   * User full name.
-   */
-  readonly name: string;
 
   /**
-   * Email address.
+   * User entity.
    */
-  readonly email: string;
-
-  /**
-   * Phone number.
-   */
-  readonly phone?: string;
-
-  /**
-   * User role.
-   */
-  readonly role: string;
-
-  /**
-   * Organization.
-   */
-  readonly organization?: string;
-
-  /**
-   * User status.
-   */
-  readonly status: string;
-
-  /**
-   * Created date.
-   */
-  readonly createdAt: string | Date;
-
-  /**
-   * Updated date.
-   */
-  readonly updatedAt?: string | Date;
+  readonly user: User;
 }
+
 
 /**
  * User details component.
@@ -68,160 +27,122 @@ export interface UserDetailsProps {
  * @param props Component properties.
  * @returns User details component.
  */
-export function UserDetails({
-  name,
-  email,
-  phone,
-  role,
-  organization,
-  status,
-  createdAt,
-  updatedAt,
-}: UserDetailsProps): React.JSX.Element {
-  const created =
-    createdAt instanceof Date
-      ? createdAt
-      : new Date(createdAt);
-
-  const updated =
-    updatedAt instanceof Date
-      ? updatedAt
-      : updatedAt
-        ? new Date(updatedAt)
-        : null;
+export function UserDetails(
+  {
+    user,
+  }: UserDetailsProps,
+): React.JSX.Element {
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-8 flex items-start gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
-          {name.charAt(0).toUpperCase()}
-        </div>
+    <div className="space-y-6">
 
-        <div className="flex-1">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-2xl font-bold text-slate-900">
-              {name}
-            </h2>
+      <div>
+        <h2 className="text-xl font-semibold text-slate-900">
+          {user.fullName}
+        </h2>
 
-            <UserStatusBadge
-              status={status}
-            />
-          </div>
+        <p className="text-sm text-slate-600">
+          {user.email}
+        </p>
+      </div>
 
-          <p className="mt-2 text-slate-600">
-            {email}
+
+      <div className="grid gap-4 md:grid-cols-2">
+
+        <div>
+          <p className="text-sm text-slate-500">
+            First Name
+          </p>
+
+          <p className="font-medium">
+            {user.firstName}
           </p>
         </div>
+
+
+        <div>
+          <p className="text-sm text-slate-500">
+            Last Name
+          </p>
+
+          <p className="font-medium">
+            {user.lastName}
+          </p>
+        </div>
+
+
+        <div>
+          <p className="text-sm text-slate-500">
+            Email
+          </p>
+
+          <p className="font-medium">
+            {user.email}
+          </p>
+        </div>
+
+
+        <div>
+          <p className="text-sm text-slate-500">
+            Phone
+          </p>
+
+          <p className="font-medium">
+            {user.phone ?? "-"}
+          </p>
+        </div>
+
+
+        <div>
+          <p className="text-sm text-slate-500">
+            Status
+          </p>
+
+          <p className="font-medium capitalize">
+            {user.status}
+          </p>
+        </div>
+
+
+        <div>
+          <p className="text-sm text-slate-500">
+            Organization
+          </p>
+
+          <p className="font-medium">
+            {
+              user.organization?.name ?? "-"
+            }
+          </p>
+        </div>
+
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <DetailItem
-          icon={
-            <Mail
-              size={18}
-              className="text-blue-600"
-            />
-          }
-          label="Email"
-          value={email}
-        />
-
-        <DetailItem
-          icon={
-            <Phone
-              size={18}
-              className="text-green-600"
-            />
-          }
-          label="Phone"
-          value={phone}
-        />
-
-        <DetailItem
-          icon={
-            <Shield
-              size={18}
-              className="text-purple-600"
-            />
-          }
-          label="Role"
-          value={role}
-        />
-
-        <DetailItem
-          icon={
-            <Building2
-              size={18}
-              className="text-orange-600"
-            />
-          }
-          label="Organization"
-          value={organization}
-        />
-
-        <DetailItem
-          icon={
-            <Calendar
-              size={18}
-              className="text-indigo-600"
-            />
-          }
-          label="Created"
-          value={created.toLocaleString()}
-        />
-
-        <DetailItem
-          icon={
-            <Calendar
-              size={18}
-              className="text-slate-600"
-            />
-          }
-          label="Updated"
-          value={
-            updated
-              ? updated.toLocaleString()
-              : undefined
-          }
-        />
-      </div>
-    </section>
-  );
-}
-
-/**
- * Detail item properties.
- */
-interface DetailItemProps {
-  readonly icon: React.JSX.Element;
-  readonly label: string;
-  readonly value?: string;
-}
-
-/**
- * Detail item.
- *
- * @param props Component properties.
- * @returns Detail item.
- */
-function DetailItem({
-  icon,
-  label,
-  value,
-}: DetailItemProps): React.JSX.Element {
-  return (
-    <div className="flex items-start gap-3">
-      {icon}
 
       <div>
         <p className="text-sm text-slate-500">
-          {label}
+          Roles
         </p>
 
-        <p className="mt-1 font-medium text-slate-900">
-          {value ?? "-"}
-        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+
+          {
+            user.roles.map(
+              (role) => (
+                <span
+                  key={role.id}
+                  className="rounded bg-slate-100 px-3 py-1 text-sm"
+                >
+                  {role.name}
+                </span>
+              ),
+            )
+          }
+
+        </div>
+
       </div>
+
     </div>
   );
 }

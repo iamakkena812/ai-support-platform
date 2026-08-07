@@ -10,46 +10,30 @@ import {
   Search,
 } from "lucide-react";
 
+import type {
+  UserFilterValues,
+} from "../types/user.types";
+
+
 /**
  * Component properties.
  */
 export interface UserFiltersProps {
-  /**
-   * Search value.
-   */
-  readonly search: string;
 
   /**
-   * Status filter.
+   * Current filters.
    */
-  readonly status: string;
+  readonly filters?: UserFilterValues;
+
 
   /**
-   * Role filter.
+   * Filter change callback.
    */
-  readonly role: string;
-
-  /**
-   * Search callback.
-   */
-  readonly onSearchChange: (
-    value: string,
-  ) => void;
-
-  /**
-   * Status callback.
-   */
-  readonly onStatusChange: (
-    value: string,
-  ) => void;
-
-  /**
-   * Role callback.
-   */
-  readonly onRoleChange: (
-    value: string,
+  readonly onChange: (
+    filters: UserFilterValues,
   ) => void;
 }
+
 
 /**
  * User filters.
@@ -57,53 +41,80 @@ export interface UserFiltersProps {
  * @param props Component properties.
  * @returns User filters component.
  */
-export function UserFilters({
-  search,
-  status,
-  role,
-  onSearchChange,
-  onStatusChange,
-  onRoleChange,
-}: UserFiltersProps): React.JSX.Element {
+export function UserFilters(
+  {
+    filters = {},
+    onChange,
+  }: UserFiltersProps,
+): React.JSX.Element {
+
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-5 flex items-center gap-2">
+    <section
+      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+    >
+
+      <div
+        className="mb-4 flex items-center gap-2"
+      >
         <Funnel
-          size={20}
-          className="text-slate-600"
+          className="h-5 w-5 text-slate-600"
         />
 
-        <h2 className="font-semibold text-slate-900">
+        <h2
+          className="font-semibold text-slate-900"
+        >
           Filters
         </h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="relative">
+
+      <div
+        className="grid gap-4 md:grid-cols-3"
+      >
+
+        <div
+          className="relative"
+        >
           <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-3 top-3 h-4 w-4 text-slate-400"
           />
 
           <input
             type="text"
             placeholder="Search users..."
-            value={search}
-            onChange={(event) =>
-              onSearchChange(
-                event.target.value,
-              )
+            value={
+              filters.search ?? ""
+            }
+            onChange={
+              (event) =>
+                onChange(
+                  {
+                    ...filters,
+                    search:
+                      event.target.value,
+                  },
+                )
             }
             className="w-full rounded-lg border border-slate-300 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none"
           />
         </div>
 
+
         <select
-          value={status}
-          onChange={(event) =>
-            onStatusChange(
-              event.target.value,
-            )
+          value={
+            filters.status ?? ""
+          }
+          onChange={
+            (event) =>
+              onChange(
+                {
+                  ...filters,
+                  status:
+                    event.target.value
+                      ? event.target.value as UserFilterValues["status"]
+                      : undefined,
+                },
+              )
           }
           className="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
         >
@@ -111,57 +122,64 @@ export function UserFilters({
             All Statuses
           </option>
 
-          <option value="ACTIVE">
+          <option value="active">
             Active
           </option>
 
-          <option value="INACTIVE">
+          <option value="inactive">
             Inactive
           </option>
 
-          <option value="PENDING">
-            Pending
-          </option>
-
-          <option value="LOCKED">
-            Locked
-          </option>
-
-          <option value="SUSPENDED">
+          <option value="suspended">
             Suspended
           </option>
+
         </select>
 
+
         <select
-          value={role}
-          onChange={(event) =>
-            onRoleChange(
-              event.target.value,
-            )
+          value={
+            filters.role ?? ""
+          }
+          onChange={
+            (event) =>
+              onChange(
+                {
+                  ...filters,
+                  role:
+                    event.target.value
+                      ? event.target.value as UserFilterValues["role"]
+                      : undefined,
+                },
+              )
           }
           className="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
         >
+
           <option value="">
             All Roles
           </option>
 
-          <option value="SUPER_ADMIN">
-            Super Admin
-          </option>
-
-          <option value="ADMIN">
+          <option value="admin">
             Administrator
           </option>
 
-          <option value="AGENT">
+          <option value="manager">
+            Manager
+          </option>
+
+          <option value="agent">
             Support Agent
           </option>
 
-          <option value="USER">
-            User
+          <option value="customer">
+            Customer
           </option>
+
         </select>
+
       </div>
+
     </section>
   );
 }

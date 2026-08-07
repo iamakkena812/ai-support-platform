@@ -5,207 +5,210 @@
  * for the projects list.
  */
 
-import {
-  Funnel,
-  Search,
-} from "lucide-react";
+import type {
+  ProjectFilterValues,
+} from "../types/project.types";
 
-import {
-  Input,
-  Select,
-} from "../../../components/ui";
-
-/**
- * Select option.
- */
-export interface ProjectFilterOption {
-  /**
-   * Option label.
-   */
-  readonly label: string;
-
-  /**
-   * Option value.
-   */
-  readonly value: string;
-}
 
 /**
  * Component properties.
  */
 export interface ProjectFiltersProps {
-  /**
-   * Search value.
-   */
-  readonly search: string;
 
   /**
-   * Organization filter.
+   * Current filters.
    */
-  readonly organizationId: string;
+  readonly filters?: ProjectFilterValues;
+
 
   /**
-   * Team filter.
+   * Filter change callback.
    */
-  readonly teamId: string;
-
-  /**
-   * Status filter.
-   */
-  readonly status: string;
-
-  /**
-   * Organization options.
-   */
-  readonly organizations: readonly ProjectFilterOption[];
-
-  /**
-   * Team options.
-   */
-  readonly teams: readonly ProjectFilterOption[];
-
-  /**
-   * Search callback.
-   */
-  readonly onSearchChange: (
-    value: string,
+  readonly onChange: (
+    filters: ProjectFilterValues,
   ) => void;
 
-  /**
-   * Organization callback.
-   */
-  readonly onOrganizationChange: (
-    value: string,
-  ) => void;
-
-  /**
-   * Team callback.
-   */
-  readonly onTeamChange: (
-    value: string,
-  ) => void;
-
-  /**
-   * Status callback.
-   */
-  readonly onStatusChange: (
-    value: string,
-  ) => void;
 }
 
-/**
- * Status options.
- */
-const STATUS_OPTIONS: readonly ProjectFilterOption[] = [
-  {
-    label: "All Statuses",
-    value: "",
-  },
-  {
-    label: "Planning",
-    value: "PLANNING",
-  },
-  {
-    label: "Active",
-    value: "ACTIVE",
-  },
-  {
-    label: "On Hold",
-    value: "ON_HOLD",
-  },
-  {
-    label: "Completed",
-    value: "COMPLETED",
-  },
-  {
-    label: "Cancelled",
-    value: "CANCELLED",
-  },
-];
 
 /**
- * Project filters component.
+ * Project filters.
  *
  * @param props Component properties.
  * @returns Project filters component.
  */
-export function ProjectFilters({
-  search,
-  organizationId,
-  teamId,
-  status,
-  organizations,
-  teams,
-  onSearchChange,
-  onOrganizationChange,
-  onTeamChange,
-  onStatusChange,
-}: ProjectFiltersProps): React.JSX.Element {
+export function ProjectFilters(
+  {
+    filters = {},
+    onChange,
+  }: ProjectFiltersProps,
+): React.JSX.Element {
+
+
+  function updateFilter(
+    key: keyof ProjectFilterValues,
+    value: string,
+  ): void {
+
+    onChange(
+      {
+        ...filters,
+
+        [key]:
+          value.length > 0
+            ? value
+            : undefined,
+      },
+    );
+
+  }
+
+
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-5 flex items-center gap-2">
-        <Funnel
-          size={20}
-          className="text-slate-600"
-        />
 
-        <h2 className="font-semibold text-slate-900">
-          Filters
-        </h2>
-      </div>
+    <div
+      className="rounded-lg border border-slate-200 bg-white p-4"
+    >
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="relative">
-          <Search
-            size={18}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
+      <div
+        className="grid gap-4 md:grid-cols-3"
+      >
 
-          <Input
-            placeholder="Search projects..."
-            value={search}
-            onChange={(event) =>
-              onSearchChange(
-                event.target.value,
-              )
+        <div>
+
+          <label
+            className="block text-sm font-medium text-slate-700"
+          >
+            Search
+          </label>
+
+
+          <input
+            type="text"
+            value={
+              filters.search ?? ""
             }
-            className="pl-10"
+            onChange={
+              (event) =>
+                updateFilter(
+                  "search",
+                  event.target.value,
+                )
+            }
+            placeholder="Search projects..."
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
           />
+
         </div>
 
-        <Select
-          value={organizationId}
-          options={organizations}
-          placeholder="All Organizations"
-          onChange={(event) =>
-            onOrganizationChange(
-              event.target.value,
-            )
-          }
-        />
 
-        <Select
-          value={teamId}
-          options={teams}
-          placeholder="All Teams"
-          onChange={(event) =>
-            onTeamChange(
-              event.target.value,
-            )
-          }
-        />
+        <div>
 
-        <Select
-          value={status}
-          options={STATUS_OPTIONS}
-          placeholder="All Statuses"
-          onChange={(event) =>
-            onStatusChange(
-              event.target.value,
-            )
-          }
-        />
+          <label
+            className="block text-sm font-medium text-slate-700"
+          >
+            Status
+          </label>
+
+
+          <select
+            value={
+              filters.status ?? ""
+            }
+            onChange={
+              (event) =>
+                updateFilter(
+                  "status",
+                  event.target.value,
+                )
+            }
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+          >
+
+            <option value="">
+              All Statuses
+            </option>
+
+
+            <option value="active">
+              Active
+            </option>
+
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+
+            <option value="completed">
+              Completed
+            </option>
+
+
+            <option value="archived">
+              Archived
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div>
+
+          <label
+            className="block text-sm font-medium text-slate-700"
+          >
+            Priority
+          </label>
+
+
+          <select
+            value={
+              filters.priority ?? ""
+            }
+            onChange={
+              (event) =>
+                updateFilter(
+                  "priority",
+                  event.target.value,
+                )
+            }
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+          >
+
+            <option value="">
+              All Priorities
+            </option>
+
+
+            <option value="low">
+              Low
+            </option>
+
+
+            <option value="medium">
+              Medium
+            </option>
+
+
+            <option value="high">
+              High
+            </option>
+
+
+            <option value="critical">
+              Critical
+            </option>
+
+          </select>
+
+        </div>
+
       </div>
-    </section>
+
+    </div>
+
   );
+
 }
