@@ -444,3 +444,124 @@ lazy(
       }),
     ),
 );
+
+
+/**
+ * Teams pages.
+ */
+export const TeamsPage =
+lazy(
+  () =>
+    import(
+      "../../features/teams/pages/TeamsPage"
+    ).then(
+      (module) => ({
+        default:
+          module.TeamsPage,
+      }),
+    ),
+);
+
+
+export const TeamDetailsPage =
+lazy(
+  () =>
+    import(
+      "../../features/teams/pages/TeamDetailsPage"
+    ).then(
+      (module) => ({
+        default:
+          module.TeamDetailsPage,
+      }),
+    ),
+);
+
+
+export const CreateTeamPage =
+lazy(
+  () =>
+    import(
+      "../../features/teams/pages/CreateTeamPage"
+    ).then(
+      (module) => ({
+        default:
+          module.CreateTeamPage,
+      }),
+    ),
+);
+
+
+export const EditTeamPage =
+lazy(
+  () =>
+    import(
+      "../../features/teams/pages/EditTeamPage"
+    ).then(
+      (module) => ({
+        default:
+          module.EditTeamPage,
+      }),
+    ),
+);
+
+
+/**
+ * Roles pages.
+ */
+export const RolesPage =
+  lazy(
+    () =>
+      import(
+        "../../features/roles/pages/RolesPage"
+      ).then(
+        (module) => ({
+          default:
+            module.RolesPage,
+        }),
+      ),
+  );
+
+
+
+export const CreateRolePage =
+  lazy(
+    () =>
+      import(
+        "../../features/roles/pages/CreateRolePage"
+      ).then(
+        (module) => ({
+          default:
+            module.CreateRolePage,
+        }),
+      ),
+  );
+
+
+
+export const EditRolePage =
+  lazy(
+    () =>
+      import(
+        "../../features/roles/pages/EditRolePage"
+      ).then(
+        (module) => ({
+          default:
+            module.EditRolePage,
+        }),
+      ),
+  );
+
+
+
+export const RoleDetailsPage =
+  lazy(
+    () =>
+      import(
+        "../../features/roles/pages/RoleDetailsPage"
+      ).then(
+        (module) => ({
+          default:
+            module.RoleDetailsPage,
+        }),
+      ),
+  );

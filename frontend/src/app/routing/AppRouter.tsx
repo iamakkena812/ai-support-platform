@@ -61,6 +61,16 @@ import {
   ProjectDetailsPage,
   EditProjectPage,
 
+  TeamsPage,
+  TeamDetailsPage,
+  CreateTeamPage,
+  EditTeamPage,
+
+  RolesPage,
+  CreateRolePage,
+  EditRolePage,
+  RoleDetailsPage,
+
 } from "./lazy-routes";
 
 
@@ -463,6 +473,88 @@ export function AppRouter(): React.JSX.Element {
               <EditProjectPage />
             }
           />
+
+          <Route
+              path="/teams"
+              element={
+                <TeamsPage />
+              }
+            />
+
+
+            <Route
+              path="/teams/create"
+              element={
+                <CreateTeamPage />
+              }
+            />
+
+
+            <Route
+              path="/teams/:id"
+              element={
+                <TeamDetailsPage />
+              }
+            />
+
+
+            <Route
+              path="/teams/:id/edit"
+              element={
+                <EditTeamPage />
+              }
+            />   
+
+          <Route
+
+              path="/roles"
+
+              element={
+
+                <RolesPage />
+
+              }
+
+            />
+
+
+            <Route
+
+              path="/roles/create"
+
+              element={
+
+                <CreateRolePage />
+
+              }
+
+            />
+
+
+            <Route
+
+              path="/roles/:id"
+
+              element={
+
+                <RoleDetailsPage />
+
+              }
+
+            />
+
+
+            <Route
+
+              path="/roles/:id/edit"
+
+              element={
+
+                <EditRolePage />
+
+              }
+
+            />
 
       </Routes>
 

@@ -22,6 +22,7 @@ import {
   UserRound,
   Users,
   Paperclip,
+  ShieldCheck,
 } from "lucide-react";
 
 /**
@@ -103,6 +104,11 @@ const navigation: readonly NavigationItem[] = [
     label: "Attachments",
     path: "/attachments",
     icon: Paperclip,
+  },
+  {
+  label: "Roles",
+  path: "/roles",
+  icon: ShieldCheck,
   },
 ];
 

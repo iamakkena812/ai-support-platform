@@ -1,7 +1,8 @@
 /**
- * Team details page.
+ * Role details page.
  *
- * Displays detailed information about a team.
+ * Displays detailed information
+ * about a role.
  */
 
 import {
@@ -11,23 +12,26 @@ import {
 } from "react-router-dom";
 
 import {
-  TeamDetails,
-  TeamError,
-  TeamSkeleton,
+  RoleDetails,
+  RoleError,
+  RoleSkeleton,
+  RoleSummary,
 } from "../components";
 
 import {
-  useDeleteTeam,
-  useTeam,
-} from "../hooks/useTeam";
+  useDeleteRole,
+  useRole,
+} from "../hooks/useRole";
+
 
 
 /**
- * Team details page.
+ * Role details page component.
  *
- * @returns Team details page component.
+ * @returns Role details page.
  */
-export function TeamDetailsPage(): React.JSX.Element {
+export function RoleDetailsPage(): React.JSX.Element {
+
 
   const {
     id = "",
@@ -41,41 +45,40 @@ export function TeamDetailsPage(): React.JSX.Element {
     useNavigate();
 
 
+
   const {
-    data: team,
+    data: role,
     isLoading,
     isError,
     error,
   } =
-    useTeam(
+    useRole(
       id,
     );
 
 
+
   const {
     mutateAsync:
-      deleteTeam,
+      deleteRole,
 
     isPending:
       isDeleting,
 
   } =
-    useDeleteTeam();
+    useDeleteRole();
 
 
 
-  /**
-   * Deletes current team.
-   */
   async function handleDelete(): Promise<void> {
 
-    await deleteTeam(
+    await deleteRole(
       id,
     );
 
 
     navigate(
-      "/teams",
+      "/roles",
     );
 
   }
@@ -85,7 +88,7 @@ export function TeamDetailsPage(): React.JSX.Element {
   if (isLoading) {
 
     return (
-      <TeamSkeleton />
+      <RoleSkeleton />
     );
 
   }
@@ -96,12 +99,10 @@ export function TeamDetailsPage(): React.JSX.Element {
 
     return (
 
-      <TeamError
+      <RoleError
 
         error={
-          error instanceof Error
-            ? error
-            : null
+          error
         }
 
       />
@@ -112,16 +113,18 @@ export function TeamDetailsPage(): React.JSX.Element {
 
 
 
-  if (!team) {
+  if (!role) {
 
     return (
 
-      <TeamError
+      <RoleError
+
         error={
           new Error(
-            "Team not found.",
+            "Role not found.",
           )
         }
+
       />
 
     );
@@ -133,27 +136,38 @@ export function TeamDetailsPage(): React.JSX.Element {
   return (
 
     <div
+
       className="space-y-6"
+
     >
 
-
       <header
+
         className="flex items-center justify-between"
+
       >
 
         <div>
 
           <h1
+
             className="text-2xl font-bold text-slate-900"
+
           >
-            Team Details
+
+            Role Details
+
           </h1>
 
 
           <p
+
             className="mt-1 text-sm text-slate-600"
+
           >
-            View team information, members, and projects.
+
+            View role information and permissions.
+
           </p>
 
         </div>
@@ -161,17 +175,21 @@ export function TeamDetailsPage(): React.JSX.Element {
 
 
         <div
+
           className="flex gap-3"
+
         >
 
           <Link
 
-            to={`/teams/${team.id}/edit`}
+            to={`/roles/${role.id}/edit`}
 
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
 
           >
-            Edit Team
+
+            Edit Role
+
           </Link>
 
 
@@ -195,7 +213,7 @@ export function TeamDetailsPage(): React.JSX.Element {
             {
               isDeleting
                 ? "Deleting..."
-                : "Delete Team"
+                : "Delete Role"
             }
 
 
@@ -209,50 +227,98 @@ export function TeamDetailsPage(): React.JSX.Element {
 
 
 
+      <RoleSummary
+
+        name={
+          role.name
+        }
+
+
+        description={
+          role.description ??
+          undefined
+        }
+
+
+        status={
+          role.status
+        }
+
+
+        isSystem={
+          role.isSystem
+        }
+
+
+        permissionCount={
+          role.permissions?.length ??
+          0
+        }
+
+
+        userCount={
+          role.users?.length ??
+          0
+        }
+
+
+        createdAt={
+          role.createdAt
+        }
+
+      />
+
+
+
       <section
 
         className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
 
       >
 
-        <TeamDetails
+        <RoleDetails
 
           name={
-            team.name
+            role.name
           }
+
 
           description={
-            team.description
-              ?? undefined
+            role.description ??
+            undefined
           }
 
-          organization={
-            team.organization?.name
-              ?? "-"
-          }
 
           status={
-            team.status
+            role.status
           }
 
-          memberCount={
-            team.members.length
+
+          isSystem={
+            role.isSystem
           }
 
-          projectCount={
-            team.projects.length
+
+          permissions={
+            role.permissions ?? []
           }
+
+
+          users={
+            role.users ?? []
+          }
+
 
           createdAt={
-            team.createdAt
+            role.createdAt
           }
 
+
           updatedAt={
-            team.updatedAt
+            role.updatedAt
           }
 
         />
-
 
       </section>
 
