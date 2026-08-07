@@ -42,7 +42,14 @@ import {
   CreateCommentPage,
   EditCommentPage,
 
+  NotificationsPage,
+  CreateNotificationPage,
+  NotificationDetailsPage,
+  EditNotificationPage,
+
 } from "./lazy-routes";
+
+
 
 import {
   PROTECTED_ROUTES,
@@ -268,6 +275,54 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
+        {/* Notifications */}
+
+        <Route
+          path={
+            PROTECTED_ROUTES.NOTIFICATIONS
+          }
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.NOTIFICATIONS}/create`
+          }
+          element={
+            <ProtectedRoute>
+              <CreateNotificationPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.NOTIFICATIONS}/:id`
+          }
+          element={
+            <ProtectedRoute>
+              <NotificationDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.NOTIFICATIONS}/:id/edit`
+          }
+          element={
+            <ProtectedRoute>
+              <EditNotificationPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Fallback */}
 

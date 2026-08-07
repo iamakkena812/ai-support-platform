@@ -28,53 +28,51 @@ import type {
  * Notification service.
  */
 export const notificationService = {
+
   /**
    * Retrieves a paginated list of notifications.
    *
-   * @param query - Notification query parameters.
+   * @param query Notification query parameters.
    * @returns Paginated notification response.
    */
   async getNotifications(
     query?: NotificationListQuery,
   ): Promise<NotificationListResponse> {
-    return getNotifications(
-      query,
-    );
+    return getNotifications(query);
   },
+
 
   /**
    * Retrieves a notification by identifier.
    *
-   * @param notificationId - Notification identifier.
+   * @param notificationId Notification identifier.
    * @returns Notification.
    */
   async getNotification(
     notificationId: string,
   ): Promise<Notification> {
-    return getNotification(
-      notificationId,
-    );
+    return getNotification(notificationId);
   },
+
 
   /**
    * Creates a notification.
    *
-   * @param payload - Notification creation payload.
+   * @param payload Notification creation payload.
    * @returns Created notification.
    */
   async createNotification(
     payload: CreateNotificationRequest,
   ): Promise<Notification> {
-    return createNotification(
-      payload,
-    );
+    return createNotification(payload);
   },
+
 
   /**
    * Updates a notification.
    *
-   * @param notificationId - Notification identifier.
-   * @param payload - Update payload.
+   * @param notificationId Notification identifier.
+   * @param payload Update payload.
    * @returns Updated notification.
    */
   async updateNotification(
@@ -87,32 +85,31 @@ export const notificationService = {
     );
   },
 
+
   /**
    * Deletes a notification.
    *
-   * @param notificationId - Notification identifier.
+   * @param notificationId Notification identifier.
    */
   async deleteNotification(
     notificationId: string,
   ): Promise<void> {
-    return deleteNotification(
-      notificationId,
-    );
+    return deleteNotification(notificationId);
   },
+
 
   /**
    * Marks a notification as read.
    *
-   * @param notificationId - Notification identifier.
+   * @param notificationId Notification identifier.
    * @returns Updated notification.
    */
   async markAsRead(
     notificationId: string,
   ): Promise<Notification> {
-    return markNotificationAsRead(
-      notificationId,
-    );
+    return markNotificationAsRead(notificationId);
   },
+
 
   /**
    * Retrieves notification statistics.
@@ -122,4 +119,5 @@ export const notificationService = {
   async getNotificationStatistics(): Promise<NotificationStatistics> {
     return getNotificationStatistics();
   },
+
 };

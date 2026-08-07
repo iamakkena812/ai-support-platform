@@ -217,3 +217,62 @@ export const EditCommentPage = lazy(
     };
   },
 );
+
+export const NotificationsPage =
+  lazy(
+    () =>
+      import(
+        "../../features/notifications/pages/NotificationsPage"
+      )
+      .then(
+        (module) => ({
+          default:
+            module.NotificationsPage,
+        }),
+      ),
+    );
+
+
+export const CreateNotificationPage =
+  lazy(
+    () =>
+      import(
+        "../../features/notifications/pages/CreateNotificationPage"
+      )
+      .then(
+        (module) => ({
+          default:
+            module.CreateNotificationPage,
+        }),
+      ),
+    );
+
+
+export const NotificationDetailsPage =
+  lazy(
+    () =>
+      import(
+        "../../features/notifications/pages/NotificationDetailsPage"
+      )
+      .then(
+        (module) => ({
+          default:
+            module.NotificationDetailsPage,
+        }),
+      ),
+    );
+
+
+export const EditNotificationPage =
+  lazy(
+    () =>
+      import(
+        "../../features/notifications/pages/EditNotificationPage"
+      )
+      .then(
+        (module) => ({
+          default:
+            module.EditNotificationPage,
+        }),
+      ),
+    );

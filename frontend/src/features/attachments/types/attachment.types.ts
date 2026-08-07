@@ -87,7 +87,7 @@ export interface Attachment {
   /**
    * Download URL.
    */
-  readonly downloadUrl: string;
+  readonly downloadUrl?: string | null;
 
   /**
    * File checksum.

@@ -2,13 +2,26 @@
  * Edit attachment page.
  */
 
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
-import { AttachmentForm } from "../components/AttachmentForm";
-import { useAttachment } from "../hooks/useAttachment";
-import { useUpdateAttachment } from "../hooks/useAttachments";
+import {
+  AttachmentForm,
+} from "../components/AttachmentForm";
 
-import type { AttachmentFormValues } from "../components/AttachmentForm";
+import {
+  useAttachment,
+} from "../hooks/useAttachment";
+
+import {
+  useUpdateAttachment,
+} from "../hooks/useAttachments";
+
+import type {
+  AttachmentFormValues,
+} from "../components/AttachmentForm";
 
 /**
  * Edit attachment page.
@@ -16,7 +29,9 @@ import type { AttachmentFormValues } from "../components/AttachmentForm";
 export function EditAttachmentPage(): React.JSX.Element {
   const navigate = useNavigate();
 
-  const { attachmentId = "" } = useParams<{
+  const {
+    attachmentId = "",
+  } = useParams<{
     attachmentId: string;
   }>();
 
@@ -35,14 +50,14 @@ export function EditAttachmentPage(): React.JSX.Element {
   /**
    * Handles attachment update.
    *
-   * @param values - Attachment form values.
+   * @param values Attachment form values.
    */
   const handleSubmit = async (
     values: AttachmentFormValues,
   ): Promise<void> => {
     await updateAttachmentMutation.mutateAsync(
       {
-        attachmentId,
+        id: attachmentId,
         payload: {
           fileName:
             values.fileName,
@@ -55,17 +70,19 @@ export function EditAttachmentPage(): React.JSX.Element {
     );
   };
 
+
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500">
+      <div>
         Loading attachment...
       </div>
     );
   }
 
+
   if (isError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+      <div>
         {error instanceof Error
           ? error.message
           : "Failed to load attachment."}
@@ -73,26 +90,29 @@ export function EditAttachmentPage(): React.JSX.Element {
     );
   }
 
+
   if (!attachment) {
     return (
-      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-700">
+      <div>
         Attachment not found.
       </div>
     );
   }
 
+
   return (
     <div className="space-y-6">
+
       <header>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900">
           Edit Attachment
         </h1>
 
         <p className="mt-2 text-gray-600">
-          Update attachment
-          information.
+          Update attachment information.
         </p>
       </header>
+
 
       <AttachmentForm
         initialValue={
@@ -105,6 +125,7 @@ export function EditAttachmentPage(): React.JSX.Element {
           updateAttachmentMutation.isPending
         }
       />
+
     </div>
   );
 }

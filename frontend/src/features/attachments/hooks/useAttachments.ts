@@ -109,7 +109,7 @@ interface UpdateAttachmentVariables {
   /**
    * Attachment identifier.
    */
-  readonly attachmentId: string;
+  readonly id: string;
 
   /**
    * Update payload.
@@ -133,11 +133,11 @@ export const useUpdateAttachment =
       UpdateAttachmentVariables
     >({
       mutationFn: ({
-        attachmentId,
+        id,
         payload,
       }) =>
         attachmentService.updateAttachment(
-          attachmentId,
+          id,
           payload,
         ),
 
@@ -157,7 +157,7 @@ export const useUpdateAttachment =
             {
               queryKey:
                 attachmentQueryKeys.detail(
-                  variables.attachmentId,
+                  variables.id,
                 ),
             },
           ),
@@ -212,9 +212,9 @@ export const useDownloadAttachment =
       string
     >({
       mutationFn: (
-        attachmentId,
+        id,
       ) =>
         attachmentService.downloadAttachment(
-          attachmentId,
+          id,
         ),
     });
