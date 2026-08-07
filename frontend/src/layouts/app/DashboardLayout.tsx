@@ -10,6 +10,9 @@ import { AppLayout } from "./AppLayout";
 
 /**
  * Dashboard layout.
+ *
+ * @param props Layout properties.
+ * @returns Dashboard layout.
  */
 export function DashboardLayout({
   children,

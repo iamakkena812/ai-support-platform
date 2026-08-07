@@ -1,103 +1,129 @@
 /**
  * Delete customer dialog component.
+ *
+ * Displays a confirmation dialog
+ * before permanently deleting a customer.
  */
 
-import type {
-  Customer,
-} from "../types/customer.types";
+import {
+  AlertTriangle,
+  Trash2,
+} from "lucide-react";
 
-interface DeleteCustomerDialogProps {
+import {
+  Button,
+  Modal,
+} from "../../../components/ui";
+
+/**
+ * Component properties.
+ */
+export interface DeleteCustomerDialogProps {
   /**
-   * Whether the dialog is open.
+   * Indicates whether dialog is open.
    */
   readonly open: boolean;
 
   /**
-   * Customer to delete.
+   * Customer name.
    */
-  readonly customer: Customer | null;
+  readonly customerName?: string;
 
   /**
-   * Loading state.
+   * Close callback.
    */
-  readonly isDeleting?: boolean;
+  readonly onClose: () => void;
 
   /**
    * Confirm callback.
    */
-  readonly onConfirm: (
-    customer: Customer,
-  ) => Promise<void> | void;
+  readonly onConfirm: () => void | Promise<void>;
 
   /**
-   * Cancel callback.
+   * Delete loading state.
    */
-  readonly onCancel: () => void;
+  readonly isDeleting?: boolean;
 }
 
 /**
- * Delete customer confirmation dialog.
+ * Delete customer dialog component.
+ *
+ * @param props Component properties.
+ * @returns Delete customer dialog.
  */
 export function DeleteCustomerDialog({
   open,
-  customer,
-  isDeleting = false,
+  customerName,
+  onClose,
   onConfirm,
-  onCancel,
-}: DeleteCustomerDialogProps): React.JSX.Element | null {
-  if (
-    !open ||
-    customer === null
-  ) {
-    return null;
-  }
-
+  isDeleting = false,
+}: DeleteCustomerDialogProps): React.JSX.Element {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-semibold">
-          Delete Customer
-        </h2>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Delete Customer"
+    >
+      <div className="space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="rounded-full bg-red-100 p-3">
+            <AlertTriangle
+              size={28}
+              className="text-red-600"
+            />
+          </div>
 
-        <p className="mt-4 text-sm text-gray-600">
-          Are you sure you want to delete{" "}
-          <span className="font-semibold">
-            {customer.firstName}{" "}
-            {customer.lastName}
-          </span>
-          ?
-        </p>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">
+              Delete Customer
+            </h3>
 
-        <p className="mt-2 text-sm text-red-600">
-          This action cannot be undone.
-        </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">
+                {customerName ?? "this customer"}
+              </span>
+              ?
+            </p>
 
-        <div className="mt-6 flex justify-end gap-3">
-          <button
+            <p className="mt-2 text-sm text-red-600">
+              This action cannot be undone.
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Deleting this customer will remove the
+              customer profile and associated customer
+              records from the platform.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <Button
             type="button"
-            onClick={onCancel}
+            variant="secondary"
+            onClick={onClose}
             disabled={isDeleting}
-            className="rounded border border-gray-300 px-4 py-2 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancel
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
-            onClick={() =>
-              void onConfirm(
-                customer,
-              )
-            }
-            disabled={isDeleting}
-            className="rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="danger"
+            loading={isDeleting}
+            onClick={() => {
+              void onConfirm();
+            }}
           >
-            {isDeleting
-              ? "Deleting..."
-              : "Delete"}
-          </button>
+            <Trash2
+              size={16}
+            />
+
+            Delete Customer
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

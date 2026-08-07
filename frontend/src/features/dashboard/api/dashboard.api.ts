@@ -30,18 +30,17 @@ const BASE_PATH =
 export async function getDashboard(
   query?: DashboardQueryValues,
 ): Promise<DashboardResponse> {
-  const {
-    data,
-  } =
+  const response =
     await apiClient.get<DashboardResponse>(
       BASE_PATH,
       {
-        params:
-          query,
+        params: query,
       },
     );
 
-  return data;
+  console.log("Dashboard API Response", response.data);
+
+  return response.data;
 }
 
 /**

@@ -1,64 +1,114 @@
 /**
- * Customer list hook.
+ * Customers query hook.
+ *
+ * Provides customer list data
+ * using React Query.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+} from "@tanstack/react-query";
 
-import { CustomerService } from "../services/customer.service";
+import {
+  customerService,
+} from "../services/customer.service";
 
 import type {
-  CustomerListResponse,
+  CustomerQueryFilters,
 } from "../types/customer.types";
 
 /**
  * Customer query keys.
  */
-export const customerQueryKeys = {
+export const customerKeys = {
   /**
-   * Customer query root.
+   * Root key.
    */
-  all: ["customers"] as const,
+  all: [
+    "customers",
+  ] as const,
 
   /**
-   * Customer list query.
+   * Customer lists.
    */
   lists: () =>
-    [...customerQueryKeys.all, "list"] as const,
+    [
+      ...customerKeys.all,
+      "list",
+    ] as const,
 
   /**
-   * Paginated customer list query.
+   * Filtered customer list.
    */
   list: (
-    page: number,
-    size: number,
+    filters?: CustomerQueryFilters,
   ) =>
     [
-      ...customerQueryKeys.lists(),
-      page,
-      size,
+      ...customerKeys.lists(),
+      filters,
+    ] as const,
+
+  /**
+   * Customer details.
+   */
+  details: () =>
+    [
+      ...customerKeys.all,
+      "detail",
+    ] as const,
+
+  /**
+   * Customer detail.
+   */
+  detail: (
+    id: string,
+  ) =>
+    [
+      ...customerKeys.details(),
+      id,
     ] as const,
 };
 
 /**
- * Returns a paginated customer list.
+ * Use customers hook options.
+ */
+export interface UseCustomersOptions {
+  /**
+   * Customer filters.
+   */
+  readonly filters?: CustomerQueryFilters;
+
+  /**
+   * Enable query.
+   */
+  readonly enabled?: boolean;
+}
+
+/**
+ * Customers query hook.
+ *
+ * @param options Hook options.
+ * @returns Customer query result.
  */
 export function useCustomers(
-  page = 1,
-  size = 10,
+  options: UseCustomersOptions = {},
 ) {
-  return useQuery<CustomerListResponse>({
+  const {
+    filters,
+    enabled = true,
+  } = options;
+
+  return useQuery({
     queryKey:
-      customerQueryKeys.list(
-        page,
-        size,
+      customerKeys.list(
+        filters,
       ),
 
     queryFn: () =>
-      CustomerService.getCustomers(
-        page,
-        size,
+      customerService.getCustomers(
+        filters,
       ),
 
-    staleTime: 1000 * 60 * 5,
+    enabled,
   });
 }

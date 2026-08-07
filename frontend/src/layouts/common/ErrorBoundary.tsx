@@ -2,22 +2,43 @@
  * Error boundary component.
  *
  * Catches rendering errors in the React component tree
- * and displays a fallback UI.
+ * and displays a fallback user interface.
  */
 
-import type { ErrorInfo, PropsWithChildren } from "react";
+import type {
+  ErrorInfo,
+  PropsWithChildren,
+} from "react";
+
 import { Component } from "react";
 
 interface ErrorBoundaryState {
+  /**
+   * Indicates whether an error occurred.
+   */
   readonly hasError: boolean;
+
+  /**
+   * Captured error.
+   */
   readonly error: Error | null;
 }
 
+/**
+ * Application error boundary.
+ */
 export class ErrorBoundary extends Component<
   PropsWithChildren,
   ErrorBoundaryState
 > {
-  public constructor(props: PropsWithChildren) {
+  /**
+   * Creates an error boundary.
+   *
+   * @param props Component properties.
+   */
+  public constructor(
+    props: PropsWithChildren,
+  ) {
     super(props);
 
     this.state = {
@@ -26,6 +47,12 @@ export class ErrorBoundary extends Component<
     };
   }
 
+  /**
+   * Updates the component state after an error.
+   *
+   * @param error Rendering error.
+   * @returns Updated state.
+   */
   public static getDerivedStateFromError(
     error: Error,
   ): ErrorBoundaryState {
@@ -35,45 +62,92 @@ export class ErrorBoundary extends Component<
     };
   }
 
+  /**
+   * Logs rendering errors.
+   *
+   * @param error Rendering error.
+   * @param errorInfo Component stack.
+   */
   public override componentDidCatch(
     error: Error,
     errorInfo: ErrorInfo,
   ): void {
-    console.error("Application Error:", error);
-    console.error(errorInfo);
+    console.error(
+      "Application Error:",
+      error,
+    );
+
+    console.error(
+      "Component Stack:",
+      errorInfo,
+    );
+
+    // TODO:
+    // Send errors to Sentry,
+    // OpenTelemetry or another
+    // monitoring platform.
   }
 
+  /**
+   * Renders the application.
+   *
+   * @returns Component tree.
+   */
   public override render(): React.JSX.Element {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-8">
-          <div className="max-w-lg rounded-xl border bg-white p-8 text-center shadow">
-            <h1 className="mb-4 text-3xl font-bold text-red-600">
+        <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6">
+          <div className="w-full max-w-2xl rounded-xl bg-white p-10 shadow-lg">
+            <h1 className="text-3xl font-bold text-red-600">
               Something went wrong
             </h1>
 
-            <p className="mb-6 text-slate-600">
-              An unexpected error occurred while rendering this page.
+            <p className="mt-4 text-slate-600">
+              An unexpected error occurred while
+              rendering this page.
             </p>
 
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="rounded-lg bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-700"
-            >
-              Reload Application
-            </button>
+            <div className="mt-8 flex gap-4">
+              <button
+                type="button"
+                onClick={() =>
+                  window.location.reload()
+                }
+                className="rounded-lg bg-slate-900 px-5 py-2 font-medium text-white transition hover:bg-slate-700"
+              >
+                Reload Application
+              </button>
 
-            {import.meta.env.DEV && this.state.error ? (
-              <pre className="mt-6 overflow-auto rounded bg-slate-100 p-4 text-left text-xs text-red-600">
-                {this.state.error.stack}
-              </pre>
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href =
+                    "/dashboard";
+                }}
+                className="rounded-lg border border-slate-300 px-5 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+
+            {import.meta.env.DEV &&
+            this.state.error ? (
+              <div className="mt-8">
+                <h2 className="mb-2 text-sm font-semibold text-slate-700">
+                  Development Stack Trace
+                </h2>
+
+                <pre className="overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-red-600">
+                  {this.state.error.stack}
+                </pre>
+              </div>
             ) : null}
           </div>
         </div>
       );
     }
 
-    return this.props.children as React.JSX.Element;
+    return this.props
+      .children as React.JSX.Element;
   }
 }

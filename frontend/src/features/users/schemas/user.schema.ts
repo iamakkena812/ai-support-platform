@@ -1,123 +1,145 @@
 /**
  * User validation schemas.
+ *
+ * Contains Zod schemas for
+ * user authentication and forms.
  */
 
-import { z } from "zod";
+import {
+  z,
+} from "zod";
 
-export const userSchema = z.object({
-  id: z.string(),
+/**
+ * User role schema.
+ */
+export const userRoleSchema =
+  z.enum([
+    "SUPER_ADMIN",
+    "ADMIN",
+    "AGENT",
+    "USER",
+  ]);
 
-  firstName: z.string(),
+/**
+ * User status schema.
+ */
+export const userStatusSchema =
+  z.enum([
+    "ACTIVE",
+    "INACTIVE",
+    "PENDING",
+    "LOCKED",
+    "SUSPENDED",
+  ]);
 
-  lastName: z.string(),
+/**
+ * User schema.
+ *
+ * Represents authenticated user data.
+ */
+export const userSchema =
+  z.object({
+    /**
+     * User identifier.
+     */
+    id: z.string(),
 
-  email: z.string().email(),
+    /**
+     * Full name.
+     */
+    fullName: z.string(),
 
-  organizationId: z.string(),
+    /**
+     * Email.
+     */
+    email: z.string().email(),
 
-  teamId: z.string().nullable(),
+    /**
+     * Phone.
+     */
+    phone: z.string().optional(),
 
-  role: z.string(),
+    /**
+     * User role.
+     */
+    role: userRoleSchema,
 
-  isActive: z.boolean(),
+    /**
+     * User status.
+     */
+    status: userStatusSchema,
 
-  createdAt: z.string(),
+    /**
+     * Organization identifier.
+     */
+    organizationId:
+      z.string().optional(),
 
-  updatedAt: z.string(),
-});
+    /**
+     * Created date.
+     */
+    createdAt:
+      z.string().optional(),
 
-export const createUserSchema = z.object({
-  firstName: z
-    .string()
-    .trim()
-    .min(2, "First name is required.")
-    .max(100),
+    /**
+     * Updated date.
+     */
+    updatedAt:
+      z.string().optional(),
+  });
 
-  lastName: z
-    .string()
-    .trim()
-    .min(2, "Last name is required.")
-    .max(100),
+/**
+ * User form schema.
+ */
+export const userFormSchema =
+  z.object({
+    fullName: z
+      .string()
+      .min(
+        2,
+        "Full name must contain at least 2 characters.",
+      ),
 
-  email: z
-    .string()
-    .email("Invalid email address."),
+    email: z
+      .string()
+      .email(
+        "Please enter a valid email address.",
+      ),
 
-  organizationId: z
-    .string()
-    .min(1, "Organization is required."),
+    phone:
+      z.string().optional(),
 
-  teamId: z.string().nullable(),
+    role:
+      userRoleSchema,
 
-  role: z
-    .string()
-    .trim()
-    .min(1, "Role is required."),
-});
+    status:
+      userStatusSchema,
+  });
 
-export const updateUserSchema = z.object({
-  firstName: z
-    .string()
-    .trim()
-    .min(2)
-    .max(100)
-    .optional(),
+/**
+ * User schema type.
+ */
+export type UserSchema =
+  z.infer<
+    typeof userSchema
+  >;
 
-  lastName: z
-    .string()
-    .trim()
-    .min(2)
-    .max(100)
-    .optional(),
+/**
+ * User form schema type.
+ */
+export type UserFormSchema =
+  z.infer<
+    typeof userFormSchema
+  >;
 
-  email: z
-    .string()
-    .email()
-    .optional(),
+/**
+ * Create user schema type.
+ */
+export type CreateUserSchema =
+  UserFormSchema;
 
-  teamId: z
-    .string()
-    .nullable()
-    .optional(),
-
-  role: z
-    .string()
-    .trim()
-    .optional(),
-
-  isActive: z
-    .boolean()
-    .optional(),
-});
-
-export const userResponseSchema = z.object({
-  user: userSchema,
-});
-
-export const userListResponseSchema = z.object({
-  items: z.array(userSchema),
-
-  total: z.number().nonnegative(),
-
-  page: z.number().nonnegative(),
-
-  size: z.number().positive(),
-});
-
-export type UserSchema = z.infer<typeof userSchema>;
-
-export type CreateUserSchema = z.infer<
-  typeof createUserSchema
->;
-
-export type UpdateUserSchema = z.infer<
-  typeof updateUserSchema
->;
-
-export type UserResponseSchema = z.infer<
-  typeof userResponseSchema
->;
-
-export type UserListResponseSchema = z.infer<
-  typeof userListResponseSchema
->;
+/**
+ * Update user schema type.
+ */
+export type UpdateUserSchema =
+  Partial<UserFormSchema>;

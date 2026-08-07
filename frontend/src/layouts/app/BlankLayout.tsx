@@ -8,13 +8,16 @@ import type { PropsWithChildren } from "react";
 
 /**
  * Blank layout.
+ *
+ * @param props Layout properties.
+ * @returns Blank layout.
  */
 export function BlankLayout({
   children,
 }: PropsWithChildren): React.JSX.Element {
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {children}
-    </main>
+    </div>
   );
 }

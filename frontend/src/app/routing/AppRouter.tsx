@@ -12,14 +12,23 @@ import {
   Routes,
 } from "react-router-dom";
 
-import { ProtectedRoute } from "./ProtectedRoute";
-import { PublicRoute } from "./PublicRoute";
+import {
+  ProtectedRoute,
+} from "./ProtectedRoute";
+
+import {
+  PublicRoute,
+} from "./PublicRoute";
 
 import {
   DashboardPage,
   ForgotPasswordPage,
   LoginPage,
   ResetPasswordPage,
+  CustomersPage,
+  CustomerDetailsPage,
+  CreateCustomerPage,
+  EditCustomerPage,
 } from "./lazy-routes";
 
 import {
@@ -36,7 +45,7 @@ export function AppRouter(): React.JSX.Element {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
+        <div>
           Loading...
         </div>
       }
@@ -45,7 +54,9 @@ export function AppRouter(): React.JSX.Element {
         {/* Public */}
 
         <Route
-          path={PUBLIC_ROUTES.LOGIN}
+          path={
+            PUBLIC_ROUTES.LOGIN
+          }
           element={
             <PublicRoute>
               <LoginPage />
@@ -75,6 +86,7 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
+
         {/* Protected */}
 
         <Route
@@ -87,6 +99,54 @@ export function AppRouter(): React.JSX.Element {
             </ProtectedRoute>
           }
         />
+
+
+        {/* Customers */}
+
+        <Route
+          path={
+            PROTECTED_ROUTES.CUSTOMERS
+          }
+          element={
+            <ProtectedRoute>
+              <CustomersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.CUSTOMERS}/create`
+          }
+          element={
+            <ProtectedRoute>
+              <CreateCustomerPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.CUSTOMERS}/:id`
+          }
+          element={
+            <ProtectedRoute>
+              <CustomerDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path={
+            `${PROTECTED_ROUTES.CUSTOMERS}/:id/edit`
+          }
+          element={
+            <ProtectedRoute>
+              <EditCustomerPage />
+            </ProtectedRoute>
+          }
+        />
+
 
         {/* Redirect */}
 

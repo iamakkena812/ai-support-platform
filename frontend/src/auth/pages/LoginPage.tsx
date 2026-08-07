@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../../app/providers/auth/useAuth";
 import { authService } from "../services/auth.service";
 
 /**
@@ -15,22 +16,20 @@ import { authService } from "../services/auth.service";
 export function LoginPage(): React.JSX.Element {
   const navigate = useNavigate();
 
-  const [email, setEmail] =
-    useState("");
+  const { login } = useAuth();
 
-  const [password, setPassword] =
-    useState("");
+  const [email, setEmail] = useState("");
 
-  const [isLoading, setIsLoading] =
-    useState(false);
+  const [password, setPassword] = useState("");
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [error, setError] = useState<string | null>(null);
 
   /**
-   * Handles login.
+   * Handles login form submission.
    *
-   * @param event - Form submit event.
+   * @param event Form submit event.
    */
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>,
@@ -41,27 +40,32 @@ export function LoginPage(): React.JSX.Element {
     setIsLoading(true);
 
     try {
-      await authService.login({
+      const response = await authService.login({
         email,
         password,
       });
 
-      navigate(
-        "/dashboard",
-        {
-          replace: true,
-        },
+      await login(
+        response.access_token,
+        response.refresh_token ?? "",
       );
-        } catch (error) {
-            console.error("Login failed:", error);
 
-            if (error instanceof Error) {
-                setError(error.message);
-            } else {
-                setError("Login failed.");
-            }
-        }
+      navigate("/dashboard", {
+        replace: true,
+      });
+    } catch (error) {
+      console.error("Login failed:", error);
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Invalid email or password.",
+      );
+    } finally {
+      setIsLoading(false);
     }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
@@ -80,43 +84,49 @@ export function LoginPage(): React.JSX.Element {
           className="space-y-4"
         >
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
               Email
             </label>
 
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(event) => {
-                setEmail(
-                  event.target.value,
-                );
+                setEmail(event.target.value);
               }}
+              autoComplete="email"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
 
             <input
+              id="password"
               type="password"
               value={password}
               onChange={(event) => {
-                setPassword(
-                  event.target.value,
-                );
+                setPassword(event.target.value);
               }}
+              autoComplete="current-password"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
-          {error ? (
-            <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {error !== null ? (
+            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {error}
             </div>
           ) : null}
@@ -124,11 +134,9 @@ export function LoginPage(): React.JSX.Element {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLoading
-              ? "Signing In..."
-              : "Sign In"}
+            {isLoading ? "Signing In..." : "Sign In"}
           </button>
         </form>
       </div>

@@ -1,196 +1,211 @@
 /**
  * Project filters component.
+ *
+ * Displays search and filter controls
+ * for the projects list.
  */
 
 import {
-  useEffect,
-  useState,
-} from "react";
+  Funnel,
+  Search,
+} from "lucide-react";
 
-import type {
-  ProjectStatus,
-} from "../types/project.types";
+import {
+  Input,
+  Select,
+} from "../../../components/ui";
 
 /**
- * Project filter values.
+ * Select option.
  */
-export interface ProjectFiltersValues {
+export interface ProjectFilterOption {
   /**
-   * Project name.
+   * Option label.
+   */
+  readonly label: string;
+
+  /**
+   * Option value.
+   */
+  readonly value: string;
+}
+
+/**
+ * Component properties.
+ */
+export interface ProjectFiltersProps {
+  /**
+   * Search value.
    */
   readonly search: string;
 
   /**
-   * Project status.
+   * Organization filter.
    */
-  readonly status: ProjectStatus | "";
+  readonly organizationId: string;
 
   /**
-   * Customer identifier.
+   * Team filter.
    */
-  readonly customerId: string;
+  readonly teamId: string;
 
   /**
-   * Owner identifier.
+   * Status filter.
    */
-  readonly ownerId: string;
-}
-
-interface ProjectFiltersProps {
-  /**
-   * Current filter values.
-   */
-  readonly value: ProjectFiltersValues;
+  readonly status: string;
 
   /**
-   * Filter change handler.
+   * Organization options.
    */
-  readonly onChange: (
-    values: ProjectFiltersValues,
+  readonly organizations: readonly ProjectFilterOption[];
+
+  /**
+   * Team options.
+   */
+  readonly teams: readonly ProjectFilterOption[];
+
+  /**
+   * Search callback.
+   */
+  readonly onSearchChange: (
+    value: string,
+  ) => void;
+
+  /**
+   * Organization callback.
+   */
+  readonly onOrganizationChange: (
+    value: string,
+  ) => void;
+
+  /**
+   * Team callback.
+   */
+  readonly onTeamChange: (
+    value: string,
+  ) => void;
+
+  /**
+   * Status callback.
+   */
+  readonly onStatusChange: (
+    value: string,
   ) => void;
 }
 
 /**
- * Project filters.
+ * Status options.
+ */
+const STATUS_OPTIONS: readonly ProjectFilterOption[] = [
+  {
+    label: "All Statuses",
+    value: "",
+  },
+  {
+    label: "Planning",
+    value: "PLANNING",
+  },
+  {
+    label: "Active",
+    value: "ACTIVE",
+  },
+  {
+    label: "On Hold",
+    value: "ON_HOLD",
+  },
+  {
+    label: "Completed",
+    value: "COMPLETED",
+  },
+  {
+    label: "Cancelled",
+    value: "CANCELLED",
+  },
+];
+
+/**
+ * Project filters component.
+ *
+ * @param props Component properties.
+ * @returns Project filters component.
  */
 export function ProjectFilters({
-  value,
-  onChange,
+  search,
+  organizationId,
+  teamId,
+  status,
+  organizations,
+  teams,
+  onSearchChange,
+  onOrganizationChange,
+  onTeamChange,
+  onStatusChange,
 }: ProjectFiltersProps): React.JSX.Element {
-  const [filters, setFilters] =
-    useState(value);
-
-  useEffect(() => {
-    setFilters(value);
-  }, [value]);
-
-  useEffect(() => {
-    onChange(filters);
-  }, [filters, onChange]);
-
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="grid gap-4 md:grid-cols-4">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Search
-          </label>
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-5 flex items-center gap-2">
+        <Funnel
+          size={20}
+          className="text-slate-600"
+        />
 
-          <input
-            type="text"
-            placeholder="Project name..."
-            value={filters.search}
-            onChange={(event) =>
-              setFilters({
-                ...filters,
-                search:
-                  event.target.value,
-              })
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Status
-          </label>
-
-          <select
-            value={filters.status}
-            onChange={(event) =>
-              setFilters({
-                ...filters,
-                status:
-                  event.target
-                    .value as ProjectStatus | "",
-              })
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          >
-            <option value="">
-              All Statuses
-            </option>
-
-            <option value="planning">
-              Planning
-            </option>
-
-            <option value="active">
-              Active
-            </option>
-
-            <option value="on_hold">
-              On Hold
-            </option>
-
-            <option value="completed">
-              Completed
-            </option>
-
-            <option value="cancelled">
-              Cancelled
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Customer ID
-          </label>
-
-          <input
-            type="text"
-            placeholder="Customer ID"
-            value={filters.customerId}
-            onChange={(event) =>
-              setFilters({
-                ...filters,
-                customerId:
-                  event.target.value,
-              })
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Owner ID
-          </label>
-
-          <input
-            type="text"
-            placeholder="Owner ID"
-            value={filters.ownerId}
-            onChange={(event) =>
-              setFilters({
-                ...filters,
-                ownerId:
-                  event.target.value,
-              })
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
+        <h2 className="font-semibold text-slate-900">
+          Filters
+        </h2>
       </div>
 
-      <div className="mt-4 flex justify-end">
-        <button
-          type="button"
-          onClick={() =>
-            setFilters({
-              search: "",
-              status: "",
-              customerId: "",
-              ownerId: "",
-            })
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="relative">
+          <Search
+            size={18}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+
+          <Input
+            placeholder="Search projects..."
+            value={search}
+            onChange={(event) =>
+              onSearchChange(
+                event.target.value,
+              )
+            }
+            className="pl-10"
+          />
+        </div>
+
+        <Select
+          value={organizationId}
+          options={organizations}
+          placeholder="All Organizations"
+          onChange={(event) =>
+            onOrganizationChange(
+              event.target.value,
+            )
           }
-          className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
-        >
-          Clear Filters
-        </button>
+        />
+
+        <Select
+          value={teamId}
+          options={teams}
+          placeholder="All Teams"
+          onChange={(event) =>
+            onTeamChange(
+              event.target.value,
+            )
+          }
+        />
+
+        <Select
+          value={status}
+          options={STATUS_OPTIONS}
+          placeholder="All Statuses"
+          onChange={(event) =>
+            onStatusChange(
+              event.target.value,
+            )
+          }
+        />
       </div>
-    </div>
+    </section>
   );
 }

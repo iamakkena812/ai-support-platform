@@ -1,41 +1,114 @@
 /**
  * Customer table component.
+ *
+ * Displays customers in a
+ * responsive table layout.
  */
 
+import {
+  Building2,
+  Mail,
+  Phone,
+} from "lucide-react";
+
+import {
+  CustomerActions,
+} from "./CustomerActions";
+
+import {
+  CustomerStatusBadge,
+} from "./CustomerStatusBadge";
+
 import type {
-  Customer,
+  CustomerStatus,
 } from "../types/customer.types";
 
-interface CustomerTableProps {
+/**
+ * Customer table row.
+ */
+export interface CustomerTableRow {
+  /**
+   * Customer identifier.
+   */
+  readonly id: string;
+
+  /**
+   * Customer name.
+   */
+  readonly name: string;
+
+  /**
+   * Company name.
+   */
+  readonly company?: string;
+
+  /**
+   * Email.
+   */
+  readonly email: string;
+
+  /**
+   * Phone.
+   */
+  readonly phone?: string;
+
+  /**
+   * Status.
+   */
+  readonly status: CustomerStatus;
+
+  /**
+   * Organization count.
+   */
+  readonly organizationCount: number;
+
+  /**
+   * Project count.
+   */
+  readonly projectCount: number;
+
+  /**
+   * Ticket count.
+   */
+  readonly ticketCount: number;
+}
+
+/**
+ * Component properties.
+ */
+export interface CustomerTableProps {
   /**
    * Customers.
    */
-  readonly customers: readonly Customer[];
+  readonly customers: readonly CustomerTableRow[];
 
   /**
    * View callback.
    */
   readonly onView?: (
-    customer: Customer,
+    id: string,
   ) => void;
 
   /**
    * Edit callback.
    */
   readonly onEdit?: (
-    customer: Customer,
+    id: string,
   ) => void;
 
   /**
    * Delete callback.
    */
   readonly onDelete?: (
-    customer: Customer,
+    id: string,
   ) => void;
 }
 
 /**
- * Customer table.
+ * Customer table component.
+ *
+ * @param props Component properties.
+ * @returns Customer table.
  */
 export function CustomerTable({
   customers,
@@ -44,127 +117,193 @@ export function CustomerTable({
   onDelete,
 }: CustomerTableProps): React.JSX.Element {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+      <table className="min-w-full">
+
+        <thead className="bg-slate-50">
           <tr>
-            <th className="px-4 py-3 text-left text-sm font-semibold">
-              Name
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+              Customer
             </th>
 
-            <th className="px-4 py-3 text-left text-sm font-semibold">
-              Email
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+              Contact
             </th>
 
-            <th className="px-4 py-3 text-left text-sm font-semibold">
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
               Company
             </th>
 
-            <th className="px-4 py-3 text-left text-sm font-semibold">
-              Phone
+            <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
+              Organizations
             </th>
 
-            <th className="px-4 py-3 text-left text-sm font-semibold">
+            <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
+              Projects
+            </th>
+
+            <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
+              Tickets
+            </th>
+
+            <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
               Status
             </th>
 
-            <th className="px-4 py-3 text-center text-sm font-semibold">
+            <th className="w-20 px-6 py-4 text-right text-sm font-semibold text-slate-700">
               Actions
             </th>
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-gray-200">
-          {customers.length === 0 ? (
-            <tr>
-              <td
-                colSpan={6}
-                className="px-4 py-6 text-center text-gray-500"
+
+        <tbody className="divide-y divide-slate-200">
+
+          {customers.map(
+            (customer) => (
+              <tr
+                key={
+                  customer.id
+                }
+                className="transition hover:bg-slate-50"
               >
-                No customers found.
-              </td>
-            </tr>
-          ) : (
-            customers.map(
-              (customer) => (
-                <tr key={customer.id}>
-                  <td className="px-4 py-3">
-                    {customer.firstName}{" "}
-                    {customer.lastName}
-                  </td>
 
-                  <td className="px-4 py-3">
-                    {customer.email}
-                  </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
 
-                  <td className="px-4 py-3">
-                    {customer.company ??
-                      "N/A"}
-                  </td>
-
-                  <td className="px-4 py-3">
-                    {customer.phone ??
-                      "N/A"}
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${
-                        customer.isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {customer.isActive
-                        ? "Active"
-                        : "Inactive"}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onView?.(
-                            customer,
-                          )
-                        }
-                        className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-                      >
-                        View
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onEdit?.(
-                            customer,
-                          )
-                        }
-                        className="rounded bg-amber-500 px-3 py-1 text-sm text-white hover:bg-amber-600"
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onDelete?.(
-                            customer,
-                          )
-                        }
-                        className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
+                      {
+                        customer.name
+                          .charAt(0)
+                          .toUpperCase()
+                      }
                     </div>
-                  </td>
-                </tr>
-              ),
-            )
+
+                    <span className="font-medium text-slate-900">
+                      {
+                        customer.name
+                      }
+                    </span>
+
+                  </div>
+                </td>
+
+
+                <td className="px-6 py-4">
+                  <div className="space-y-2 text-sm text-slate-600">
+
+                    <div className="flex items-center gap-2">
+                      <Mail
+                        size={14}
+                      />
+
+                      {
+                        customer.email
+                      }
+                    </div>
+
+
+                    {customer.phone ? (
+                      <div className="flex items-center gap-2">
+                        <Phone
+                          size={14}
+                        />
+
+                        {
+                          customer.phone
+                        }
+                      </div>
+                    ) : null}
+
+                  </div>
+                </td>
+
+
+                <td className="px-6 py-4 text-sm text-slate-700">
+                  <div className="flex items-center gap-2">
+
+                    <Building2
+                      size={15}
+                    />
+
+                    {
+                      customer.company ??
+                      "-"
+                    }
+
+                  </div>
+                </td>
+
+
+                <td className="px-6 py-4 text-center text-sm text-slate-700">
+                  {
+                    customer.organizationCount
+                  }
+                </td>
+
+
+                <td className="px-6 py-4 text-center text-sm text-slate-700">
+                  {
+                    customer.projectCount
+                  }
+                </td>
+
+
+                <td className="px-6 py-4 text-center text-sm text-slate-700">
+                  {
+                    customer.ticketCount
+                  }
+                </td>
+
+
+                <td className="px-6 py-4 text-center">
+                  <CustomerStatusBadge
+                    status={
+                      customer.status
+                    }
+                  />
+                </td>
+
+
+                <td className="px-6 py-4 text-right">
+
+                  <CustomerActions
+                    onView={
+                      onView
+                        ? () =>
+                            onView(
+                              customer.id,
+                            )
+                        : undefined
+                    }
+
+                    onEdit={
+                      onEdit
+                        ? () =>
+                            onEdit(
+                              customer.id,
+                            )
+                        : undefined
+                    }
+
+                    onDelete={
+                      onDelete
+                        ? () =>
+                            onDelete(
+                              customer.id,
+                            )
+                        : undefined
+                    }
+                  />
+
+                </td>
+
+              </tr>
+            ),
           )}
+
         </tbody>
+
       </table>
     </div>
   );

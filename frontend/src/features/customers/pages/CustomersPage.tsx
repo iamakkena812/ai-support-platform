@@ -1,270 +1,231 @@
 /**
  * Customers page.
+ *
+ * Displays customer listing,
+ * filtering, and management actions.
  */
 
 import {
   useState,
 } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  CustomerCard,
+  CustomerEmpty,
+  CustomerError,
+  CustomerFilters,
+  CustomerHeader,
+  CustomerSkeleton,
+  CustomerStats,
+  CustomerTable,
+} from "../components";
 
-import { CustomerFilters } from "../components/CustomerFilters";
-import { CustomerTable } from "../components/CustomerTable";
-import { DeleteCustomerDialog } from "../components/DeleteCustomerDialog";
-
-import { useCustomers } from "../hooks/useCustomers";
-
-import type {
-  Customer,
-} from "../types/customer.types";
+import {
+  useCustomers,
+} from "../hooks/useCustomers";
 
 /**
- * Customers page.
+ * Customers page component.
+ *
+ * @returns Customers page.
  */
 export function CustomersPage(): React.JSX.Element {
-  const navigate = useNavigate();
-
-  const [page, setPage] =
-    useState(1);
-
-  const [size] =
-    useState(10);
-
-  const [search, setSearch] =
-    useState("");
-
-  const [status, setStatus] =
-    useState<boolean>();
+  const [
+    search,
+    setSearch,
+  ] = useState("");
 
   const [
-    selectedCustomer,
-    setSelectedCustomer,
-  ] =
-    useState<Customer | null>(
-      null,
-    );
+    status,
+    setStatus,
+  ] = useState("");
 
   const [
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-  ] =
-    useState(false);
+    industry,
+    setIndustry,
+  ] = useState("");
 
   const {
     data,
     isLoading,
+    isError,
+    error,
     refetch,
-  } = useCustomers(
-    page,
-    size,
-  );
+  } = useCustomers({
+    filters: {
+      search:
+        search || undefined,
+
+      status:
+        status
+          ? status as never
+          : undefined,
+
+      industry:
+        industry || undefined,
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <CustomerSkeleton />
+    );
+  }
+
+  if (isError) {
+    return (
+      <CustomerError
+        error={
+          error instanceof Error
+            ? error
+            : undefined
+        }
+        onRetry={() => {
+          void refetch();
+        }}
+      />
+    );
+  }
 
   const customers =
-    data?.items.filter(
-      (customer) => {
-        const matchesSearch =
-          search === "" ||
-          customer.firstName
-            .toLowerCase()
-            .includes(
-              search.toLowerCase(),
-            ) ||
-          customer.lastName
-            .toLowerCase()
-            .includes(
-              search.toLowerCase(),
-            ) ||
-          customer.email
-            .toLowerCase()
-            .includes(
-              search.toLowerCase(),
-            );
-
-        const matchesStatus =
-          status === undefined ||
-          customer.isActive ===
-            status;
-
-        return (
-          matchesSearch &&
-          matchesStatus
-        );
-      },
-    ) ?? [];
-
-  const handleView = (
-    customer: Customer,
-  ): void => {
-    navigate(
-      `/customers/${customer.id}`,
-    );
-  };
-
-  const handleEdit = (
-    customer: Customer,
-  ): void => {
-    navigate(
-      `/customers/${customer.id}/edit`,
-    );
-  };
-
-  const handleDelete = (
-    customer: Customer,
-  ): void => {
-    setSelectedCustomer(
-      customer,
-    );
-
-    setDeleteDialogOpen(
-      true,
-    );
-  };
-
-  const confirmDelete =
-    async (): Promise<void> => {
-      if (
-        selectedCustomer === null
-      ) {
-        return;
-      }
-
-      // TODO:
-      // Call CustomerService.deleteCustomer()
-
-      setDeleteDialogOpen(
-        false,
-      );
-
-      setSelectedCustomer(
-        null,
-      );
-
-      await refetch();
-    };
+    data?.items ?? [];
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Customers
-          </h1>
+    <div className="space-y-6">
+      <CustomerHeader />
 
-          <p className="text-gray-600">
-            Manage customer
-            records.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigate(
-              "/customers/create",
-            )
-          }
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          New Customer
-        </button>
-      </div>
+      <CustomerStats
+            totalCustomers={
+                data?.total ?? 0
+            }
+            activeCustomers={
+                customers.filter(
+                (customer) =>
+                    customer.status === "ACTIVE",
+                ).length
+            }
+            totalOrganizations={
+                customers.reduce(
+                (
+                    total,
+                    customer,
+                ) =>
+                    total +
+                    customer.organizationCount,
+                0,
+                )
+            }
+            totalProjects={
+                customers.reduce(
+                (
+                    total,
+                    customer,
+                ) =>
+                    total +
+                    customer.projectCount,
+                0,
+                )
+            }
+            openTickets={
+                customers.reduce(
+                (
+                    total,
+                    customer,
+                ) =>
+                    total +
+                    customer.ticketCount,
+                0,
+                )
+            }
+            />
 
       <CustomerFilters
         search={search}
-        isActive={status}
+        status={status}
+        industry={industry}
+        industries={[]}
         onSearchChange={
           setSearch
         }
         onStatusChange={
           setStatus
         }
-        onReset={() => {
-          setSearch("");
-
-          setStatus(
-            undefined,
-          );
-        }}
+        onIndustryChange={
+          setIndustry
+        }
       />
 
-      {isLoading ? (
-        <div className="rounded-lg bg-white p-8 text-center">
-          Loading customers...
-        </div>
+      {customers.length === 0 ? (
+        <CustomerEmpty />
       ) : (
-        <CustomerTable
-          customers={customers}
-          onView={
-            handleView
-          }
-          onEdit={
-            handleEdit
-          }
-          onDelete={
-            handleDelete
-          }
-        />
+        <>
+          <div className="hidden lg:block">
+            <CustomerTable
+              customers={
+                customers.map(
+                  (customer) => ({
+                    id: customer.id,
+                    name: customer.name,
+                    company:
+                      customer.company,
+                    email:
+                      customer.email,
+                    phone:
+                      customer.phone,
+                    status:
+                      customer.status,
+                    organizationCount:
+                      customer.organizationCount,
+                    projectCount:
+                      customer.projectCount,
+                    ticketCount:
+                      customer.ticketCount,
+                  }),
+                )
+              }
+            />
+          </div>
+
+          <div className="grid gap-6 lg:hidden">
+            {customers.map(
+              (customer) => (
+                <CustomerCard
+                  key={
+                    customer.id
+                  }
+                  id={
+                    customer.id
+                  }
+                  name={
+                    customer.name
+                  }
+                  company={
+                    customer.company
+                  }
+                  email={
+                    customer.email
+                  }
+                  phone={
+                    customer.phone
+                  }
+                  status={
+                    customer.status
+                  }
+                  organizationCount={
+                    customer.organizationCount
+                  }
+                  projectCount={
+                    customer.projectCount
+                  }
+                  ticketCount={
+                    customer.ticketCount
+                  }
+                />
+              ),
+            )}
+          </div>
+        </>
       )}
-
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          disabled={
-            page === 1
-          }
-          onClick={() =>
-            setPage(
-              (current) =>
-                current - 1,
-            )
-          }
-          className="rounded border px-4 py-2 disabled:opacity-50"
-        >
-          Previous
-        </button>
-
-        <span>
-          Page {page}
-        </span>
-
-        <button
-          type="button"
-          disabled={
-            customers.length <
-            size
-          }
-          onClick={() =>
-            setPage(
-              (current) =>
-                current + 1,
-            )
-          }
-          className="rounded border px-4 py-2 disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
-
-      <DeleteCustomerDialog
-        open={
-          deleteDialogOpen
-        }
-        customer={
-          selectedCustomer
-        }
-        onCancel={() => {
-          setDeleteDialogOpen(
-            false,
-          );
-
-          setSelectedCustomer(
-            null,
-          );
-        }}
-        onConfirm={
-          confirmDelete
-        }
-      />
-    </section>
+    </div>
   );
 }

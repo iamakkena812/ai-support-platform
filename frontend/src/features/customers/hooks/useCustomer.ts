@@ -1,38 +1,64 @@
 /**
- * Customer hook.
+ * Customer detail query hook.
+ *
+ * Provides a single customer
+ * using React Query.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+} from "@tanstack/react-query";
 
-import { CustomerService } from "../services/customer.service";
+import {
+  customerService,
+} from "../services/customer.service";
 
-import { customerQueryKeys } from "./useCustomers";
-
-import type {
-  CustomerResponse,
-} from "../types/customer.types";
+import {
+  customerKeys,
+} from "./useCustomers";
 
 /**
- * Returns a customer by identifier.
+ * Use customer options.
+ */
+export interface UseCustomerOptions {
+  /**
+   * Customer identifier.
+   */
+  readonly id: string;
+
+  /**
+   * Enable query.
+   */
+  readonly enabled?: boolean;
+}
+
+/**
+ * Customer detail hook.
+ *
+ * @param options Hook options.
+ * @returns Customer query result.
  */
 export function useCustomer(
-  customerId: string,
+  options: UseCustomerOptions,
 ) {
-  return useQuery<CustomerResponse>({
-    queryKey: [
-      ...customerQueryKeys.all,
-      customerId,
-    ],
+  const {
+    id,
+    enabled = true,
+  } = options;
+
+  return useQuery({
+    queryKey:
+      customerKeys.detail(
+        id,
+      ),
 
     queryFn: () =>
-      CustomerService.getCustomer(
-        customerId,
+      customerService.getCustomer(
+        id,
       ),
 
     enabled:
-      customerId.length > 0,
-
-    staleTime:
-      1000 * 60 * 5,
+      enabled &&
+      Boolean(id),
   });
 }

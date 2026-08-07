@@ -1,131 +1,235 @@
 /**
  * Customer card component.
+ *
+ * Displays customer information
+ * in a responsive card layout.
  */
 
+import {
+  Building2,
+  Mail,
+  Phone,
+} from "lucide-react";
+
+import {
+  CustomerActions,
+} from "./CustomerActions";
+
+import {
+  CustomerStatusBadge,
+} from "./CustomerStatusBadge";
+
 import type {
-  Customer,
+  CustomerStatus,
 } from "../types/customer.types";
 
-interface CustomerCardProps {
+/**
+ * Component properties.
+ */
+export interface CustomerCardProps {
   /**
-   * Customer.
+   * Customer identifier.
    */
-  readonly customer: Customer;
+  readonly id: string;
+
+  /**
+   * Customer name.
+   */
+  readonly name: string;
+
+  /**
+   * Company name.
+   */
+  readonly company?: string;
+
+  /**
+   * Email.
+   */
+  readonly email: string;
+
+  /**
+   * Phone.
+   */
+  readonly phone?: string;
+
+  /**
+   * Status.
+   */
+  readonly status: CustomerStatus;
+
+  /**
+   * Organization count.
+   */
+  readonly organizationCount: number;
+
+  /**
+   * Project count.
+   */
+  readonly projectCount: number;
+
+  /**
+   * Ticket count.
+   */
+  readonly ticketCount: number;
 
   /**
    * View callback.
    */
   readonly onView?: (
-    customer: Customer,
+    id: string,
   ) => void;
 
   /**
    * Edit callback.
    */
   readonly onEdit?: (
-    customer: Customer,
+    id: string,
   ) => void;
 
   /**
    * Delete callback.
    */
   readonly onDelete?: (
-    customer: Customer,
+    id: string,
   ) => void;
 }
 
 /**
- * Customer card.
+ * Customer card component.
+ *
+ * @param props Component properties.
+ * @returns Customer card.
  */
 export function CustomerCard({
-  customer,
+  id,
+  name,
+  company,
+  email,
+  phone,
+  status,
+  organizationCount,
+  projectCount,
+  ticketCount,
   onView,
   onEdit,
   onDelete,
 }: CustomerCardProps): React.JSX.Element {
   return (
-    <article className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border bg-white p-6 shadow-sm space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-semibold">
-            {customer.firstName}{" "}
-            {customer.lastName}
+          <h3 className="text-lg font-semibold text-slate-900">
+            {name}
           </h3>
 
-          <p className="mt-1 text-sm text-gray-600">
-            {customer.email}
-          </p>
-
-          <p className="mt-2 text-sm">
-            <span className="font-medium">
-              Company:
-            </span>{" "}
-            {customer.company ??
-              "N/A"}
-          </p>
-
-          <p className="text-sm">
-            <span className="font-medium">
-              Phone:
-            </span>{" "}
-            {customer.phone ??
-              "N/A"}
-          </p>
-
-          <p className="text-sm">
-            <span className="font-medium">
-              Status:
-            </span>{" "}
-            {customer.isActive
-              ? "Active"
-              : "Inactive"}
-          </p>
+          <CustomerStatusBadge
+            status={status}
+          />
         </div>
 
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
-            customer.isActive
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
-          }`}
-        >
-          {customer.isActive
-            ? "Active"
-            : "Inactive"}
+        <CustomerActions
+          onView={
+            onView
+              ? () => onView(id)
+              : undefined
+          }
+          onEdit={
+            onEdit
+              ? () => onEdit(id)
+              : undefined
+          }
+          onDelete={
+            onDelete
+              ? () => onDelete(id)
+              : undefined
+          }
+        />
+      </div>
+
+      {company ? (
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <Building2
+            size={16}
+          />
+
+          <span>
+            {company}
+          </span>
+        </div>
+      ) : null}
+
+      <div className="flex items-center gap-3 text-sm text-slate-600">
+        <Mail
+          size={16}
+        />
+
+        <span>
+          {email}
         </span>
       </div>
 
-      <div className="mt-6 flex gap-2">
-        <button
-          type="button"
-          onClick={() =>
-            onView?.(customer)
-          }
-          className="rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
-        >
-          View
-        </button>
+      {phone ? (
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <Phone
+            size={16}
+          />
 
-        <button
-          type="button"
-          onClick={() =>
-            onEdit?.(customer)
-          }
-          className="rounded bg-amber-500 px-3 py-2 text-sm text-white hover:bg-amber-600"
-        >
-          Edit
-        </button>
+          <span>
+            {phone}
+          </span>
+        </div>
+      ) : null}
 
-        <button
-          type="button"
-          onClick={() =>
-            onDelete?.(customer)
+      <div className="grid grid-cols-3 gap-3">
+        <Metric
+          label="Organizations"
+          value={
+            organizationCount
           }
-          className="rounded bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700"
-        >
-          Delete
-        </button>
+        />
+
+        <Metric
+          label="Projects"
+          value={
+            projectCount
+          }
+        />
+
+        <Metric
+          label="Tickets"
+          value={
+            ticketCount
+          }
+        />
       </div>
-    </article>
+    </div>
+  );
+}
+
+/**
+ * Metric properties.
+ */
+interface MetricProps {
+  readonly label: string;
+  readonly value: number;
+}
+
+/**
+ * Metric component.
+ */
+function Metric({
+  label,
+  value,
+}: MetricProps): React.JSX.Element {
+  return (
+    <div className="rounded-md bg-slate-50 p-3 text-center">
+      <p className="text-xs text-slate-500">
+        {label}
+      </p>
+
+      <p className="text-lg font-semibold text-slate-900">
+        {value}
+      </p>
+    </div>
   );
 }

@@ -1,135 +1,183 @@
 /**
  * Customer filters component.
+ *
+ * Displays search and filter controls
+ * for the customers list.
  */
 
 import {
-  useState,
-} from "react";
+  Funnel,
+  Search,
+} from "lucide-react";
 
-interface CustomerFiltersProps {
+import {
+  Input,
+  Select,
+} from "../../../components/ui";
+
+/**
+ * Select option.
+ */
+export interface CustomerFilterOption {
+  /**
+   * Option label.
+   */
+  readonly label: string;
+
+  /**
+   * Option value.
+   */
+  readonly value: string;
+}
+
+/**
+ * Component properties.
+ */
+export interface CustomerFiltersProps {
   /**
    * Search value.
    */
   readonly search: string;
 
   /**
-   * Active status filter.
+   * Status filter.
    */
-  readonly isActive?: boolean;
+  readonly status: string;
 
   /**
-   * Search change handler.
+   * Industry filter.
+   */
+  readonly industry: string;
+
+  /**
+   * Industry options.
+   */
+  readonly industries: readonly CustomerFilterOption[];
+
+  /**
+   * Search callback.
    */
   readonly onSearchChange: (
     value: string,
   ) => void;
 
   /**
-   * Status change handler.
+   * Status callback.
    */
   readonly onStatusChange: (
-    value: boolean | undefined,
+    value: string,
   ) => void;
 
   /**
-   * Reset filters handler.
+   * Industry callback.
    */
-  readonly onReset: () => void;
+  readonly onIndustryChange: (
+    value: string,
+  ) => void;
 }
 
 /**
- * Customer filters.
+ * Status options.
+ */
+const STATUS_OPTIONS: readonly CustomerFilterOption[] = [
+  {
+    label: "All Statuses",
+    value: "",
+  },
+  {
+    label: "Active",
+    value: "ACTIVE",
+  },
+  {
+    label: "Inactive",
+    value: "INACTIVE",
+  },
+  {
+    label: "Prospect",
+    value: "PROSPECT",
+  },
+  {
+    label: "Pending",
+    value: "PENDING",
+  },
+  {
+    label: "Suspended",
+    value: "SUSPENDED",
+  },
+  {
+    label: "Blocked",
+    value: "BLOCKED",
+  },
+];
+
+/**
+ * Customer filters component.
+ *
+ * @param props Component properties.
+ * @returns Customer filters.
  */
 export function CustomerFilters({
   search,
-  isActive,
+  status,
+  industry,
+  industries,
   onSearchChange,
   onStatusChange,
-  onReset,
+  onIndustryChange,
 }: CustomerFiltersProps): React.JSX.Element {
-  const [searchValue, setSearchValue] =
-    useState(search);
-
-  const handleSearch = (
-    value: string,
-  ): void => {
-    setSearchValue(value);
-    onSearchChange(value);
-  };
-
   return (
-    <section className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="grid gap-4 md:grid-cols-3">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Search
-          </label>
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-5 flex items-center gap-2">
+        <Funnel
+          size={20}
+          className="text-slate-600"
+        />
 
-          <input
-            type="text"
-            value={searchValue}
+        <h2 className="font-semibold text-slate-900">
+          Filters
+        </h2>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="relative">
+          <Search
+            size={18}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+
+          <Input
             placeholder="Search customers..."
+            value={search}
             onChange={(event) =>
-              handleSearch(
+              onSearchChange(
                 event.target.value,
               )
             }
-            className="w-full rounded border border-gray-300 px-3 py-2"
+            className="pl-10"
           />
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Status
-          </label>
+        <Select
+          value={status}
+          options={STATUS_OPTIONS}
+          placeholder="All Statuses"
+          onChange={(event) =>
+            onStatusChange(
+              event.target.value,
+            )
+          }
+        />
 
-          <select
-            value={
-              isActive === undefined
-                ? ""
-                : String(isActive)
-            }
-            onChange={(event) => {
-              const value =
-                event.target.value;
-
-              if (value === "") {
-                onStatusChange(
-                  undefined,
-                );
-
-                return;
-              }
-
-              onStatusChange(
-                value === "true",
-              );
-            }}
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          >
-            <option value="">
-              All
-            </option>
-
-            <option value="true">
-              Active
-            </option>
-
-            <option value="false">
-              Inactive
-            </option>
-          </select>
-        </div>
-
-        <div className="flex items-end">
-          <button
-            type="button"
-            onClick={onReset}
-            className="w-full rounded bg-gray-700 px-4 py-2 text-white hover:bg-gray-800"
-          >
-            Reset Filters
-          </button>
-        </div>
+        <Select
+          value={industry}
+          options={industries}
+          placeholder="All Industries"
+          onChange={(event) =>
+            onIndustryChange(
+              event.target.value,
+            )
+          }
+        />
       </div>
     </section>
   );

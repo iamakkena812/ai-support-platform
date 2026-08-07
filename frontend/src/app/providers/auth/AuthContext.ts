@@ -2,34 +2,18 @@
  * Authentication context.
  */
 
-import {
-  createContext,
-} from "react";
+import { createContext } from "react";
+
+import type {
+  UserSchema,
+} from "../../../features/users/schemas/user.schema";
 
 /**
  * Authenticated user.
+ *
+ * Reuses the application's shared user model.
  */
-export interface AuthUser {
-  /**
-   * User identifier.
-   */
-  readonly id: string;
-
-  /**
-   * Full name.
-   */
-  readonly name: string;
-
-  /**
-   * Email address.
-   */
-  readonly email: string;
-
-  /**
-   * User role.
-   */
-  readonly role: string;
-}
+export type AuthUser = UserSchema;
 
 /**
  * Authentication context value.
@@ -51,22 +35,25 @@ export interface AuthContextValue {
   readonly isLoading: boolean;
 
   /**
-   * Sign in.
+   * Signs in the current user.
+   *
+   * @param accessToken JWT access token.
+   * @param refreshToken JWT refresh token.
    */
-  login(
+  readonly login: (
     accessToken: string,
     refreshToken: string,
-  ): Promise<void>;
+  ) => Promise<void>;
 
   /**
-   * Sign out.
+   * Signs out the current user.
    */
-  logout(): Promise<void>;
+  readonly logout: () => Promise<void>;
 
   /**
-   * Refresh current user.
+   * Reloads the authenticated user.
    */
-  refreshUser(): Promise<void>;
+  readonly refreshUser: () => Promise<void>;
 }
 
 /**

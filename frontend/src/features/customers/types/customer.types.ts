@@ -1,9 +1,23 @@
 /**
  * Customer domain types.
+ *
+ * Contains customer-related
+ * TypeScript definitions.
  */
 
 /**
- * Customer.
+ * Customer status.
+ */
+export type CustomerStatus =
+  | "ACTIVE"
+  | "INACTIVE"
+  | "PROSPECT"
+  | "PENDING"
+  | "SUSPENDED"
+  | "BLOCKED";
+
+/**
+ * Customer entity.
  */
 export interface Customer {
   /**
@@ -12,39 +26,59 @@ export interface Customer {
   readonly id: string;
 
   /**
-   * Organization identifier.
+   * Customer name.
    */
-  readonly organizationId: string;
-
-  /**
-   * Customer first name.
-   */
-  readonly firstName: string;
-
-  /**
-   * Customer last name.
-   */
-  readonly lastName: string;
-
-  /**
-   * Customer email address.
-   */
-  readonly email: string;
-
-  /**
-   * Customer phone number.
-   */
-  readonly phone: string | null;
+  readonly name: string;
 
   /**
    * Company name.
    */
-  readonly company: string | null;
+  readonly company?: string;
 
   /**
-   * Whether the customer is active.
+   * Email address.
    */
-  readonly isActive: boolean;
+  readonly email: string;
+
+  /**
+   * Phone number.
+   */
+  readonly phone?: string;
+
+  /**
+   * Contact person.
+   */
+  readonly contactPerson?: string;
+
+  /**
+   * Industry.
+   */
+  readonly industry?: string;
+
+  /**
+   * Address.
+   */
+  readonly address?: string;
+
+  /**
+   * Customer status.
+   */
+  readonly status: CustomerStatus;
+
+  /**
+   * Organization count.
+   */
+  readonly organizationCount: number;
+
+  /**
+   * Project count.
+   */
+  readonly projectCount: number;
+
+  /**
+   * Ticket count.
+   */
+  readonly ticketCount: number;
 
   /**
    * Created timestamp.
@@ -58,81 +92,131 @@ export interface Customer {
 }
 
 /**
- * Create customer request.
+ * Customer create payload.
  */
-export interface CreateCustomerRequest {
+export interface CreateCustomerPayload {
   /**
-   * Organization identifier.
+   * Customer name.
    */
-  readonly organizationId: string;
+  readonly name: string;
 
   /**
-   * Customer first name.
+   * Company.
    */
-  readonly firstName: string;
+  readonly company?: string;
 
   /**
-   * Customer last name.
-   */
-  readonly lastName: string;
-
-  /**
-   * Customer email address.
+   * Email.
    */
   readonly email: string;
 
   /**
-   * Customer phone number.
+   * Phone.
    */
-  readonly phone?: string | null;
+  readonly phone?: string;
 
   /**
-   * Company name.
+   * Contact person.
    */
-  readonly company?: string | null;
+  readonly contactPerson?: string;
+
+  /**
+   * Industry.
+   */
+  readonly industry?: string;
+
+  /**
+   * Address.
+   */
+  readonly address?: string;
+
+  /**
+   * Status.
+   */
+  readonly status?: CustomerStatus;
 }
 
 /**
- * Update customer request.
+ * Customer update payload.
  */
-export interface UpdateCustomerRequest {
+export interface UpdateCustomerPayload {
   /**
-   * Customer first name.
+   * Customer name.
    */
-  readonly firstName?: string;
+  readonly name?: string;
 
   /**
-   * Customer last name.
+   * Company.
    */
-  readonly lastName?: string;
+  readonly company?: string;
 
   /**
-   * Customer email address.
+   * Email.
    */
   readonly email?: string;
 
   /**
-   * Customer phone number.
+   * Phone.
    */
-  readonly phone?: string | null;
+  readonly phone?: string;
 
   /**
-   * Company name.
+   * Contact person.
    */
-  readonly company?: string | null;
+  readonly contactPerson?: string;
 
   /**
-   * Whether the customer is active.
+   * Industry.
    */
-  readonly isActive?: boolean;
+  readonly industry?: string;
+
+  /**
+   * Address.
+   */
+  readonly address?: string;
+
+  /**
+   * Status.
+   */
+  readonly status?: CustomerStatus;
 }
 
 /**
- * Customer list response.
+ * Customer list query parameters.
+ */
+export interface CustomerQueryFilters {
+  /**
+   * Search text.
+   */
+  readonly search?: string;
+
+  /**
+   * Status filter.
+   */
+  readonly status?: CustomerStatus;
+
+  /**
+   * Industry filter.
+   */
+  readonly industry?: string;
+
+  /**
+   * Page number.
+   */
+  readonly page?: number;
+
+  /**
+   * Page size.
+   */
+  readonly limit?: number;
+}
+
+/**
+ * Customer paginated response.
  */
 export interface CustomerListResponse {
   /**
-   * Customers.
+   * Customer items.
    */
   readonly items: readonly Customer[];
 
@@ -149,15 +233,10 @@ export interface CustomerListResponse {
   /**
    * Page size.
    */
-  readonly size: number;
-}
+  readonly limit: number;
 
-/**
- * Customer response.
- */
-export interface CustomerResponse {
   /**
-   * Customer.
+   * Total pages.
    */
-  readonly customer: Customer;
+  readonly pages: number;
 }

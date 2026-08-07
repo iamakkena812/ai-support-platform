@@ -1,58 +1,40 @@
 /**
  * Customers feature exports.
+ *
+ * Provides public exports for
+ * the customers module.
  */
 
-// API
-export { CustomerApi } from "./api/customer.api";
+/**
+ * Components.
+ */
+export * from "./components";
 
-// Components
-export { CustomerCard } from "./components/CustomerCard";
-export { CustomerFilters } from "./components/CustomerFilters";
-export { CustomerForm } from "./components/CustomerForm";
-export type {
-  CustomerFormValues,
-} from "./components/CustomerForm";
-export { CustomerTable } from "./components/CustomerTable";
-export { DeleteCustomerDialog } from "./components/DeleteCustomerDialog";
+/**
+ * Hooks.
+ */
+export * from "./hooks/useCustomer";
+export * from "./hooks/useCustomers";
 
-// Hooks
-export {
-  customerQueryKeys,
-  useCustomers,
-} from "./hooks/useCustomers";
-export { useCustomer } from "./hooks/useCustomer";
+/**
+ * Pages.
+ */
+export * from "./pages/CustomersPage";
+export * from "./pages/CustomerDetailsPage";
+export * from "./pages/CreateCustomerPage";
+export * from "./pages/EditCustomerPage";
 
-// Pages
-export { CreateCustomerPage } from "./pages/CreateCustomerPage";
-export { CustomerDetailsPage } from "./pages/CustomerDetailsPage";
-export { CustomersPage } from "./pages/CustomersPage";
-export { EditCustomerPage } from "./pages/EditCustomerPage";
+/**
+ * Services.
+ */
+export * from "./services/customer.service";
 
-// Schemas
-export {
-  createCustomerSchema,
-  customerListResponseSchema,
-  customerResponseSchema,
-  customerSchema,
-  updateCustomerSchema,
-} from "./schemas/customer.schema";
+/**
+ * Types.
+ */
+export * from "./types/customer.types";
 
-export type {
-  CreateCustomerSchema,
-  CustomerListResponseSchema,
-  CustomerResponseSchema,
-  CustomerSchema,
-  UpdateCustomerSchema,
-} from "./schemas/customer.schema";
-
-// Services
-export { CustomerService } from "./services/customer.service";
-
-// Types
-export type {
-  CreateCustomerRequest,
-  Customer,
-  CustomerListResponse,
-  CustomerResponse,
-  UpdateCustomerRequest,
-} from "./types/customer.types";
+/**
+ * Schemas.
+ */
+export * from "./schemas/customer.schema";

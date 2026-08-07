@@ -1,107 +1,129 @@
 /**
- * Delete project confirmation dialog.
+ * Delete project dialog component.
+ *
+ * Displays a confirmation dialog
+ * before permanently deleting a project.
  */
 
-import type {
-  Project,
-} from "../types/project.types";
+import {
+  AlertTriangle,
+  Trash2,
+} from "lucide-react";
 
-interface DeleteProjectDialogProps {
+import {
+  Button,
+  Modal,
+} from "../../../components/ui";
+
+/**
+ * Component properties.
+ */
+export interface DeleteProjectDialogProps {
   /**
-   * Whether the dialog is open.
+   * Indicates whether the dialog is open.
    */
   readonly open: boolean;
 
   /**
-   * Project to delete.
+   * Project name.
    */
-  readonly project: Project | null;
+  readonly projectName?: string;
 
   /**
-   * Loading state.
+   * Close callback.
    */
-  readonly isDeleting?: boolean;
-
-  /**
-   * Cancel callback.
-   */
-  readonly onCancel: () => void;
+  readonly onClose: () => void;
 
   /**
    * Confirm callback.
    */
-  readonly onConfirm: (
-    project: Project,
-  ) => Promise<void> | void;
+  readonly onConfirm: () => void | Promise<void>;
+
+  /**
+   * Indicates deletion state.
+   */
+  readonly isDeleting?: boolean;
 }
 
 /**
- * Delete project dialog.
+ * Delete project dialog component.
+ *
+ * @param props Component properties.
+ * @returns Delete project dialog.
  */
 export function DeleteProjectDialog({
   open,
-  project,
-  isDeleting = false,
-  onCancel,
+  projectName,
+  onClose,
   onConfirm,
-}: DeleteProjectDialogProps): React.JSX.Element | null {
-  if (!open || !project) {
-    return null;
-  }
-
-  const handleConfirm = async (): Promise<void> => {
-    await onConfirm(project);
-  };
-
+  isDeleting = false,
+}: DeleteProjectDialogProps): React.JSX.Element {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-semibold">
-          Delete Project
-        </h2>
-
-        <p className="mt-4 text-gray-600">
-          Are you sure you want to delete the
-          following project?
-        </p>
-
-        <div className="mt-4 rounded border border-red-200 bg-red-50 p-4">
-          <div className="font-medium">
-            {project.name}
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Delete Project"
+    >
+      <div className="space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="rounded-full bg-red-100 p-3">
+            <AlertTriangle
+              size={28}
+              className="text-red-600"
+            />
           </div>
 
-          <div className="mt-1 text-sm text-gray-600">
-            {project.description ??
-              "No description"}
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">
+              Delete Project
+            </h3>
+
+            <p className="mt-2 text-sm text-slate-600">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">
+                {projectName ?? "this project"}
+              </span>
+              ?
+            </p>
+
+            <p className="mt-2 text-sm text-red-600">
+              This action cannot be undone.
+            </p>
+
+            <p className="mt-2 text-sm text-slate-500">
+              Deleting this project will permanently
+              remove all associated project metadata,
+              milestones, assignments, and related
+              records that are not referenced by other
+              resources.
+            </p>
           </div>
         </div>
 
-        <p className="mt-4 text-sm text-red-600">
-          This action cannot be undone.
-        </p>
-
-        <div className="mt-6 flex justify-end gap-3">
-          <button
+        <div className="flex justify-end gap-3">
+          <Button
             type="button"
-            onClick={onCancel}
+            variant="secondary"
+            onClick={onClose}
             disabled={isDeleting}
-            className="rounded border border-gray-300 px-4 py-2 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancel
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
-            onClick={handleConfirm}
-            disabled={isDeleting}
-            className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="danger"
+            loading={isDeleting}
+            onClick={() => {
+              void onConfirm();
+            }}
           >
-            {isDeleting
-              ? "Deleting..."
-              : "Delete Project"}
-          </button>
+            <Trash2 size={16} />
+
+            Delete Project
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

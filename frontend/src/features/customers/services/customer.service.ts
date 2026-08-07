@@ -1,103 +1,101 @@
 /**
  * Customer service.
  *
- * Contains business logic for customer operations.
+ * Contains customer business operations
+ * and API communication abstraction.
  */
 
-import { CustomerApi } from "../api/customer.api";
-
 import {
-  customerListResponseSchema,
-  customerResponseSchema,
-} from "../schemas/customer.schema";
+  customerApi,
+} from "../api/customer.api";
 
 import type {
-  CreateCustomerRequest,
+  CreateCustomerPayload,
+  Customer,
+  CustomerQueryFilters,
   CustomerListResponse,
-  CustomerResponse,
-  UpdateCustomerRequest,
+  UpdateCustomerPayload,
 } from "../types/customer.types";
 
 /**
- * Customer service.
+ * Customer service class.
  */
 export class CustomerService {
   /**
-   * List customers.
+   * Get customers.
+   *
+   * @param filters Customer filters.
+   * @returns Customer list response.
    */
-  public static async getCustomers(
-    page = 1,
-    size = 10,
+  async getCustomers(
+    filters?: CustomerQueryFilters,
   ): Promise<CustomerListResponse> {
-    const response =
-      await CustomerApi.getCustomers(
-        page,
-        size,
-      );
-
-    return customerListResponseSchema.parse(
-      response,
-    ) as CustomerListResponse;
+    return customerApi.getCustomers(
+      filters,
+    );
   }
 
   /**
-   * Get customer.
+   * Get customer by identifier.
+   *
+   * @param id Customer identifier.
+   * @returns Customer.
    */
-  public static async getCustomer(
-    customerId: string,
-  ): Promise<CustomerResponse> {
-    const response =
-      await CustomerApi.getCustomer(
-        customerId,
-      );
-
-    return customerResponseSchema.parse(
-      response,
-    ) as CustomerResponse;
+  async getCustomer(
+    id: string,
+  ): Promise<Customer> {
+    return customerApi.getCustomer(
+      id,
+    );
   }
 
   /**
    * Create customer.
+   *
+   * @param payload Customer payload.
+   * @returns Created customer.
    */
-  public static async createCustomer(
-    payload: CreateCustomerRequest,
-  ): Promise<CustomerResponse> {
-    const response =
-      await CustomerApi.createCustomer(
-        payload,
-      );
-
-    return customerResponseSchema.parse(
-      response,
-    ) as CustomerResponse;
+  async createCustomer(
+    payload: CreateCustomerPayload,
+  ): Promise<Customer> {
+    return customerApi.createCustomer(
+      payload,
+    );
   }
 
   /**
    * Update customer.
+   *
+   * @param id Customer identifier.
+   * @param payload Update payload.
+   * @returns Updated customer.
    */
-  public static async updateCustomer(
-    customerId: string,
-    payload: UpdateCustomerRequest,
-  ): Promise<CustomerResponse> {
-    const response =
-      await CustomerApi.updateCustomer(
-        customerId,
-        payload,
-      );
-
-    return customerResponseSchema.parse(
-      response,
-    ) as CustomerResponse;
+  async updateCustomer(
+    id: string,
+    payload: UpdateCustomerPayload,
+  ): Promise<Customer> {
+    return customerApi.updateCustomer(
+      id,
+      payload,
+    );
   }
 
   /**
    * Delete customer.
+   *
+   * @param id Customer identifier.
    */
-  public static async deleteCustomer(
-    customerId: string,
+  async deleteCustomer(
+    id: string,
   ): Promise<void> {
-    await CustomerApi.deleteCustomer(
-      customerId,
+    return customerApi.deleteCustomer(
+      id,
     );
   }
 }
+
+/**
+ * Customer service instance.
+ */
+export const customerService =
+  new CustomerService();

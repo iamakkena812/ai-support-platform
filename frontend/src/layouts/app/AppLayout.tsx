@@ -12,6 +12,9 @@ import { Sidebar } from "../common/Sidebar";
 
 /**
  * Application layout.
+ *
+ * @param props Layout properties.
+ * @returns Application layout.
  */
 export function AppLayout({
   children,
@@ -19,19 +22,24 @@ export function AppLayout({
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
+
       <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex min-h-screen flex-1 flex-col">
+      {/* Content */}
+
+      <div className="flex flex-1 flex-col">
         {/* Header */}
+
         <Header />
 
-        {/* Page Content */}
-        <main className="flex-1 p-6">
+        {/* Main */}
+
+        <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
 
         {/* Footer */}
+
         <Footer />
       </div>
     </div>

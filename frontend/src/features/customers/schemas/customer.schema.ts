@@ -1,166 +1,150 @@
 /**
  * Customer validation schemas.
+ *
+ * Contains Zod schemas for
+ * customer forms.
  */
 
-import { z } from "zod";
+import {
+  z,
+} from "zod";
 
-export const customerSchema = z.object({
-  id: z.string(),
+/**
+ * Customer status schema.
+ */
+export const customerStatusSchema =
+  z.enum([
+    "ACTIVE",
+    "INACTIVE",
+    "PROSPECT",
+    "PENDING",
+    "SUSPENDED",
+    "BLOCKED",
+  ]);
 
-  organizationId: z.string(),
-
-  firstName: z.string(),
-
-  lastName: z.string(),
-
-  email: z
-    .string()
-    .email(),
-
-  phone: z
-    .string()
-    .nullable(),
-
-  company: z
-    .string()
-    .nullable(),
-
-  isActive: z.boolean(),
-
-  createdAt: z.string(),
-
-  updatedAt: z.string(),
-});
-
-export const createCustomerSchema = z.object({
-  organizationId: z
-    .string()
-    .min(
-      1,
-      "Organization is required.",
-    ),
-
-  firstName: z
-    .string()
-    .trim()
-    .min(
-      2,
-      "First name is required.",
-    )
-    .max(100),
-
-  lastName: z
-    .string()
-    .trim()
-    .min(
-      2,
-      "Last name is required.",
-    )
-    .max(100),
-
-  email: z
-    .string()
-    .email(
-      "Invalid email address.",
-    ),
-
-  phone: z
-    .string()
-    .trim()
-    .max(20)
-    .nullable()
-    .optional(),
-
-  company: z
-    .string()
-    .trim()
-    .max(255)
-    .nullable()
-    .optional(),
-});
-
-export const updateCustomerSchema = z.object({
-  firstName: z
-    .string()
-    .trim()
-    .min(2)
-    .max(100)
-    .optional(),
-
-  lastName: z
-    .string()
-    .trim()
-    .min(2)
-    .max(100)
-    .optional(),
-
-  email: z
-    .string()
-    .email()
-    .optional(),
-
-  phone: z
-    .string()
-    .trim()
-    .max(20)
-    .nullable()
-    .optional(),
-
-  company: z
-    .string()
-    .trim()
-    .max(255)
-    .nullable()
-    .optional(),
-
-  isActive: z
-    .boolean()
-    .optional(),
-});
-
-export const customerResponseSchema =
+/**
+ * Create customer schema.
+ */
+export const createCustomerSchema =
   z.object({
-    customer: customerSchema,
+    /**
+     * Customer name.
+     */
+    name: z
+      .string()
+      .min(
+        2,
+        "Customer name must contain at least 2 characters.",
+      )
+      .max(
+        100,
+        "Customer name cannot exceed 100 characters.",
+      ),
+
+    /**
+     * Company.
+     */
+    company: z
+      .string()
+      .max(
+        150,
+        "Company name cannot exceed 150 characters.",
+      )
+      .optional(),
+
+    /**
+     * Email.
+     */
+    email: z
+      .string()
+      .email(
+        "Please enter a valid email address.",
+      ),
+
+    /**
+     * Phone.
+     */
+    phone: z
+      .string()
+      .max(
+        30,
+        "Phone number cannot exceed 30 characters.",
+      )
+      .optional(),
+
+    /**
+     * Contact person.
+     */
+    contactPerson: z
+      .string()
+      .max(
+        100,
+        "Contact person cannot exceed 100 characters.",
+      )
+      .optional(),
+
+    /**
+     * Industry.
+     */
+    industry: z
+      .string()
+      .max(
+        100,
+        "Industry cannot exceed 100 characters.",
+      )
+      .optional(),
+
+    /**
+     * Address.
+     */
+    address: z
+      .string()
+      .max(
+        500,
+        "Address cannot exceed 500 characters.",
+      )
+      .optional(),
+
+    /**
+     * Status.
+     */
+    status:
+      customerStatusSchema
+      .optional(),
   });
 
-export const customerListResponseSchema =
-  z.object({
-    items: z.array(customerSchema),
+/**
+ * Update customer schema.
+ */
+export const updateCustomerSchema =
+  createCustomerSchema.partial();
 
-    total: z
-      .number()
-      .nonnegative(),
+/**
+ * Customer form schema.
+ */
+export const customerFormSchema =
+  createCustomerSchema;
 
-    page: z
-      .number()
-      .nonnegative(),
-
-    size: z
-      .number()
-      .positive(),
-  });
-
-export type CustomerSchema =
+/**
+ * Customer form values.
+ */
+export type CustomerFormSchema =
   z.infer<
-    typeof customerSchema
+    typeof customerFormSchema
   >;
 
+/**
+ * Create customer values.
+ */
 export type CreateCustomerSchema =
   z.infer<
     typeof createCustomerSchema
   >;
 
+/**
+ * Update customer values.
+ */
 export type UpdateCustomerSchema =
   z.infer<
     typeof updateCustomerSchema
-  >;
-
-export type CustomerResponseSchema =
-  z.infer<
-    typeof customerResponseSchema
-  >;
-
-export type CustomerListResponseSchema =
-  z.infer<
-    typeof customerListResponseSchema
   >;

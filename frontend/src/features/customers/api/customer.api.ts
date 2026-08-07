@@ -1,94 +1,115 @@
 /**
- * Customer API client.
+ * Customer API module.
+ *
+ * Handles customer HTTP requests.
  */
 
-import { apiClient } from "../../../api/axios/client";
+import {
+  apiClient,
+} from "../../../api/axios/client";
 
 import type {
-  CreateCustomerRequest,
+  CreateCustomerPayload,
+  Customer,
+  CustomerQueryFilters,
   CustomerListResponse,
-  CustomerResponse,
-  UpdateCustomerRequest,
+  UpdateCustomerPayload,
 } from "../types/customer.types";
 
 /**
- * Customer API.
+ * Customer API endpoint.
  */
-export class CustomerApi {
+const CUSTOMER_ENDPOINT = "/customers";
+
+/**
+ * Customer API object.
+ */
+export const customerApi = {
   /**
-   * List customers.
+   * Get customers.
+   *
+   * @param filters Customer filters.
+   * @returns Customer list response.
    */
-  public static async getCustomers(
-    page = 1,
-    size = 10,
+  async getCustomers(
+    filters?: CustomerQueryFilters,
   ): Promise<CustomerListResponse> {
     const response =
       await apiClient.get<CustomerListResponse>(
-        "/customers",
+        CUSTOMER_ENDPOINT,
         {
-          params: {
-            page,
-            size,
-          },
+          params: filters,
         },
       );
 
     return response.data;
-  }
+  },
 
   /**
-   * Get customer by identifier.
+   * Get customer by id.
+   *
+   * @param id Customer identifier.
+   * @returns Customer.
    */
-  public static async getCustomer(
-    customerId: string,
-  ): Promise<CustomerResponse> {
+  async getCustomer(
+    id: string,
+  ): Promise<Customer> {
     const response =
-      await apiClient.get<CustomerResponse>(
-        `/customers/${customerId}`,
+      await apiClient.get<Customer>(
+        `${CUSTOMER_ENDPOINT}/${id}`,
       );
 
     return response.data;
-  }
+  },
 
   /**
    * Create customer.
+   *
+   * @param payload Customer payload.
+   * @returns Created customer.
    */
-  public static async createCustomer(
-    payload: CreateCustomerRequest,
-  ): Promise<CustomerResponse> {
+  async createCustomer(
+    payload: CreateCustomerPayload,
+  ): Promise<Customer> {
     const response =
-      await apiClient.post<CustomerResponse>(
-        "/customers",
+      await apiClient.post<Customer>(
+        CUSTOMER_ENDPOINT,
         payload,
       );
 
     return response.data;
-  }
+  },
 
   /**
    * Update customer.
+   *
+   * @param id Customer identifier.
+   * @param payload Update payload.
+   * @returns Updated customer.
    */
-  public static async updateCustomer(
-    customerId: string,
-    payload: UpdateCustomerRequest,
-  ): Promise<CustomerResponse> {
+  async updateCustomer(
+    id: string,
+    payload: UpdateCustomerPayload,
+  ): Promise<Customer> {
     const response =
-      await apiClient.put<CustomerResponse>(
-        `/customers/${customerId}`,
+      await apiClient.patch<Customer>(
+        `${CUSTOMER_ENDPOINT}/${id}`,
         payload,
       );
 
     return response.data;
-  }
+  },
 
   /**
    * Delete customer.
+   *
+   * @param id Customer identifier.
    */
-  public static async deleteCustomer(
-    customerId: string,
+  async deleteCustomer(
+    id: string,
   ): Promise<void> {
     await apiClient.delete(
-      `/customers/${customerId}`,
+      `${CUSTOMER_ENDPOINT}/${id}`,
     );
-  }
-}
+  },
+};

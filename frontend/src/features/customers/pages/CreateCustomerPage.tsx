@@ -1,96 +1,83 @@
 /**
  * Create customer page.
+ *
+ * Displays customer creation form.
  */
 
-import { useState } from "react";
-
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+} from "react-router-dom";
 
 import {
   CustomerForm,
-} from "../components/CustomerForm";
+} from "../components";
 
-import { CustomerService } from "../services/customer.service";
+import {
+  customerService,
+} from "../services/customer.service";
 
 import type {
   CustomerFormValues,
 } from "../components/CustomerForm";
 
-import type {
-  CreateCustomerRequest,
-} from "../types/customer.types";
-
 /**
- * Create customer page.
+ * Create customer page component.
+ *
+ * @returns Create customer page.
  */
 export function CreateCustomerPage(): React.JSX.Element {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-
-  /**
-   * Handles customer creation.
-   */
-  const handleSubmit = async (
+  async function handleCreate(
     values: CustomerFormValues,
-  ): Promise<void> => {
-    if (values.organizationId === undefined) {
-      throw new Error(
-        "Organization ID is required.",
-      );
-    }
-
-    const payload: CreateCustomerRequest = {
-      organizationId: values.organizationId,
-      firstName: values.firstName,
-      lastName: values.lastName,
+  ): Promise<void> {
+    await customerService.createCustomer({
+      name: values.name,
+      company:
+        values.company || undefined,
       email: values.email,
-      phone: values.phone,
-      company: values.company,
-    };
+      phone:
+        values.phone || undefined,
+      contactPerson:
+        values.contactPerson || undefined,
+      industry:
+        values.industry || undefined,
+      address:
+        values.address || undefined,
+      status:
+        values.status as
+          | "ACTIVE"
+          | "INACTIVE"
+          | "PROSPECT"
+          | "PENDING"
+          | "SUSPENDED"
+          | "BLOCKED",
+    });
 
-    try {
-      setIsSubmitting(true);
-
-      await CustomerService.createCustomer(
-        payload,
-      );
-
-      navigate("/customers");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    navigate(
+      "/customers",
+    );
+  }
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Create Customer
-          </h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">
+          Create Customer
+        </h1>
 
-          <p className="text-gray-600">
-            Register a new customer.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigate("/customers")
-          }
-          className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
-        >
-          Back
-        </button>
+        <p className="mt-2 text-sm text-slate-600">
+          Add a new customer to the platform.
+        </p>
       </div>
 
       <CustomerForm
-        isSubmitting={isSubmitting}
-        onSubmit={handleSubmit}
+        onSubmit={
+          handleCreate
+        }
+        submitLabel="Create Customer"
       />
-    </section>
+    </div>
   );
 }

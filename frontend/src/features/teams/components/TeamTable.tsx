@@ -1,41 +1,89 @@
 /**
  * Team table component.
+ *
+ * Displays teams in a responsive
+ * table layout.
  */
 
-import type {
-  Team,
-} from "../types/team.types";
+import {
+  TeamActions,
+} from "./TeamActions";
 
+import {
+  TeamStatusBadge,
+} from "./TeamStatusBadge";
+
+/**
+ * Team table row.
+ */
+export interface TeamTableRow {
+  /**
+   * Team identifier.
+   */
+  readonly id: string;
+
+  /**
+   * Team name.
+   */
+  readonly name: string;
+
+  /**
+   * Organization.
+   */
+  readonly organization: string;
+
+  /**
+   * Member count.
+   */
+  readonly memberCount: number;
+
+  /**
+   * Project count.
+   */
+  readonly projectCount: number;
+
+  /**
+   * Status.
+   */
+  readonly status: string;
+}
+
+/**
+ * Component properties.
+ */
 export interface TeamTableProps {
   /**
    * Teams.
    */
-  readonly teams: readonly Team[];
+  readonly teams: readonly TeamTableRow[];
 
   /**
    * View callback.
    */
   readonly onView?: (
-    team: Team,
+    id: string,
   ) => void;
 
   /**
    * Edit callback.
    */
   readonly onEdit?: (
-    team: Team,
+    id: string,
   ) => void;
 
   /**
    * Delete callback.
    */
   readonly onDelete?: (
-    team: Team,
+    id: string,
   ) => void;
 }
 
 /**
- * Team table.
+ * Team table component.
+ *
+ * @param props Component properties.
+ * @returns Team table.
  */
 export function TeamTable({
   teams,
@@ -45,121 +93,109 @@ export function TeamTable({
 }: TeamTableProps): React.JSX.Element {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <table className="min-w-full">
-        <thead className="bg-slate-100">
-          <tr>
-            <th className="px-6 py-4 text-left text-sm font-semibold">
-              Name
-            </th>
-
-            <th className="px-6 py-4 text-left text-sm font-semibold">
-              Description
-            </th>
-
-            <th className="px-6 py-4 text-left text-sm font-semibold">
-              Organization
-            </th>
-
-            <th className="px-6 py-4 text-left text-sm font-semibold">
-              Status
-            </th>
-
-            <th className="px-6 py-4 text-left text-sm font-semibold">
-              Created
-            </th>
-
-            <th className="px-6 py-4 text-center text-sm font-semibold">
-              Actions
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {teams.length === 0 ? (
+      <div className="overflow-x-auto">
+        <table className="min-w-full">
+          <thead className="bg-slate-50">
             <tr>
-              <td
-                colSpan={6}
-                className="py-10 text-center text-slate-500"
-              >
-                No teams found.
-              </td>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                Team
+              </th>
+
+              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                Organization
+              </th>
+
+              <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
+                Members
+              </th>
+
+              <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
+                Projects
+              </th>
+
+              <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
+                Status
+              </th>
+
+              <th className="w-20 px-6 py-4 text-right text-sm font-semibold text-slate-700">
+                Actions
+              </th>
             </tr>
-          ) : (
-            teams.map((team) => (
-              <tr
-                key={team.id}
-                className="border-t hover:bg-slate-50"
-              >
-                <td className="px-6 py-4 font-medium">
-                  {team.name}
-                </td>
+          </thead>
 
-                <td className="px-6 py-4">
-                  {team.description ?? "-"}
-                </td>
+          <tbody className="divide-y divide-slate-200">
+            {teams.map(
+              (team) => (
+                <tr
+                  key={team.id}
+                  className="hover:bg-slate-50"
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
+                        {team.name
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
 
-                <td className="px-6 py-4">
-                  {team.organizationId}
-                </td>
+                      <span className="font-medium text-slate-900">
+                        {team.name}
+                      </span>
+                    </div>
+                  </td>
 
-                <td className="px-6 py-4">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      team.isActive
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {team.isActive
-                      ? "Active"
-                      : "Inactive"}
-                  </span>
-                </td>
+                  <td className="px-6 py-4 text-sm text-slate-700">
+                    {team.organization}
+                  </td>
 
-                <td className="px-6 py-4">
-                  {new Date(
-                    team.createdAt,
-                  ).toLocaleDateString()}
-                </td>
+                  <td className="px-6 py-4 text-center text-sm text-slate-700">
+                    {team.memberCount}
+                  </td>
 
-                <td className="px-6 py-4">
-                  <div className="flex justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onView?.(team)
+                  <td className="px-6 py-4 text-center text-sm text-slate-700">
+                    {team.projectCount}
+                  </td>
+
+                  <td className="px-6 py-4 text-center">
+                    <TeamStatusBadge
+                      status={team.status}
+                    />
+                  </td>
+
+                  <td className="px-6 py-4 text-right">
+                    <TeamActions
+                      onView={
+                        onView
+                          ? () =>
+                              onView(
+                                team.id,
+                              )
+                          : undefined
                       }
-                      className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-                    >
-                      View
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onEdit?.(team)
+                      onEdit={
+                        onEdit
+                          ? () =>
+                              onEdit(
+                                team.id,
+                              )
+                          : undefined
                       }
-                      className="rounded bg-amber-500 px-3 py-1 text-sm text-white hover:bg-amber-600"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onDelete?.(team)
+                      onDelete={
+                        onDelete
+                          ? () =>
+                              onDelete(
+                                team.id,
+                              )
+                          : undefined
                       }
-                      className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                    />
+                  </td>
+                </tr>
+              ),
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

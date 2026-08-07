@@ -1,186 +1,206 @@
 /**
  * Project card component.
+ *
+ * Displays project information
+ * in a responsive card layout.
  */
 
-import type {
-  Project,
-} from "../types/project.types";
+import {
+  Building2,
+  FolderKanban,
+  Target,
+  Users,
+} from "lucide-react";
 
-interface ProjectCardProps {
+import {
+  ProjectActions,
+} from "./ProjectActions";
+
+import {
+  ProjectStatusBadge,
+} from "./ProjectStatusBadge";
+
+/**
+ * Component properties.
+ */
+export interface ProjectCardProps {
   /**
-   * Project.
+   * Project identifier.
    */
-  readonly project: Project;
+  readonly id: string;
 
   /**
-   * View details callback.
+   * Project name.
+   */
+  readonly name: string;
+
+  /**
+   * Project description.
+   */
+  readonly description?: string;
+
+  /**
+   * Organization name.
+   */
+  readonly organization: string;
+
+  /**
+   * Team name.
+   */
+  readonly team: string;
+
+  /**
+   * Progress percentage.
+   */
+  readonly progress: number;
+
+  /**
+   * Member count.
+   */
+  readonly memberCount: number;
+
+  /**
+   * Project status.
+   */
+  readonly status: string;
+
+  /**
+   * View callback.
    */
   readonly onView?: (
-    project: Project,
+    id: string,
   ) => void;
 
   /**
    * Edit callback.
    */
   readonly onEdit?: (
-    project: Project,
+    id: string,
   ) => void;
 
   /**
    * Delete callback.
    */
   readonly onDelete?: (
-    project: Project,
+    id: string,
   ) => void;
 }
 
 /**
- * Returns a badge color for a project status.
+ * Project card component.
  *
- * @param status Project status.
- * @returns Tailwind CSS classes.
- */
-function getStatusColor(
-  status: Project["status"],
-): string {
-  switch (status) {
-    case "planning":
-      return "bg-gray-100 text-gray-800";
-
-    case "active":
-      return "bg-green-100 text-green-800";
-
-    case "on_hold":
-      return "bg-yellow-100 text-yellow-800";
-
-    case "completed":
-      return "bg-blue-100 text-blue-800";
-
-    case "cancelled":
-      return "bg-red-100 text-red-800";
-
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-}
-
-/**
- * Project card.
+ * @param props Component properties.
+ * @returns Project card.
  */
 export function ProjectCard({
-  project,
+  id,
+  name,
+  description,
+  organization,
+  team,
+  progress,
+  memberCount,
+  status,
   onView,
   onEdit,
   onDelete,
 }: ProjectCardProps): React.JSX.Element {
   return (
-    <article className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-      <div className="mb-4 flex items-start justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">
-            {project.name}
-          </h3>
+    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-white">
+            {name.charAt(0).toUpperCase()}
+          </div>
 
-          <p className="mt-1 text-sm text-gray-500">
-            {project.description ??
-              "No description"}
-          </p>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">
+              {name}
+            </h3>
+
+            <ProjectStatusBadge
+              status={status}
+            />
+          </div>
         </div>
 
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(
-            project.status,
-          )}`}
-        >
-          {project.status.replace(
-            "_",
-            " ",
-          )}
-        </span>
+        <ProjectActions
+          onView={
+            onView
+              ? () => onView(id)
+              : undefined
+          }
+          onEdit={
+            onEdit
+              ? () => onEdit(id)
+              : undefined
+          }
+          onDelete={
+            onDelete
+              ? () => onDelete(id)
+              : undefined
+          }
+        />
       </div>
 
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="font-medium">
-            Customer
-          </span>
+      {description ? (
+        <p className="mt-5 text-sm leading-6 text-slate-600">
+          {description}
+        </p>
+      ) : null}
 
-          <span>
-            {project.customerId}
-          </span>
+      <div className="mt-6 space-y-3">
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <Building2 size={16} />
+
+          <span>{organization}</span>
         </div>
 
-        <div className="flex justify-between">
-          <span className="font-medium">
-            Owner
-          </span>
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <Users size={16} />
 
-          <span>
-            {project.ownerId ??
-              "Unassigned"}
-          </span>
+          <span>{team}</span>
         </div>
 
-        <div className="flex justify-between">
-          <span className="font-medium">
-            Start
-          </span>
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <FolderKanban size={16} />
 
           <span>
-            {project.startDate ??
-              "-"}
-          </span>
-        </div>
-
-        <div className="flex justify-between">
-          <span className="font-medium">
-            End
-          </span>
-
-          <span>
-            {project.endDate ??
-              "-"}
+            {memberCount} Member
+            {memberCount === 1
+              ? ""
+              : "s"}
           </span>
         </div>
       </div>
 
-      <div className="mt-6 flex justify-end gap-2">
-        {onView && (
-          <button
-            type="button"
-            onClick={() =>
-              onView(project)
-            }
-            className="rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
-          >
-            View
-          </button>
-        )}
+      <div className="mt-6">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Target
+              size={16}
+              className="text-blue-600"
+            />
 
-        {onEdit && (
-          <button
-            type="button"
-            onClick={() =>
-              onEdit(project)
-            }
-            className="rounded bg-amber-500 px-3 py-2 text-sm text-white hover:bg-amber-600"
-          >
-            Edit
-          </button>
-        )}
+            <span className="text-sm font-medium text-slate-700">
+              Progress
+            </span>
+          </div>
 
-        {onDelete && (
-          <button
-            type="button"
-            onClick={() =>
-              onDelete(project)
-            }
-            className="rounded bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700"
-          >
-            Delete
-          </button>
-        )}
+          <span className="text-sm font-semibold text-slate-900">
+            {progress}%
+          </span>
+        </div>
+
+        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+          <div
+            className="h-full rounded-full bg-blue-600 transition-all duration-300"
+            style={{
+              width: `${progress}%`,
+            }}
+          />
+        </div>
       </div>
-    </article>
+    </div>
   );
 }

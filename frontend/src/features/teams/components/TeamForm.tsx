@@ -1,134 +1,233 @@
 /**
  * Team form component.
+ *
+ * Displays a reusable form for
+ * creating and editing teams.
  */
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import {
+  useState,
+} from "react";
 
 import {
-  createTeamSchema,
-} from "../schemas/team.schema";
+  Button,
+  Input,
+  Select,
+} from "../../../components/ui";
 
-import type {
-  CreateTeamRequest,
-  Team,
-} from "../types/team.types";
+/**
+ * Team status options.
+ */
+const STATUS_OPTIONS = [
+  {
+    label: "Active",
+    value: "ACTIVE",
+  },
+  {
+    label: "Inactive",
+    value: "INACTIVE",
+  },
+  {
+    label: "Pending",
+    value: "PENDING",
+  },
+  {
+    label: "Archived",
+    value: "ARCHIVED",
+  },
+] as const;
 
+/**
+ * Form values.
+ */
+export interface TeamFormValues {
+  /**
+   * Team name.
+   */
+  readonly name: string;
+
+  /**
+   * Description.
+   */
+  readonly description: string;
+
+  /**
+   * Organization identifier.
+   */
+  readonly organizationId: string;
+
+  /**
+   * Team status.
+   */
+  readonly status: string;
+}
+
+/**
+ * Organization option.
+ */
+export interface OrganizationOption {
+  /**
+   * Organization identifier.
+   */
+  readonly value: string;
+
+  /**
+   * Organization name.
+   */
+  readonly label: string;
+}
+
+/**
+ * Component properties.
+ */
 export interface TeamFormProps {
   /**
-   * Initial team values.
+   * Initial values.
    */
-  readonly initialValues?: Team;
+  readonly initialValues?: Partial<TeamFormValues>;
+
+  /**
+   * Organizations.
+   */
+  readonly organizations: readonly OrganizationOption[];
 
   /**
    * Submit callback.
    */
   readonly onSubmit: (
-    values: CreateTeamRequest,
-  ) => Promise<void> | void;
+    values: TeamFormValues,
+  ) => void | Promise<void>;
 
   /**
-   * Loading state.
+   * Indicates submitting.
    */
-  readonly isLoading?: boolean;
+  readonly isSubmitting?: boolean;
+
+  /**
+   * Submit button label.
+   */
+  readonly submitLabel?: string;
 }
 
 /**
- * Team form.
+ * Team form component.
+ *
+ * @param props Component properties.
+ * @returns Team form.
  */
 export function TeamForm({
   initialValues,
+  organizations,
   onSubmit,
-  isLoading = false,
+  isSubmitting = false,
+  submitLabel = "Save Team",
 }: TeamFormProps): React.JSX.Element {
-  const {
-    register,
-    handleSubmit,
-    formState: {
-      errors,
-    },
-  } = useForm<CreateTeamRequest>({
-    resolver: zodResolver(
-      createTeamSchema,
-    ),
-
-    defaultValues: {
-      name: initialValues?.name ?? "",
-
-      description:
-        initialValues?.description ?? "",
-
-      organizationId:
-        initialValues?.organizationId ?? "",
-    },
+  const [
+    values,
+    setValues,
+  ] = useState<TeamFormValues>({
+    name:
+      initialValues?.name ?? "",
+    description:
+      initialValues?.description ?? "",
+    organizationId:
+      initialValues?.organizationId ??
+      "",
+    status:
+      initialValues?.status ??
+      "ACTIVE",
   });
+
+  function updateField<
+    K extends keyof TeamFormValues,
+  >(
+    key: K,
+    value: TeamFormValues[K],
+  ): void {
+    setValues(
+      (previous) => ({
+        ...previous,
+        [key]: value,
+      }),
+    );
+  }
+
+  function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ): void {
+    event.preventDefault();
+    void onSubmit(values);
+  }
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit}
       className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
     >
-      <div>
-        <label className="mb-2 block text-sm font-medium">
-          Team Name
-        </label>
-
-        <input
-          {...register("name")}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+      <div className="grid gap-6 md:grid-cols-2">
+        <Input
+          label="Team Name"
+          value={values.name}
+          onChange={(event) =>
+            updateField(
+              "name",
+              event.target.value,
+            )
+          }
+          required
         />
 
-        {errors.name && (
-          <p className="mt-2 text-sm text-red-600">
-            {errors.name.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="mb-2 block text-sm font-medium">
-          Description
-        </label>
-
-        <textarea
-          {...register("description")}
-          rows={4}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+        <Select
+          label="Organization"
+          value={
+            values.organizationId
+          }
+          options={organizations}
+          placeholder="Select organization"
+          onChange={(event) =>
+            updateField(
+              "organizationId",
+              event.target.value,
+            )
+          }
+          required
         />
 
-        {errors.description && (
-          <p className="mt-2 text-sm text-red-600">
-            {errors.description.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="mb-2 block text-sm font-medium">
-          Organization ID
-        </label>
-
-        <input
-          {...register("organizationId")}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+        <Input
+          label="Description"
+          value={
+            values.description
+          }
+          onChange={(event) =>
+            updateField(
+              "description",
+              event.target.value,
+            )
+          }
+          className="md:col-span-2"
         />
 
-        {errors.organizationId && (
-          <p className="mt-2 text-sm text-red-600">
-            {errors.organizationId.message}
-          </p>
-        )}
+        <Select
+          label="Status"
+          value={values.status}
+          options={STATUS_OPTIONS}
+          onChange={(event) =>
+            updateField(
+              "status",
+              event.target.value,
+            )
+          }
+        />
       </div>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-      >
-        {isLoading
-          ? "Saving..."
-          : "Save Team"}
-      </button>
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          loading={isSubmitting}
+        >
+          {submitLabel}
+        </Button>
+      </div>
     </form>
   );
 }

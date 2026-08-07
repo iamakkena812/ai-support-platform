@@ -1,259 +1,308 @@
 /**
  * Customer form component.
+ *
+ * Displays a reusable form for
+ * creating and editing customers.
  */
 
 import {
-  useEffect,
   useState,
 } from "react";
 
-import type {
-  Customer,
-} from "../types/customer.types";
+import {
+  Button,
+  Input,
+  Select,
+} from "../../../components/ui";
+
+/**
+ * Customer status options.
+ */
+const STATUS_OPTIONS = [
+  {
+    label: "Active",
+    value: "ACTIVE",
+  },
+  {
+    label: "Inactive",
+    value: "INACTIVE",
+  },
+  {
+    label: "Prospect",
+    value: "PROSPECT",
+  },
+  {
+    label: "Pending",
+    value: "PENDING",
+  },
+  {
+    label: "Suspended",
+    value: "SUSPENDED",
+  },
+  {
+    label: "Blocked",
+    value: "BLOCKED",
+  },
+] as const;
+
+/**
+ * Select option.
+ */
+export interface CustomerSelectOption {
+  /**
+   * Option label.
+   */
+  readonly label: string;
+
+  /**
+   * Option value.
+   */
+  readonly value: string;
+}
 
 /**
  * Customer form values.
  */
 export interface CustomerFormValues {
-  readonly organizationId?: string;
-  readonly firstName: string;
-  readonly lastName: string;
+  /**
+   * Customer name.
+   */
+  readonly name: string;
+
+  /**
+   * Company name.
+   */
+  readonly company: string;
+
+  /**
+   * Email.
+   */
   readonly email: string;
-  readonly phone: string | null;
-  readonly company: string | null;
-}
-
-interface CustomerFormProps {
-  /**
-   * Initial customer values.
-   */
-  readonly initialValue?: Customer;
 
   /**
-   * Submit handler.
+   * Phone.
    */
-  readonly onSubmit: (
-    values: CustomerFormValues,
-  ) => Promise<void> | void;
+  readonly phone: string;
 
   /**
-   * Whether the form is submitting.
+   * Contact person.
    */
-  readonly isSubmitting?: boolean;
+  readonly contactPerson: string;
+
+  /**
+   * Industry.
+   */
+  readonly industry: string;
+
+  /**
+   * Address.
+   */
+  readonly address: string;
+
+  /**
+   * Status.
+   */
+  readonly status: string;
 }
 
 /**
- * Customer form.
+ * Component properties.
  */
-export function CustomerForm({
-  initialValue,
-  onSubmit,
-  isSubmitting = false,
-}: CustomerFormProps): React.JSX.Element {
-  const [organizationId, setOrganizationId] =
-    useState("");
-
-  const [firstName, setFirstName] =
-    useState("");
-
-  const [lastName, setLastName] =
-    useState("");
-
-  const [email, setEmail] =
-    useState("");
-
-  const [phone, setPhone] =
-    useState("");
-
-  const [company, setCompany] =
-    useState("");
-
-  useEffect(() => {
-    if (!initialValue) {
-      return;
-    }
-
-    setOrganizationId(
-      initialValue.organizationId,
-    );
-
-    setFirstName(
-      initialValue.firstName,
-    );
-
-    setLastName(
-      initialValue.lastName,
-    );
-
-    setEmail(
-      initialValue.email,
-    );
-
-    setPhone(
-      initialValue.phone ?? "",
-    );
-
-    setCompany(
-      initialValue.company ?? "",
-    );
-  }, [initialValue]);
+export interface CustomerFormProps {
+  /**
+   * Initial values.
+   */
+  readonly initialValues?: Partial<CustomerFormValues>;
 
   /**
-   * Handles form submission.
+   * Submit callback.
    */
-  const handleSubmit = async (
+  readonly onSubmit: (
+    values: CustomerFormValues,
+  ) => void | Promise<void>;
+
+  /**
+   * Submitting state.
+   */
+  readonly isSubmitting?: boolean;
+
+  /**
+   * Submit button label.
+   */
+  readonly submitLabel?: string;
+}
+
+/**
+ * Customer form component.
+ *
+ * @param props Component properties.
+ * @returns Customer form.
+ */
+export function CustomerForm({
+  initialValues,
+  onSubmit,
+  isSubmitting = false,
+  submitLabel = "Save Customer",
+}: CustomerFormProps): React.JSX.Element {
+  const [
+    values,
+    setValues,
+  ] = useState<CustomerFormValues>({
+    name:
+      initialValues?.name ?? "",
+
+    company:
+      initialValues?.company ?? "",
+
+    email:
+      initialValues?.email ?? "",
+
+    phone:
+      initialValues?.phone ?? "",
+
+    contactPerson:
+      initialValues?.contactPerson ?? "",
+
+    industry:
+      initialValues?.industry ?? "",
+
+    address:
+      initialValues?.address ?? "",
+
+    status:
+      initialValues?.status ??
+      "PROSPECT",
+  });
+
+  function updateField<
+    K extends keyof CustomerFormValues,
+  >(
+    key: K,
+    value: CustomerFormValues[K],
+  ): void {
+    setValues(
+      (previous) => ({
+        ...previous,
+        [key]: value,
+      }),
+    );
+  }
+
+  function handleSubmit(
     event: React.FormEvent<HTMLFormElement>,
-  ): Promise<void> => {
+  ): void {
     event.preventDefault();
 
-    await onSubmit({
-      organizationId:
-        initialValue === undefined
-          ? organizationId
-          : undefined,
-      firstName,
-      lastName,
-      email,
-      phone:
-        phone.trim() === ""
-          ? null
-          : phone,
-      company:
-        company.trim() === ""
-          ? null
-          : company,
-    });
-  };
+    void onSubmit(values);
+  }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+      className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
     >
-      {!initialValue && (
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Organization ID
-          </label>
-
-          <input
-            type="text"
-            value={organizationId}
-            onChange={(event) =>
-              setOrganizationId(
-                event.target.value,
-              )
-            }
-            required
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            First Name
-          </label>
-
-          <input
-            type="text"
-            value={firstName}
-            onChange={(event) =>
-              setFirstName(
-                event.target.value,
-              )
-            }
-            required
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Last Name
-          </label>
-
-          <input
-            type="text"
-            value={lastName}
-            onChange={(event) =>
-              setLastName(
-                event.target.value,
-              )
-            }
-            required
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="mb-2 block text-sm font-medium">
-          Email
-        </label>
-
-        <input
-          type="email"
-          value={email}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Input
+          label="Customer Name"
+          value={values.name}
           onChange={(event) =>
-            setEmail(
+            updateField(
+              "name",
               event.target.value,
             )
           }
           required
-          className="w-full rounded border border-gray-300 px-3 py-2"
+        />
+
+        <Input
+          label="Company"
+          value={values.company}
+          onChange={(event) =>
+            updateField(
+              "company",
+              event.target.value,
+            )
+          }
+        />
+
+        <Input
+          label="Email"
+          type="email"
+          value={values.email}
+          onChange={(event) =>
+            updateField(
+              "email",
+              event.target.value,
+            )
+          }
+          required
+        />
+
+        <Input
+          label="Phone"
+          value={values.phone}
+          onChange={(event) =>
+            updateField(
+              "phone",
+              event.target.value,
+            )
+          }
+        />
+
+        <Input
+          label="Contact Person"
+          value={values.contactPerson}
+          onChange={(event) =>
+            updateField(
+              "contactPerson",
+              event.target.value,
+            )
+          }
+        />
+
+        <Input
+          label="Industry"
+          value={values.industry}
+          onChange={(event) =>
+            updateField(
+              "industry",
+              event.target.value,
+            )
+          }
+        />
+
+        <Input
+          label="Address"
+          value={values.address}
+          onChange={(event) =>
+            updateField(
+              "address",
+              event.target.value,
+            )
+          }
+          className="md:col-span-2"
+        />
+
+        <Select
+          label="Status"
+          value={values.status}
+          options={STATUS_OPTIONS}
+          onChange={(event) =>
+            updateField(
+              "status",
+              event.target.value,
+            )
+          }
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Phone
-          </label>
-
-          <input
-            type="tel"
-            value={phone}
-            onChange={(event) =>
-              setPhone(
-                event.target.value,
-              )
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Company
-          </label>
-
-          <input
-            type="text"
-            value={company}
-            onChange={(event) =>
-              setCompany(
-                event.target.value,
-              )
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2"
-          />
-        </div>
-      </div>
-
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
-          disabled={isSubmitting}
-          className="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          loading={isSubmitting}
         >
-          {isSubmitting
-            ? "Saving..."
-            : initialValue
-              ? "Update Customer"
-              : "Create Customer"}
-        </button>
+          {submitLabel}
+        </Button>
       </div>
     </form>
   );

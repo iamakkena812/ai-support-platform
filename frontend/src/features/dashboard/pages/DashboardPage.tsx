@@ -2,7 +2,10 @@
  * Dashboard page.
  */
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import { AIInsightsCard } from "../components/AIInsightsCard";
 import { DashboardHeader } from "../components/DashboardHeader";
@@ -18,17 +21,23 @@ import {
   useRefreshDashboard,
 } from "../hooks/useDashboard";
 
-import type { DashboardQueryValues } from "../schemas/dashboard.schema";
+import type {
+  DashboardQueryValues,
+} from "../schemas/dashboard.schema";
 
 /**
  * Dashboard page.
+ *
+ * @returns Dashboard page component.
  */
 export function DashboardPage(): React.JSX.Element {
-  const [query, setQuery] =
-    useState<DashboardQueryValues>({
-      dateRange: "30d",
-      refreshInterval: "off",
-    });
+  const [
+    query,
+    setQuery,
+  ] = useState<DashboardQueryValues>({
+    dateRange: "30d",
+    refreshInterval: "off",
+  });
 
   const {
     data,
@@ -40,23 +49,49 @@ export function DashboardPage(): React.JSX.Element {
   const refreshMutation =
     useRefreshDashboard();
 
+  useEffect(() => {
+    console.group("Dashboard");
+
+    console.log(
+      "Loading:",
+      isLoading,
+    );
+
+    console.log(
+      "Error:",
+      isError,
+    );
+
+    console.log(
+      "Response:",
+      data,
+    );
+
+    console.groupEnd();
+  }, [
+    data,
+    isLoading,
+    isError,
+  ]);
+
   /**
-   * Refreshes dashboard data.
+   * Refresh dashboard.
    */
-  const handleRefresh = async (): Promise<void> => {
-    try {
-      await refreshMutation.mutateAsync();
-    } catch (error) {
-      console.error(
-        "Failed to refresh dashboard.",
-        error,
-      );
-    }
-  };
+  const handleRefresh =
+    async (): Promise<void> => {
+      try {
+        await refreshMutation.mutateAsync();
+      } catch (error) {
+        console.error(
+          "Failed to refresh dashboard.",
+          error,
+        );
+      }
+    };
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500">
+      <div className="flex min-h-screen items-center justify-center">
         Loading dashboard...
       </div>
     );
@@ -64,17 +99,25 @@ export function DashboardPage(): React.JSX.Element {
 
   if (isError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-        {error instanceof Error
-          ? error.message
-          : "Failed to load dashboard."}
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6">
+          <h2 className="mb-2 text-xl font-bold text-red-700">
+            Dashboard Error
+          </h2>
+
+          <p className="text-red-600">
+            {error instanceof Error
+              ? error.message
+              : "Unknown error."}
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (!data) {
+  if (data == null) {
     return (
-      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-700">
+      <div className="flex min-h-screen items-center justify-center">
         Dashboard data unavailable.
       </div>
     );

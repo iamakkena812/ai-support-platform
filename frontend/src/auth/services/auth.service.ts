@@ -9,7 +9,10 @@ import {
   type LoginRequest,
   type LoginResponse,
 } from "../api/auth.api";
-import { tokenService } from "./token.service";
+
+import {
+  tokenService,
+} from "./token.service";
 
 /**
  * Authentication service.
@@ -19,7 +22,7 @@ export class AuthService {
    * Authenticates a user.
    *
    * @param credentials Login credentials.
-   * @returns Login response.
+   * @returns Authentication response.
    */
   async login(
     credentials: LoginRequest,
@@ -29,72 +32,88 @@ export class AuthService {
         credentials,
       );
 
-    tokenService.setAccessToken(
-      response.access_token,
-    );
-
-    if (
-      response.refresh_token
-    ) {
-      tokenService.setRefreshToken(
-        response.refresh_token,
-      );
-    }
+    this.storeTokens(response);
 
     return response;
   }
+
   /**
    * Logs out the current user.
    */
   async logout(): Promise<void> {
-    await authApi.logout();
-
-    tokenService.clearTokens();
+    try {
+      await authApi.logout();
+    } finally {
+      this.clearTokens();
+    }
   }
 
   /**
    * Refreshes authentication tokens.
    *
-   * @returns Updated login response.
+   * @returns Updated authentication response.
    */
   async refresh(): Promise<LoginResponse> {
-    const response = await authApi.refresh();
+    const response =
+      await authApi.refresh();
 
-    tokenService.setAccessToken(
-      response.access_token,
-    );
-
-    if (
-      response.refresh_token
-    ) {
-      tokenService.setRefreshToken(
-        response.refresh_token,
-      );
-    }
+    this.storeTokens(response);
 
     return response;
   }
 
   /**
-   * Returns the authenticated user profile.
+   * Retrieves the authenticated user profile.
    *
-   * @returns Current user profile.
+   * @returns Current authenticated user.
    */
   async profile<T>(): Promise<T> {
     return authApi.profile<T>();
   }
 
   /**
-   * Returns whether an access token exists.
+   * Indicates whether the user is authenticated.
    *
-   * @returns Authentication status.
+   * @returns True when an access token exists.
    */
   isAuthenticated(): boolean {
     return tokenService.hasAccessToken();
+  }
+
+  /**
+   * Persists authentication tokens.
+   *
+   * @param response Authentication response.
+   */
+  private storeTokens(
+    response: LoginResponse,
+  ): void {
+    this.clearTokens();
+
+    tokenService.setAccessToken(
+      response.access_token,
+    );
+
+    if (
+      response.refresh_token != null &&
+      response.refresh_token.length > 0
+    ) {
+      tokenService.setRefreshToken(
+        response.refresh_token,
+      );
+    }
+  }
+
+  /**
+   * Removes persisted authentication tokens.
+   */
+  private clearTokens(): void {
+    tokenService.clearTokens();
   }
 }
 
 /**
  * Shared authentication service instance.
  */
-export const authService = new AuthService();
+export const authService =
+  new AuthService();

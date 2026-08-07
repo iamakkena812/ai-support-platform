@@ -1,5 +1,5 @@
 /**
- * Common layout component exports.
+ * Common layout exports.
  */
 
 export * from "./Breadcrumb";

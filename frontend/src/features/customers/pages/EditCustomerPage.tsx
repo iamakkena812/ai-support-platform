@@ -1,118 +1,182 @@
 /**
  * Edit customer page.
+ *
+ * Displays customer update form.
  */
 
-import { useState } from "react";
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  CustomerError,
+  CustomerForm,
+  CustomerSkeleton,
+} from "../components";
 
-import { CustomerForm } from "../components/CustomerForm";
+import {
+  useCustomer,
+} from "../hooks/useCustomer";
 
-import { useCustomer } from "../hooks/useCustomer";
-
-import { CustomerService } from "../services/customer.service";
+import {
+  customerService,
+} from "../services/customer.service";
 
 import type {
-  UpdateCustomerRequest,
-} from "../types/customer.types";
+  CustomerFormValues,
+} from "../components/CustomerForm";
 
 /**
- * Edit customer page.
+ * Edit customer page component.
+ *
+ * @returns Edit customer page.
  */
 export function EditCustomerPage(): React.JSX.Element {
-  const navigate = useNavigate();
-
-  const { customerId = "" } =
-    useParams<{
-      customerId: string;
-    }>();
-
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
+  const navigate =
+    useNavigate();
 
   const {
-    data,
+    id,
+  } = useParams<{
+    id: string;
+  }>();
+
+  const {
+    data: customer,
     isLoading,
     isError,
-  } = useCustomer(customerId);
+    error,
+    refetch,
+  } = useCustomer({
+    id: id ?? "",
+    enabled:
+      Boolean(id),
+  });
 
-  /**
-   * Handles customer update.
-   */
-  const handleSubmit = async (
-    values: UpdateCustomerRequest,
-  ): Promise<void> => {
-    try {
-      setIsSubmitting(true);
-
-      await CustomerService.updateCustomer(
-        customerId,
-        values,
-      );
-
-      navigate("/customers");
-    } finally {
-      setIsSubmitting(false);
+  async function handleUpdate(
+    values: CustomerFormValues,
+  ): Promise<void> {
+    if (!id) {
+      return;
     }
-  };
 
-  if (isLoading) {
-    return (
-      <div className="rounded-lg bg-white p-8 text-center">
-        Loading customer...
-      </div>
+    await customerService.updateCustomer(
+      id,
+      {
+        name: values.name,
+
+        company:
+          values.company ||
+          undefined,
+
+        email:
+          values.email,
+
+        phone:
+          values.phone ||
+          undefined,
+
+        contactPerson:
+          values.contactPerson ||
+          undefined,
+
+        industry:
+          values.industry ||
+          undefined,
+
+        address:
+          values.address ||
+          undefined,
+
+        status:
+          values.status as
+            | "ACTIVE"
+            | "INACTIVE"
+            | "PROSPECT"
+            | "PENDING"
+            | "SUSPENDED"
+            | "BLOCKED",
+      },
+    );
+
+    navigate(
+      `/customers/${id}`,
     );
   }
 
-  if (isError || !data) {
+  if (isLoading) {
     return (
-      <div className="rounded-lg bg-white p-8 text-center">
-        <h2 className="text-xl font-semibold">
-          Customer not found
-        </h2>
+      <CustomerSkeleton />
+    );
+  }
 
-        <button
-          type="button"
-          onClick={() =>
-            navigate("/customers")
-          }
-          className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          Back to Customers
-        </button>
-      </div>
+  if (
+    isError ||
+    !customer
+  ) {
+    return (
+      <CustomerError
+        error={
+          error instanceof Error
+            ? error
+            : undefined
+        }
+        onRetry={() => {
+          void refetch();
+        }}
+      />
     );
   }
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Edit Customer
-          </h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">
+          Edit Customer
+        </h1>
 
-          <p className="text-gray-600">
-            Update customer information.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() =>
-            navigate("/customers")
-          }
-          className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
-        >
-          Back
-        </button>
+        <p className="mt-2 text-sm text-slate-600">
+          Update customer information.
+        </p>
       </div>
 
       <CustomerForm
-        initialValue={data.customer}
-        isSubmitting={isSubmitting}
-        onSubmit={handleSubmit}
+        initialValues={{
+          name:
+            customer.name,
+
+          company:
+            customer.company ??
+            "",
+
+          email:
+            customer.email,
+
+          phone:
+            customer.phone ??
+            "",
+
+          contactPerson:
+            customer.contactPerson ??
+            "",
+
+          industry:
+            customer.industry ??
+            "",
+
+          address:
+            customer.address ??
+            "",
+
+          status:
+            customer.status,
+        }}
+        onSubmit={
+          handleUpdate
+        }
+        submitLabel="Update Customer"
       />
-    </section>
+    </div>
   );
 }

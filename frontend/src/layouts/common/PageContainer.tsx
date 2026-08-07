@@ -4,17 +4,37 @@
  * Provides a consistent wrapper for page content.
  */
 
-import type { PropsWithChildren, ReactNode } from "react";
+import type {
+  PropsWithChildren,
+  ReactNode,
+} from "react";
 
+/**
+ * Component properties.
+ */
 export interface PageContainerProps
   extends PropsWithChildren {
+  /**
+   * Page title.
+   */
   readonly title?: string;
+
+  /**
+   * Page description.
+   */
   readonly description?: string;
+
+  /**
+   * Header actions.
+   */
   readonly actions?: ReactNode;
 }
 
 /**
  * Page container.
+ *
+ * @param props Component properties.
+ * @returns Page container component.
  */
 export function PageContainer({
   title,
@@ -23,14 +43,14 @@ export function PageContainer({
   children,
 }: PageContainerProps): React.JSX.Element {
   return (
-    <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
-      {(title || description || actions) && (
-        <header className="flex items-start justify-between gap-4">
+    <div className="mx-auto w-full max-w-7xl space-y-6">
+      {(title ?? description ?? actions) ? (
+        <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 md:flex-row md:items-start md:justify-between">
           <div>
             {title ? (
-              <h2 className="text-3xl font-bold text-slate-900">
+              <h1 className="text-3xl font-bold text-slate-900">
                 {title}
-              </h2>
+              </h1>
             ) : null}
 
             {description ? (
@@ -46,11 +66,11 @@ export function PageContainer({
             </div>
           ) : null}
         </header>
-      )}
+      ) : null}
 
-      <div className="flex flex-1 flex-col gap-6">
+      <section>
         {children}
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

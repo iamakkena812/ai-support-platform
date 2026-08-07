@@ -1,112 +1,179 @@
 /**
  * Team card component.
+ *
+ * Displays team information
+ * in a card layout.
  */
 
-import { Users } from "lucide-react";
+import {
+  Building2,
+  FolderKanban,
+  Users,
+} from "lucide-react";
 
-import type {
-  Team,
-} from "../types/team.types";
+import {
+  TeamActions,
+} from "./TeamActions";
 
+import {
+  TeamStatusBadge,
+} from "./TeamStatusBadge";
+
+/**
+ * Component properties.
+ */
 export interface TeamCardProps {
   /**
-   * Team.
+   * Team identifier.
    */
-  readonly team: Team;
+  readonly id: string;
+
+  /**
+   * Team name.
+   */
+  readonly name: string;
+
+  /**
+   * Description.
+   */
+  readonly description?: string;
+
+  /**
+   * Organization name.
+   */
+  readonly organization: string;
+
+  /**
+   * Team status.
+   */
+  readonly status: string;
+
+  /**
+   * Member count.
+   */
+  readonly memberCount: number;
+
+  /**
+   * Project count.
+   */
+  readonly projectCount: number;
 
   /**
    * View callback.
    */
   readonly onView?: (
-    team: Team,
+    id: string,
   ) => void;
 
   /**
    * Edit callback.
    */
   readonly onEdit?: (
-    team: Team,
+    id: string,
+  ) => void;
+
+  /**
+   * Delete callback.
+   */
+  readonly onDelete?: (
+    id: string,
   ) => void;
 }
 
 /**
- * Team card.
+ * Team card component.
+ *
+ * @param props Component properties.
+ * @returns Team card component.
  */
 export function TeamCard({
-  team,
+  id,
+  name,
+  description,
+  organization,
+  status,
+  memberCount,
+  projectCount,
   onView,
   onEdit,
+  onDelete,
 }: TeamCardProps): React.JSX.Element {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Users
-            className="text-blue-600"
-            size={28}
-          />
+    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-white">
+              {name.charAt(0).toUpperCase()}
+            </div>
 
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              {team.name}
-            </h2>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                {name}
+              </h3>
 
-            <p className="text-sm text-slate-500">
-              {team.description ??
-                "No description"}
-            </p>
+              <TeamStatusBadge
+                status={status}
+              />
+            </div>
           </div>
         </div>
 
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
-            team.isActive
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
-          }`}
-        >
-          {team.isActive
-            ? "Active"
-            : "Inactive"}
-        </span>
+        <TeamActions
+          onView={
+            onView
+              ? () => onView(id)
+              : undefined
+          }
+          onEdit={
+            onEdit
+              ? () => onEdit(id)
+              : undefined
+          }
+          onDelete={
+            onDelete
+              ? () => onDelete(id)
+              : undefined
+          }
+        />
       </div>
 
-      <div className="space-y-2 text-sm text-slate-500">
-        <p>
-          Organization ID:
-          {" "}
-          {team.organizationId}
+      {description ? (
+        <p className="mt-5 text-sm leading-6 text-slate-600">
+          {description}
         </p>
+      ) : null}
 
-        <p>
-          Created:
-          {" "}
-          {new Date(
-            team.createdAt,
-          ).toLocaleDateString()}
-        </p>
-      </div>
+      <div className="mt-6 space-y-3">
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <Building2 size={16} />
 
-      <div className="mt-6 flex gap-3">
-        <button
-          type="button"
-          onClick={() =>
-            onView?.(team)
-          }
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          View
-        </button>
+          <span>{organization}</span>
+        </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            onEdit?.(team)
-          }
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100"
-        >
-          Edit
-        </button>
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <Users size={16} />
+
+          <span>
+            {memberCount} Member
+            {memberCount === 1
+              ? ""
+              : "s"}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <FolderKanban
+            size={16}
+          />
+
+          <span>
+            {projectCount} Project
+            {projectCount === 1
+              ? ""
+              : "s"}
+          </span>
+        </div>
       </div>
     </div>
   );

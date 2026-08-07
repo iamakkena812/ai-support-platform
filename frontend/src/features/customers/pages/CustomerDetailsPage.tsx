@@ -1,198 +1,181 @@
 /**
  * Customer details page.
+ *
+ * Displays complete customer information,
+ * organizations, and projects.
  */
 
-import { Link, useParams } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
-import { useCustomer } from "../hooks/useCustomer";
+import {
+  ArrowLeft,
+  Pencil,
+} from "lucide-react";
+
+import {
+  Button,
+} from "../../../components/ui";
+
+import {
+  CustomerDetails,
+  CustomerError,
+  CustomerOrganizations,
+  CustomerProjects,
+  CustomerSkeleton,
+} from "../components";
+
+import {
+  useCustomer,
+} from "../hooks/useCustomer";
 
 /**
- * Customer details page.
+ * Customer details page component.
+ *
+ * @returns Customer details page.
  */
 export function CustomerDetailsPage(): React.JSX.Element {
-  const { customerId = "" } =
-    useParams<{
-      customerId: string;
-    }>();
+  const navigate =
+    useNavigate();
 
   const {
-    data,
+    id,
+  } = useParams<{
+    id: string;
+  }>();
+
+  const {
+    data: customer,
     isLoading,
     isError,
-  } = useCustomer(customerId);
+    error,
+    refetch,
+  } = useCustomer({
+    id: id ?? "",
+    enabled:
+      Boolean(id),
+  });
 
   if (isLoading) {
     return (
-      <div className="rounded-lg bg-white p-8 text-center">
-        Loading customer...
-      </div>
+      <CustomerSkeleton />
     );
   }
 
-  if (isError || !data) {
+  if (
+    isError ||
+    !customer
+  ) {
     return (
-      <div className="rounded-lg bg-white p-8 text-center">
-        <h2 className="text-xl font-semibold">
-          Customer not found
-        </h2>
-
-        <Link
-          to="/customers"
-          className="mt-4 inline-block rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          Back to Customers
-        </Link>
-      </div>
+      <CustomerError
+        error={
+          error instanceof Error
+            ? error
+            : undefined
+        }
+        onRetry={() => {
+          void refetch();
+        }}
+      />
     );
   }
-
-  const { customer } = data;
 
   return (
-    <section className="space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Customer Details
-          </h1>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() =>
+            navigate(
+              "/customers",
+            )
+          }
+        >
+          <ArrowLeft
+            size={18}
+          />
 
-          <p className="text-gray-600">
-            View customer information.
-          </p>
-        </div>
+          Back
+        </Button>
 
-        <div className="flex gap-3">
-          <Link
-            to={`/customers/${customer.id}/edit`}
-            className="rounded bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
-          >
-            Edit
-          </Link>
+        <Button
+          type="button"
+          onClick={() =>
+            navigate(
+              `/customers/${customer.id}/edit`,
+            )
+          }
+        >
+          <Pencil
+            size={18}
+          />
 
-          <Link
-            to="/customers"
-            className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
-          >
-            Back
-          </Link>
-        </div>
+          Edit Customer
+        </Button>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <dl className="grid gap-6 md:grid-cols-2">
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              First Name
-            </dt>
+      <CustomerDetails
+        name={
+          customer.name
+        }
+        company={
+          customer.company
+        }
+        email={
+          customer.email
+        }
+        phone={
+          customer.phone
+        }
+        contactPerson={
+          customer.contactPerson
+        }
+        status={
+          customer.status
+        }
+        industry={
+          customer.industry
+        }
+        address={
+          customer.address
+        }
+        organizationCount={
+          customer.organizationCount
+        }
+        projectCount={
+          customer.projectCount
+        }
+        ticketCount={
+          customer.ticketCount
+        }
+        createdAt={
+          customer.createdAt
+        }
+        updatedAt={
+          customer.updatedAt
+        }
+      />
 
-            <dd className="mt-1 text-lg">
-              {customer.firstName}
-            </dd>
-          </div>
+      <CustomerOrganizations
+        organizations={[]}
+        onViewOrganization={(organizationId) =>
+          navigate(
+            `/organizations/${organizationId}`,
+          )
+        }
+      />
 
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Last Name
-            </dt>
-
-            <dd className="mt-1 text-lg">
-              {customer.lastName}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Email
-            </dt>
-
-            <dd className="mt-1">
-              {customer.email}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Phone
-            </dt>
-
-            <dd className="mt-1">
-              {customer.phone ??
-                "N/A"}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Company
-            </dt>
-
-            <dd className="mt-1">
-              {customer.company ??
-                "N/A"}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Status
-            </dt>
-
-            <dd className="mt-1">
-              <span
-                className={`rounded-full px-3 py-1 text-sm font-medium ${
-                  customer.isActive
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {customer.isActive
-                  ? "Active"
-                  : "Inactive"}
-              </span>
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Organization ID
-            </dt>
-
-            <dd className="mt-1 break-all">
-              {customer.organizationId}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Customer ID
-            </dt>
-
-            <dd className="mt-1 break-all">
-              {customer.id}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Created At
-            </dt>
-
-            <dd className="mt-1">
-              {customer.createdAt}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Updated At
-            </dt>
-
-            <dd className="mt-1">
-              {customer.updatedAt}
-            </dd>
-          </div>
-        </dl>
-      </div>
-    </section>
+      <CustomerProjects
+        projects={[]}
+        onViewProject={(projectId) =>
+          navigate(
+            `/projects/${projectId}`,
+          )
+        }
+      />
+    </div>
   );
 }

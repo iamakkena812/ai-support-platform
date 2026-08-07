@@ -4,7 +4,9 @@
  * Centralizes all lazy route imports.
  */
 
-import { lazy } from "react";
+import {
+  lazy,
+} from "react";
 
 /**
  * Authentication pages.
@@ -12,7 +14,7 @@ import { lazy } from "react";
 export const LoginPage = lazy(
   async () => {
     const module = await import(
-      "../../auth/pages/LoginPage",
+      "../../auth/pages/LoginPage"
     );
 
     return {
@@ -20,6 +22,7 @@ export const LoginPage = lazy(
     };
   },
 );
+
 
 export const ForgotPasswordPage = lazy(
   async () => ({
@@ -31,6 +34,7 @@ export const ForgotPasswordPage = lazy(
   }),
 );
 
+
 export const ResetPasswordPage = lazy(
   async () => ({
     default: () => (
@@ -41,17 +45,73 @@ export const ResetPasswordPage = lazy(
   }),
 );
 
+
 /**
  * Dashboard.
  */
 export const DashboardPage = lazy(
   async () => {
     const module = await import(
-      "../../features/dashboard/pages/DashboardPage",
+      "../../features/dashboard/pages/DashboardPage"
     );
 
     return {
       default: module.DashboardPage,
+    };
+  },
+);
+
+
+/**
+ * Customers pages.
+ */
+export const CustomersPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/customers/pages/CustomersPage"
+    );
+
+    return {
+      default: module.CustomersPage,
+    };
+  },
+);
+
+
+export const CustomerDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/customers/pages/CustomerDetailsPage"
+    );
+
+    return {
+      default: module.CustomerDetailsPage,
+    };
+  },
+);
+
+
+export const CreateCustomerPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/customers/pages/CreateCustomerPage"
+    );
+
+    return {
+      default: module.CreateCustomerPage,
+    };
+  },
+);
+
+
+export const EditCustomerPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/customers/pages/EditCustomerPage"
+    );
+
+    return {
+      default: module.EditCustomerPage,
     };
   },
 );
