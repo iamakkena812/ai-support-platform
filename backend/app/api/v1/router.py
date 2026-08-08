@@ -29,6 +29,8 @@ from app.teams.router import router as teams_router
 from app.tickets.router import router as ticket_router
 from app.users.router import router as user_router
 from app.workflows.router import router as workflows_router
+from app.permissions.router import router as permissions_router
+from app.roles.router import router as roles_router
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -52,6 +54,8 @@ api_router.include_router(comment_router)
 api_router.include_router(attachment_router)
 api_router.include_router(notification_router)
 api_router.include_router(dashboard_router)
+api_router.include_router(permissions_router)
+api_router.include_router(roles_router)
 
 # ============================================================================
 # Business

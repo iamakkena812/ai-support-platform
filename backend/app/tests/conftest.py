@@ -73,6 +73,8 @@ from app.files.constants import (
 from app.files.models import File
 from app.main import app
 from app.models.organization import Organization
+from app.models.permission import Permission
+from app.models.role import Role
 from app.models.ticket import Ticket
 from app.models.user import User
 from app.organizations.repository import OrganizationRepository
@@ -1065,3 +1067,61 @@ def authenticated_client(
     """Create an authenticated test client."""
     client.headers.update(auth_headers)
     return client
+
+@pytest.fixture
+def permission_factory(
+    db_session: Session,
+) -> Callable[..., Permission]:
+    """Create permissions for tests."""
+
+    def create_permission(
+        *,
+        name: str = "Create User",
+        resource: str = "user",
+        action: str = "create",
+        description: str | None = "Create users.",
+    ) -> Permission:
+        """Create and persist a permission."""
+        permission = Permission(
+            name=name,
+            resource=resource,
+            action=action,
+            description=description,
+        )
+
+        db_session.add(permission)
+        db_session.commit()
+        db_session.refresh(permission)
+
+        return permission
+
+    return create_permission
+
+@pytest.fixture
+def role_factory(
+    db_session: Session,
+    organization: Organization,
+) -> Callable[..., Role]:
+    """Create roles for tests."""
+
+    def create_role(
+        *,
+        name: str = "Support Agent",
+        description: str | None = "Support agent role.",
+        is_system: bool = False,
+    ) -> Role:
+        """Create and persist a role."""
+        role = Role(
+            organization_id=organization.id,
+            name=name,
+            description=description,
+            is_system=is_system,
+        )
+
+        db_session.add(role)
+        db_session.commit()
+        db_session.refresh(role)
+
+        return role
+
+    return create_role
