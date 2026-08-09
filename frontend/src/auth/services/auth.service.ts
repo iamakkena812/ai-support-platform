@@ -10,6 +10,8 @@ import {
   type LoginResponse,
 } from "../api/auth.api";
 
+import type { AuthResponse } from "../types/auth.types";
+
 import {
   tokenService,
 } from "./token.service";
@@ -21,16 +23,15 @@ export class AuthService {
   /**
    * Authenticates a user.
    *
-   * @param credentials Login credentials.
+   * @param credentials - Login credentials.
    * @returns Authentication response.
    */
   async login(
     credentials: LoginRequest,
   ): Promise<LoginResponse> {
-    const response =
-      await authApi.login(
-        credentials,
-      );
+    const response = await authApi.login(
+      credentials,
+    );
 
     this.storeTokens(response);
 
@@ -54,8 +55,7 @@ export class AuthService {
    * @returns Updated authentication response.
    */
   async refresh(): Promise<LoginResponse> {
-    const response =
-      await authApi.refresh();
+    const response = await authApi.refresh();
 
     this.storeTokens(response);
 
@@ -65,10 +65,10 @@ export class AuthService {
   /**
    * Retrieves the authenticated user profile.
    *
-   * @returns Current authenticated user.
+   * @returns Current authenticated user profile.
    */
-  async profile<T>(): Promise<T> {
-    return authApi.profile<T>();
+  async profile(): Promise<AuthResponse> {
+    return authApi.profile();
   }
 
   /**
@@ -83,7 +83,7 @@ export class AuthService {
   /**
    * Persists authentication tokens.
    *
-   * @param response Authentication response.
+   * @param response - Authentication response.
    */
   private storeTokens(
     response: LoginResponse,
@@ -115,5 +115,4 @@ export class AuthService {
 /**
  * Shared authentication service instance.
  */
-export const authService =
-  new AuthService();
+export const authService = new AuthService();

@@ -6,7 +6,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.auth.jwt import decode_access_token
@@ -15,11 +15,50 @@ from app.database import get_db
 from app.models.user import User
 from app.repositories.user import UserRepository
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+# ---------------------------------------------------------------------------
+# Bearer authentication
+# ---------------------------------------------------------------------------
+
+bearer_scheme = HTTPBearer(auto_error=False)
+
+
+def get_bearer_token(
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None,
+        Depends(bearer_scheme),
+    ],
+) -> str:
+    """Extract the Bearer token from the Authorization header.
+
+    Args:
+        credentials: HTTP authorization credentials.
+
+    Returns:
+        Raw JWT access token.
+
+    Raises:
+        HTTPException: If credentials are missing or the authentication
+            scheme is not Bearer.
+    """
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if credentials.scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication scheme.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return credentials.credentials
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: str = Depends(get_bearer_token),
     db: Session = Depends(get_db),
 ) -> User:
     """Return the authenticated user.
@@ -37,13 +76,20 @@ def get_current_user(
     """
     try:
         payload = decode_access_token(token)
+
+        subject = payload.get("sub")
+
+        if not isinstance(subject, str):
+            raise ValueError("Missing subject claim.")
+
+        user_id = UUID(subject)
+
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials.",
+            headers={"WWW-Authenticate": "Bearer"},
         ) from exc
-
-    user_id = UUID(payload["sub"])
 
     repository = UserRepository(db)
     user = repository.get_by_id(user_id)
@@ -52,6 +98,7 @@ def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     return user
@@ -106,8 +153,10 @@ CurrentSuperuserDependency = Annotated[
     Depends(get_current_superuser),
 ]
 
+
 __all__ = [
-    "oauth2_scheme",
+    "bearer_scheme",
+    "get_bearer_token",
     "get_current_user",
     "get_current_superuser",
     "get_authentication_service",

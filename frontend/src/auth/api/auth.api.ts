@@ -7,6 +7,8 @@
 import { API_ENDPOINTS } from "../../api/endpoints";
 import { apiService } from "../../services";
 
+import type { AuthResponse } from "../types/auth.types";
+
 /**
  * Login request.
  */
@@ -20,9 +22,7 @@ export interface LoginRequest {
  */
 export interface LoginResponse {
   readonly access_token: string;
-
   readonly token_type: string;
-
   readonly refresh_token?: string;
 }
 
@@ -33,7 +33,7 @@ export class AuthApi {
   /**
    * Authenticates a user.
    *
-   * @param payload Login request.
+   * @param payload - Login credentials.
    * @returns Authentication response.
    */
   async login(
@@ -49,7 +49,7 @@ export class AuthApi {
    * Logs out the current user.
    */
   async logout(): Promise<void> {
-    await apiService.post<void>(
+    await apiService.post(
       API_ENDPOINTS.AUTH.LOGOUT,
     );
   }
@@ -67,9 +67,11 @@ export class AuthApi {
 
   /**
    * Returns the authenticated user profile.
+   *
+   * @returns Authenticated user profile.
    */
-  async profile<T>(): Promise<T> {
-    return apiService.get<T>(
+  async profile(): Promise<AuthResponse> {
+    return apiService.get<AuthResponse>(
       API_ENDPOINTS.AUTH.PROFILE,
     );
   }

@@ -1,4 +1,4 @@
-"""JWT token utilities."""
+"""JWT authentication utilities."""
 
 from __future__ import annotations
 
@@ -7,21 +7,29 @@ from typing import Any
 
 from jose import JWTError, jwt
 
-SECRET_KEY = "your-secret-key-change-in-production"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+from app.auth.exceptions import InvalidTokenError
+from app.config.settings import settings
 
 
 def create_access_token(
     subject: str,
     expires_delta: timedelta | None = None,
 ) -> str:
-    """Create a signed JWT access token."""
-    expire = datetime.now(UTC) + (
-        expires_delta
-        if expires_delta is not None
-        else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
+    """Create a JWT access token.
+
+    Args:
+        subject: Subject identifier.
+        expires_delta: Optional token lifetime.
+
+    Returns:
+        Encoded JWT access token.
+    """
+    if expires_delta is None:
+        expires_delta = timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+        )
+
+    expire = datetime.now(UTC) + expires_delta
 
     payload: dict[str, Any] = {
         "sub": subject,
@@ -30,24 +38,32 @@ def create_access_token(
 
     return jwt.encode(
         payload,
-        SECRET_KEY,
-        algorithm=ALGORITHM,
+        settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
     )
 
 
 def decode_access_token(
     token: str,
 ) -> dict[str, Any]:
-    """Decode and validate a JWT.
+    """Decode and validate an access token.
+
+    Args:
+        token: Encoded JWT access token.
+
+    Returns:
+        Decoded JWT payload.
 
     Raises:
-        JWTError: If the token is invalid or expired.
+        InvalidTokenError: If the JWT is malformed, expired, or invalid.
     """
     try:
         return jwt.decode(
             token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM],
+            settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM],
         )
-    except JWTError:
-        raise
+    except JWTError as exc:
+        raise InvalidTokenError(
+            "Invalid access token.",
+        ) from exc

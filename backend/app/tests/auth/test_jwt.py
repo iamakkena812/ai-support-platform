@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import pytest
-from jwt import InvalidTokenError
 
+from app.auth.exceptions import InvalidTokenError
 from app.auth.jwt import (
     create_access_token,
     decode_access_token,

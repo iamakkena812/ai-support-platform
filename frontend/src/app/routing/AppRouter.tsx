@@ -71,6 +71,11 @@ import {
   EditRolePage,
   RoleDetailsPage,
 
+  PermissionsPage,
+  CreatePermissionPage,
+  EditPermissionPage,
+  PermissionDetailsPage,
+
 } from "./lazy-routes";
 
 
@@ -554,6 +559,43 @@ export function AppRouter(): React.JSX.Element {
 
               }
 
+            />
+
+              {/* Permissions */}
+            <Route
+              path={PROTECTED_ROUTES.PERMISSIONS}
+              element={
+                <ProtectedRoute>
+                  <PermissionsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path={`${PROTECTED_ROUTES.PERMISSIONS}/create`}
+              element={
+                <ProtectedRoute>
+                  <CreatePermissionPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path={`${PROTECTED_ROUTES.PERMISSIONS}/:id`}
+              element={
+                <ProtectedRoute>
+                  <PermissionDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path={`${PROTECTED_ROUTES.PERMISSIONS}/:id/edit`}
+              element={
+                <ProtectedRoute>
+                  <EditPermissionPage />
+                </ProtectedRoute>
+              }
             />
 
       </Routes>

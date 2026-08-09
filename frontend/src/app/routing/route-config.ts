@@ -72,6 +72,10 @@ export const PROTECTED_ROUTES = {
   AI_KNOWLEDGE: "/ai/knowledge",
 
   AI_RETRIEVAL: "/ai/retrieval",
+
+  PERMISSIONS: "/permissions",
+
+  ROLES: "/roles",
 } as const;
 
 /**
@@ -193,6 +197,16 @@ export const APP_ROUTES: readonly AppRoute[] = [
   {
     name: "AI Retrieval",
     path: PROTECTED_ROUTES.AI_RETRIEVAL,
+    protected: true,
+  },
+  {
+    name: "Roles",
+    path: PROTECTED_ROUTES.ROLES,
+    protected: true,
+  },
+  {
+    name: "Permissions",
+    path: PROTECTED_ROUTES.PERMISSIONS,
     protected: true,
   },
 ] as const;

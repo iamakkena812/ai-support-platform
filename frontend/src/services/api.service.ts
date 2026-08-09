@@ -19,8 +19,8 @@ export class ApiService {
   /**
    * Sends a GET request.
    *
-   * @param url Endpoint URL.
-   * @param config Optional request configuration.
+   * @param url - Endpoint URL.
+   * @param config - Optional request configuration.
    * @returns Response payload.
    */
   async get<T>(
@@ -28,7 +28,7 @@ export class ApiService {
     config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> =
-      await apiClient.get(url, config);
+      await apiClient.get<T>(url, config);
 
     return response.data;
   }
@@ -36,9 +36,9 @@ export class ApiService {
   /**
    * Sends a POST request.
    *
-   * @param url Endpoint URL.
-   * @param data Request payload.
-   * @param config Optional request configuration.
+   * @param url - Endpoint URL.
+   * @param data - Request payload.
+   * @param config - Optional request configuration.
    * @returns Response payload.
    */
   async post<T, D = unknown>(
@@ -47,7 +47,7 @@ export class ApiService {
     config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> =
-      await apiClient.post(url, data, config);
+      await apiClient.post<T>(url, data, config);
 
     return response.data;
   }
@@ -55,9 +55,9 @@ export class ApiService {
   /**
    * Sends a PUT request.
    *
-   * @param url Endpoint URL.
-   * @param data Request payload.
-   * @param config Optional request configuration.
+   * @param url - Endpoint URL.
+   * @param data - Request payload.
+   * @param config - Optional request configuration.
    * @returns Response payload.
    */
   async put<T, D = unknown>(
@@ -66,7 +66,7 @@ export class ApiService {
     config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> =
-      await apiClient.put(url, data, config);
+      await apiClient.put<T>(url, data, config);
 
     return response.data;
   }
@@ -74,9 +74,9 @@ export class ApiService {
   /**
    * Sends a PATCH request.
    *
-   * @param url Endpoint URL.
-   * @param data Request payload.
-   * @param config Optional request configuration.
+   * @param url - Endpoint URL.
+   * @param data - Request payload.
+   * @param config - Optional request configuration.
    * @returns Response payload.
    */
   async patch<T, D = unknown>(
@@ -85,7 +85,7 @@ export class ApiService {
     config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> =
-      await apiClient.patch(url, data, config);
+      await apiClient.patch<T>(url, data, config);
 
     return response.data;
   }
@@ -93,16 +93,16 @@ export class ApiService {
   /**
    * Sends a DELETE request.
    *
-   * @param url Endpoint URL.
-   * @param config Optional request configuration.
+   * @param url - Endpoint URL.
+   * @param config - Optional request configuration.
    * @returns Response payload.
    */
-  async delete<T>(
+  async delete<T = void>(
     url: string,
     config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> =
-      await apiClient.delete(url, config);
+      await apiClient.delete<T>(url, config);
 
     return response.data;
   }

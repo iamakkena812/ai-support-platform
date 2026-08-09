@@ -94,7 +94,7 @@ class TestAuthenticationRouter:
 
         assert response.status_code == 422
 
-    def test_me_success(
+    def test_profile_success(
         self,
         client: TestClient,
         user: User,
@@ -103,7 +103,7 @@ class TestAuthenticationRouter:
         app.dependency_overrides[get_current_user] = lambda: user
 
         try:
-            response = client.get("/api/v1/auth/me")
+            response = client.get("/api/v1/auth/profile")
         finally:
             app.dependency_overrides.clear()
 
@@ -115,12 +115,12 @@ class TestAuthenticationRouter:
         assert body["username"] == user.username
         assert body["full_name"] == user.full_name
 
-    def test_me_unauthorized(
+    def test_profile_unauthorized(
         self,
         client: TestClient,
     ) -> None:
         """Authentication is required."""
-        response = client.get("/api/v1/auth/me")
+        response = client.get("/api/v1/auth/profile")
 
         assert response.status_code in (401, 403)
 

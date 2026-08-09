@@ -35,7 +35,7 @@ import type {
 /**
  * Authentication provider.
  *
- * @param props Provider properties.
+ * @param props - Provider properties.
  * @returns Authentication provider.
  */
 export function AuthProvider({
@@ -50,106 +50,103 @@ export function AuthProvider({
   /**
    * Loads the authenticated user.
    */
-  const refreshUser =
-    useCallback(
-      async (): Promise<void> => {
+  const refreshUser = useCallback(
+    async (): Promise<void> => {
+      if (!authService.isAuthenticated()) {
+        setUser(null);
+        return;
+      }
+
+      try {
+        const profile =
+          await authService.profile();
+
+        setUser(profile.user);
+      } catch (error) {
         if (
-          !authService.isAuthenticated()
+          axios.isAxiosError(error) &&
+          error.response?.status === 401
         ) {
+          await authService.logout();
+
           setUser(null);
 
           return;
         }
 
-        try {
-          const profile =
-            await authService.profile<AuthUser>();
+        console.error(
+          "Failed to load authenticated user.",
+          error,
+        );
 
-          setUser(profile);
-        } catch (error) {
-          if (
-            axios.isAxiosError(error) &&
-            error.response?.status === 401
-          ) {
-            await authService.logout();
-
-            setUser(null);
-
-            return;
-          }
-
-          console.error(
-            "Failed to load authenticated user.",
-            error,
-          );
-
-          setUser(null);
-        }
-      },
-      [],
-    );
+        setUser(null);
+      }
+    },
+    [],
+  );
 
   /**
-   * Restore authentication state.
+   * Restores authentication state.
    */
   useEffect(() => {
-  async function initialize(): Promise<void> {
-    if (!authService.isAuthenticated()) {
-      setUser(null);
-      setIsLoading(false);
+    async function initialize(): Promise<void> {
+      if (!authService.isAuthenticated()) {
+        setUser(null);
+        setIsLoading(false);
 
-      return;
+        return;
+      }
+
+      try {
+        await refreshUser();
+      } finally {
+        setIsLoading(false);
+      }
     }
 
-    try {
-      await refreshUser();
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  void initialize();
-}, [refreshUser]);
+    void initialize();
+  }, [refreshUser]);
 
   /**
    * Signs in the current user.
+   *
+   * @param accessToken - Access token.
+   * @param refreshToken - Refresh token.
    */
-  const login =
-    useCallback(
-      async (
-        accessToken: string,
-        refreshToken: string,
-      ): Promise<void> => {
-        tokenService.setAccessToken(
-          accessToken,
+  const login = useCallback(
+    async (
+      accessToken: string,
+      refreshToken: string,
+    ): Promise<void> => {
+      tokenService.setAccessToken(
+        accessToken,
+      );
+
+      if (refreshToken.length > 0) {
+        tokenService.setRefreshToken(
+          refreshToken,
         );
+      }
 
-        if (refreshToken.length > 0) {
-          tokenService.setRefreshToken(
-            refreshToken,
-          );
-        }
-
-        await refreshUser();
-      },
-      [refreshUser],
-    );
+      await refreshUser();
+    },
+    [refreshUser],
+  );
 
   /**
    * Signs out the current user.
    */
-  const logout =
-    useCallback(
-      async (): Promise<void> => {
-        await authService.logout();
+  const logout = useCallback(
+    async (): Promise<void> => {
+      await authService.logout();
 
-        setUser(null);
-      },
-      [],
-    );
+      setUser(null);
+    },
+    [],
+  );
 
-  const value =
-    useMemo<AuthContextValue>(
+  const value: AuthContextValue =
+    useMemo(
       () => ({
         user,
         isAuthenticated:

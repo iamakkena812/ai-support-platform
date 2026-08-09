@@ -12,10 +12,22 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../providers/auth/useAuth";
 import { PUBLIC_ROUTES } from "./route-config";
 
+/**
+ * Protected route properties.
+ */
 interface ProtectedRouteProps {
+  /**
+   * Protected route content.
+   */
   readonly children: ReactNode;
 }
 
+/**
+ * Protects application routes from unauthenticated access.
+ *
+ * @param props - Protected route properties.
+ * @returns Protected content or login redirect.
+ */
 export function ProtectedRoute({
   children,
 }: ProtectedRouteProps): React.JSX.Element {
@@ -25,7 +37,15 @@ export function ProtectedRoute({
   } = useAuth();
 
   if (isLoading) {
-    return <>Loading...</>;
+    return (
+      <div
+        className="flex min-h-[200px] items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
+        Loading...
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

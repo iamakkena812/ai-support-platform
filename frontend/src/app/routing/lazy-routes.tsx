@@ -565,3 +565,43 @@ export const RoleDetailsPage =
         }),
       ),
   );
+
+
+  /**
+ * Permissions pages.
+ */
+export const PermissionsPage = lazy(
+  () =>
+    import(
+      "../../features/permissions/pages/PermissionsPage"
+    ).then((module) => ({
+      default: module.PermissionsPage,
+    })),
+);
+
+export const CreatePermissionPage = lazy(
+  () =>
+    import(
+      "../../features/permissions/pages/CreatePermissionPage"
+    ).then((module) => ({
+      default: module.CreatePermissionPage,
+    })),
+);
+
+export const EditPermissionPage = lazy(
+  () =>
+    import(
+      "../../features/permissions/pages/EditPermissionPage"
+    ).then((module) => ({
+      default: module.EditPermissionPage,
+    })),
+);
+
+export const PermissionDetailsPage = lazy(
+  () =>
+    import(
+      "../../features/permissions/pages/PermissionDetailsPage"
+    ).then((module) => ({
+      default: module.PermissionDetailsPage,
+    })),
+);
