@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Application layout.
  *
  * Main layout used for authenticated pages.
@@ -20,28 +20,20 @@ export function AppLayout({
   children,
 }: PropsWithChildren): React.JSX.Element {
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+    <div className="flex min-h-screen flex-col bg-slate-50">
+      <Header />
 
-      <Sidebar />
+      <div className="flex min-h-0 flex-1">
+        <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white lg:block">
+          <Sidebar />
+        </aside>
 
-      {/* Content */}
-
-      <div className="flex flex-1 flex-col">
-        {/* Header */}
-
-        <Header />
-
-        {/* Main */}
-
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">
           {children}
         </main>
-
-        {/* Footer */}
-
-        <Footer />
       </div>
+
+      <Footer />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Footer component.
  *
  * Displays the application footer.
@@ -11,25 +11,17 @@
  */
 export function Footer(): React.JSX.Element {
   return (
-    <footer className="border-t border-slate-200 bg-white px-6 py-4">
-      <div className="flex flex-col items-center justify-between gap-3 text-sm text-slate-500 md:flex-row">
-        <div>
-          © {new Date().getFullYear()} Enterprise AI Support Platform
-        </div>
+    <footer className="flex min-h-12 shrink-0 items-center justify-between border-t border-slate-200 bg-white px-4 text-xs text-slate-500 sm:px-6">
+      <span>Version 1.0.0</span>
 
-        <div className="flex items-center gap-6">
-          <span>Version 1.0.0</span>
-
-          <a
-            href="https://github.com/techakkena/ai-support-platform"
-            target="_blank"
-            rel="noreferrer"
-            className="transition-colors hover:text-slate-900"
-          >
-            GitHub Repository
-          </a>
-        </div>
-      </div>
+      <a
+        href="https://github.com/techakkena/ai-support-platform"
+        target="_blank"
+        rel="noreferrer"
+        className="transition-colors hover:text-slate-900"
+      >
+        GitHub Repository
+      </a>
     </footer>
   );
 }

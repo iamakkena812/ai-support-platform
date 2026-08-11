@@ -1,11 +1,10 @@
 /**
  * Application router.
+ *
+ * Defines public and protected application routes.
  */
 
-import {
-  Suspense,
-} from "react";
-
+import { Suspense } from "react";
 import {
   Navigate,
   Route,
@@ -13,78 +12,87 @@ import {
 } from "react-router-dom";
 
 import {
-  ProtectedRoute,
-} from "./ProtectedRoute";
-
-import {
-  PublicRoute,
-} from "./PublicRoute";
-
-import {
-  DashboardPage,
-  CustomersPage,
-  CustomerDetailsPage,
-  CreateCustomerPage,
-  EditCustomerPage,
-
-  TicketsPage,
-  TicketDetailsPage,
-  CreateTicketPage,
-  EditTicketPage,
-
-  CommentsPage,
-  CommentDetailsPage,
-  CreateCommentPage,
-  EditCommentPage,
-
-  NotificationsPage,
-  NotificationDetailsPage,
-  CreateNotificationPage,
-  EditNotificationPage,
-
-  AttachmentsPage,
   AttachmentDetailsPage,
+  AttachmentsPage,
+  CommentDetailsPage,
+  CommentsPage,
   CreateAttachmentPage,
-  EditAttachmentPage,
-
-  LoginPage,
-  ForgotPasswordPage,
-  ResetPasswordPage,
-
-  UsersPage,
-  CreateUserPage,
-  UserDetailsPage,
-  EditUserPage,
-
-  ProjectsPage,
-  CreateProjectPage,
-  ProjectDetailsPage,
-  EditProjectPage,
-
-  TeamsPage,
-  TeamDetailsPage,
-  CreateTeamPage,
-  EditTeamPage,
-
-  RolesPage,
-  CreateRolePage,
-  EditRolePage,
-  RoleDetailsPage,
-
-  PermissionsPage,
+  CreateCommentPage,
+  CreateCustomerPage,
+  CreateNotificationPage,
+  CreateOrganizationPage,
   CreatePermissionPage,
+  CreateProjectPage,
+  CreateRolePage,
+  CreateTeamPage,
+  CreateTicketPage,
+  CreateUserPage,
+  CustomerDetailsPage,
+  CustomersPage,
+  DashboardPage,
+  EditAttachmentPage,
+  EditCommentPage,
+  EditCustomerPage,
+  EditNotificationPage,
+  EditOrganizationPage,
   EditPermissionPage,
+  EditProjectPage,
+  EditRolePage,
+  EditTeamPage,
+  EditTicketPage,
+  EditUserPage,
+  ForgotPasswordPage,
+  LoginPage,
+  NotificationDetailsPage,
+  NotificationsPage,
+  OrganizationDetailsPage,
+  OrganizationsPage,
   PermissionDetailsPage,
-
+  PermissionsPage,
+  ProjectDetailsPage,
+  ProjectsPage,
+  ResetPasswordPage,
+  RoleDetailsPage,
+  RolesPage,
+  SettingsPage,
+  TeamDetailsPage,
+  TeamsPage,
+  TicketDetailsPage,
+  TicketsPage,
+  UserDetailsPage,
+  UsersPage,
 } from "./lazy-routes";
 
-
-
+import { DashboardLayout } from "../../layouts/app/DashboardLayout";
+import { ProtectedRoute } from "./ProtectedRoute";
+import { PublicRoute } from "./PublicRoute";
 import {
   PROTECTED_ROUTES,
   PUBLIC_ROUTES,
 } from "./route-config";
 
+/**
+ * Protected application content.
+ *
+ * Applies authentication protection and the common
+ * dashboard layout to every authenticated page.
+ *
+ * @param children Protected page content.
+ * @returns Protected content inside the dashboard layout.
+ */
+function ProtectedLayout({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <ProtectedRoute>
+      <DashboardLayout>
+        {children}
+      </DashboardLayout>
+    </ProtectedRoute>
+  );
+}
 
 /**
  * Application router.
@@ -95,20 +103,20 @@ export function AppRouter(): React.JSX.Element {
   return (
     <Suspense
       fallback={
-        <div>
-          Loading...
+        <div className="flex min-h-screen items-center justify-center bg-slate-50">
+          <div className="text-sm text-slate-500">
+            Loading...
+          </div>
         </div>
       }
     >
-
       <Routes>
-
-        {/* Public Routes */}
+        {/* =====================================================
+            Public Routes
+            ===================================================== */}
 
         <Route
-          path={
-            PUBLIC_ROUTES.LOGIN
-          }
+          path={PUBLIC_ROUTES.LOGIN}
           element={
             <PublicRoute>
               <LoginPage />
@@ -116,11 +124,8 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
-
         <Route
-          path={
-            PUBLIC_ROUTES.FORGOT_PASSWORD
-          }
+          path={PUBLIC_ROUTES.FORGOT_PASSWORD}
           element={
             <PublicRoute>
               <ForgotPasswordPage />
@@ -128,11 +133,8 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
-
         <Route
-          path={
-            PUBLIC_ROUTES.RESET_PASSWORD
-          }
+          path={PUBLIC_ROUTES.RESET_PASSWORD}
           element={
             <PublicRoute>
               <ResetPasswordPage />
@@ -140,466 +142,486 @@ export function AppRouter(): React.JSX.Element {
           }
         />
 
-
-        {/* Dashboard */}
+        {/* =====================================================
+            Dashboard
+            ===================================================== */}
 
         <Route
-          path={
-            PROTECTED_ROUTES.DASHBOARD
-          }
+          path={PROTECTED_ROUTES.DASHBOARD}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <DashboardPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
-        {/* Customers */}
+        {/* =====================================================
+            Organizations
+            ===================================================== */}
 
         <Route
-          path={
-            PROTECTED_ROUTES.CUSTOMERS
-          }
+          path={PROTECTED_ROUTES.ORGANIZATIONS}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
+              <OrganizationsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.ORGANIZATIONS}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateOrganizationPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.ORGANIZATIONS}/:id`}
+          element={
+            <ProtectedLayout>
+              <OrganizationDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.ORGANIZATIONS}/:id/edit`}
+          element={
+            <ProtectedLayout>
+              <EditOrganizationPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Customers
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.CUSTOMERS}
+          element={
+            <ProtectedLayout>
               <CustomersPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.CUSTOMERS}/create`
-          }
+          path={`${PROTECTED_ROUTES.CUSTOMERS}/create`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <CreateCustomerPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.CUSTOMERS}/:id`
-          }
+          path={`${PROTECTED_ROUTES.CUSTOMERS}/:id`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <CustomerDetailsPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.CUSTOMERS}/:id/edit`
-          }
+          path={`${PROTECTED_ROUTES.CUSTOMERS}/:id/edit`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <EditCustomerPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
-        {/* Tickets */}
+        {/* =====================================================
+            Tickets
+            ===================================================== */}
 
         <Route
-          path={
-            PROTECTED_ROUTES.TICKETS
-          }
+          path={PROTECTED_ROUTES.TICKETS}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <TicketsPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.TICKETS}/create`
-          }
+          path={`${PROTECTED_ROUTES.TICKETS}/create`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <CreateTicketPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.TICKETS}/:id`
-          }
+          path={`${PROTECTED_ROUTES.TICKETS}/:id`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <TicketDetailsPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.TICKETS}/:id/edit`
-          }
+          path={`${PROTECTED_ROUTES.TICKETS}/:id/edit`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <EditTicketPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
-        {/* Comments */}
+        {/* =====================================================
+            Comments
+            ===================================================== */}
 
         <Route
-          path={
-            PROTECTED_ROUTES.COMMENTS
-          }
+          path={PROTECTED_ROUTES.COMMENTS}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <CommentsPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.COMMENTS}/create`
-          }
+          path={`${PROTECTED_ROUTES.COMMENTS}/create`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <CreateCommentPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.COMMENTS}/:id`
-          }
+          path={`${PROTECTED_ROUTES.COMMENTS}/:id`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <CommentDetailsPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.COMMENTS}/:id/edit`
-          }
+          path={`${PROTECTED_ROUTES.COMMENTS}/:id/edit`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <EditCommentPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-        {/* Notifications */}
+        {/* =====================================================
+            Notifications
+            ===================================================== */}
 
         <Route
-          path={
-            PROTECTED_ROUTES.NOTIFICATIONS
-          }
+          path={PROTECTED_ROUTES.NOTIFICATIONS}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <NotificationsPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.NOTIFICATIONS}/create`
-          }
+          path={`${PROTECTED_ROUTES.NOTIFICATIONS}/create`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <CreateNotificationPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-
         <Route
-          path={
-            `${PROTECTED_ROUTES.NOTIFICATIONS}/:id`
-          }
+          path={`${PROTECTED_ROUTES.NOTIFICATIONS}/:id`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <NotificationDetailsPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
-
 
         <Route
-          path={
-            `${PROTECTED_ROUTES.NOTIFICATIONS}/:id/edit`
-          }
+          path={`${PROTECTED_ROUTES.NOTIFICATIONS}/:id/edit`}
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <EditNotificationPage />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
-       {/* Attachments */}
+        {/* =====================================================
+            Attachments
+            ===================================================== */}
 
-          <Route
-            path={
-              PROTECTED_ROUTES.ATTACHMENTS
-            }
-            element={
-              <ProtectedRoute>
-                <AttachmentsPage />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path={PROTECTED_ROUTES.ATTACHMENTS}
+          element={
+            <ProtectedLayout>
+              <AttachmentsPage />
+            </ProtectedLayout>
+          }
+        />
 
+        <Route
+          path={`${PROTECTED_ROUTES.ATTACHMENTS}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateAttachmentPage />
+            </ProtectedLayout>
+          }
+        />
 
-          <Route
-            path={
-              `${PROTECTED_ROUTES.ATTACHMENTS}/create`
-            }
-            element={
-              <ProtectedRoute>
-                <CreateAttachmentPage />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path={`${PROTECTED_ROUTES.ATTACHMENTS}/:id`}
+          element={
+            <ProtectedLayout>
+              <AttachmentDetailsPage />
+            </ProtectedLayout>
+          }
+        />
 
-          <Route
-            path={
-              `${PROTECTED_ROUTES.ATTACHMENTS}/:id`
-            }
-            element={
-              <ProtectedRoute>
-                <AttachmentDetailsPage />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path={`${PROTECTED_ROUTES.ATTACHMENTS}/:id/edit`}
+          element={
+            <ProtectedLayout>
+              <EditAttachmentPage />
+            </ProtectedLayout>
+          }
+        />
 
+        {/* =====================================================
+            Users
+            ===================================================== */}
 
-          <Route
-            path={
-              `${PROTECTED_ROUTES.ATTACHMENTS}/:id/edit`
-            }
-            element={
-              <ProtectedRoute>
-                <EditAttachmentPage />
-              </ProtectedRoute>
-            }
-          />     
+        <Route
+          path={PROTECTED_ROUTES.USERS}
+          element={
+            <ProtectedLayout>
+              <UsersPage />
+            </ProtectedLayout>
+          }
+        />
 
-        {/* Fallback */}
+        <Route
+          path={`${PROTECTED_ROUTES.USERS}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateUserPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.USERS}/:id`}
+          element={
+            <ProtectedLayout>
+              <UserDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.USERS}/:id/edit`}
+          element={
+            <ProtectedLayout>
+              <EditUserPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Projects
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.PROJECTS}
+          element={
+            <ProtectedLayout>
+              <ProjectsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.PROJECTS}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateProjectPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.PROJECTS}/:id`}
+          element={
+            <ProtectedLayout>
+              <ProjectDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.PROJECTS}/:id/edit`}
+          element={
+            <ProtectedLayout>
+              <EditProjectPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Teams
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.TEAMS}
+          element={
+            <ProtectedLayout>
+              <TeamsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.TEAMS}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateTeamPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.TEAMS}/:id`}
+          element={
+            <ProtectedLayout>
+              <TeamDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.TEAMS}/:id/edit`}
+          element={
+            <ProtectedLayout>
+              <EditTeamPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Roles
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.ROLES}
+          element={
+            <ProtectedLayout>
+              <RolesPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.ROLES}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateRolePage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.ROLES}/:id`}
+          element={
+            <ProtectedLayout>
+              <RoleDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.ROLES}/:id/edit`}
+          element={
+            <ProtectedLayout>
+              <EditRolePage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Permissions
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.PERMISSIONS}
+          element={
+            <ProtectedLayout>
+              <PermissionsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.PERMISSIONS}/create`}
+          element={
+            <ProtectedLayout>
+              <CreatePermissionPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.PERMISSIONS}/:id`}
+          element={
+            <ProtectedLayout>
+              <PermissionDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.PERMISSIONS}/:id/edit`}
+          element={
+            <ProtectedLayout>
+              <EditPermissionPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Settings
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.SETTINGS}
+          element={
+            <ProtectedLayout>
+              <SettingsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Fallback
+            ===================================================== */}
 
         <Route
           path="*"
           element={
             <Navigate
               replace
-              to={
-                PUBLIC_ROUTES.LOGIN
-              }
+              to={PUBLIC_ROUTES.LOGIN}
             />
           }
         />
-
-         {/* Users Routes */}
-
-        <Route
-          path="/users"
-          element={
-            <UsersPage />
-          }
-        />
-
-
-        <Route
-          path="/users/create"
-          element={
-            <CreateUserPage />
-          }
-        />
-
-
-        <Route
-          path="/users/:id"
-          element={
-            <UserDetailsPage />
-          }
-        />
-
-
-        <Route
-          path="/users/:id/edit"
-          element={
-            <EditUserPage />
-          }
-        /> 
-
-        <Route
-            path="/projects"
-            element={
-              <ProjectsPage />
-            }
-          />
-
-
-          <Route
-            path="/projects/create"
-            element={
-              <CreateProjectPage />
-            }
-          />
-
-
-          <Route
-            path="/projects/:id"
-            element={
-              <ProjectDetailsPage />
-            }
-          />
-
-
-          <Route
-            path="/projects/:id/edit"
-            element={
-              <EditProjectPage />
-            }
-          />
-
-          <Route
-              path="/teams"
-              element={
-                <TeamsPage />
-              }
-            />
-
-
-            <Route
-              path="/teams/create"
-              element={
-                <CreateTeamPage />
-              }
-            />
-
-
-            <Route
-              path="/teams/:id"
-              element={
-                <TeamDetailsPage />
-              }
-            />
-
-
-            <Route
-              path="/teams/:id/edit"
-              element={
-                <EditTeamPage />
-              }
-            />   
-
-          <Route
-
-              path="/roles"
-
-              element={
-
-                <RolesPage />
-
-              }
-
-            />
-
-
-            <Route
-
-              path="/roles/create"
-
-              element={
-
-                <CreateRolePage />
-
-              }
-
-            />
-
-
-            <Route
-
-              path="/roles/:id"
-
-              element={
-
-                <RoleDetailsPage />
-
-              }
-
-            />
-
-
-            <Route
-
-              path="/roles/:id/edit"
-
-              element={
-
-                <EditRolePage />
-
-              }
-
-            />
-
-              {/* Permissions */}
-            <Route
-              path={PROTECTED_ROUTES.PERMISSIONS}
-              element={
-                <ProtectedRoute>
-                  <PermissionsPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path={`${PROTECTED_ROUTES.PERMISSIONS}/create`}
-              element={
-                <ProtectedRoute>
-                  <CreatePermissionPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path={`${PROTECTED_ROUTES.PERMISSIONS}/:id`}
-              element={
-                <ProtectedRoute>
-                  <PermissionDetailsPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path={`${PROTECTED_ROUTES.PERMISSIONS}/:id/edit`}
-              element={
-                <ProtectedRoute>
-                  <EditPermissionPage />
-                </ProtectedRoute>
-              }
-            />
-
       </Routes>
-
     </Suspense>
   );
 }

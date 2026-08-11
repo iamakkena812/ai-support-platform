@@ -4,9 +4,7 @@
  * Centralizes all lazy route imports.
  */
 
-import {
-  lazy,
-} from "react";
+import { lazy } from "react";
 
 /**
  * Authentication pages.
@@ -23,7 +21,6 @@ export const LoginPage = lazy(
   },
 );
 
-
 export const ForgotPasswordPage = lazy(
   async () => ({
     default: () => (
@@ -34,7 +31,6 @@ export const ForgotPasswordPage = lazy(
   }),
 );
 
-
 export const ResetPasswordPage = lazy(
   async () => ({
     default: () => (
@@ -44,7 +40,6 @@ export const ResetPasswordPage = lazy(
     ),
   }),
 );
-
 
 /**
  * Dashboard.
@@ -61,7 +56,6 @@ export const DashboardPage = lazy(
   },
 );
 
-
 /**
  * Customers pages.
  */
@@ -77,7 +71,6 @@ export const CustomersPage = lazy(
   },
 );
 
-
 export const CustomerDetailsPage = lazy(
   async () => {
     const module = await import(
@@ -89,7 +82,6 @@ export const CustomerDetailsPage = lazy(
     };
   },
 );
-
 
 export const CreateCustomerPage = lazy(
   async () => {
@@ -103,7 +95,6 @@ export const CreateCustomerPage = lazy(
   },
 );
 
-
 export const EditCustomerPage = lazy(
   async () => {
     const module = await import(
@@ -116,6 +107,9 @@ export const EditCustomerPage = lazy(
   },
 );
 
+/**
+ * Tickets pages.
+ */
 export const TicketsPage = lazy(
   async () => {
     const module = await import(
@@ -127,7 +121,6 @@ export const TicketsPage = lazy(
     };
   },
 );
-
 
 export const TicketDetailsPage = lazy(
   async () => {
@@ -141,7 +134,6 @@ export const TicketDetailsPage = lazy(
   },
 );
 
-
 export const CreateTicketPage = lazy(
   async () => {
     const module = await import(
@@ -153,7 +145,6 @@ export const CreateTicketPage = lazy(
     };
   },
 );
-
 
 export const EditTicketPage = lazy(
   async () => {
@@ -167,6 +158,9 @@ export const EditTicketPage = lazy(
   },
 );
 
+/**
+ * Comments pages.
+ */
 export const CommentsPage = lazy(
   async () => {
     const module = await import(
@@ -178,7 +172,6 @@ export const CommentsPage = lazy(
     };
   },
 );
-
 
 export const CommentDetailsPage = lazy(
   async () => {
@@ -192,7 +185,6 @@ export const CommentDetailsPage = lazy(
   },
 );
 
-
 export const CreateCommentPage = lazy(
   async () => {
     const module = await import(
@@ -204,7 +196,6 @@ export const CreateCommentPage = lazy(
     };
   },
 );
-
 
 export const EditCommentPage = lazy(
   async () => {
@@ -218,390 +209,425 @@ export const EditCommentPage = lazy(
   },
 );
 
-export const NotificationsPage =
-  lazy(
-    () =>
-      import(
-        "../../features/notifications/pages/NotificationsPage"
-      )
-      .then(
-        (module) => ({
-          default:
-            module.NotificationsPage,
-        }),
-      ),
+/**
+ * Notifications pages.
+ */
+export const NotificationsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/notifications/pages/NotificationsPage"
     );
 
+    return {
+      default: module.NotificationsPage,
+    };
+  },
+);
 
-export const CreateNotificationPage =
-  lazy(
-    () =>
-      import(
-        "../../features/notifications/pages/CreateNotificationPage"
-      )
-      .then(
-        (module) => ({
-          default:
-            module.CreateNotificationPage,
-        }),
-      ),
+export const CreateNotificationPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/notifications/pages/CreateNotificationPage"
     );
 
+    return {
+      default: module.CreateNotificationPage,
+    };
+  },
+);
 
-export const NotificationDetailsPage =
-  lazy(
-    () =>
-      import(
-        "../../features/notifications/pages/NotificationDetailsPage"
-      )
-      .then(
-        (module) => ({
-          default:
-            module.NotificationDetailsPage,
-        }),
-      ),
+export const NotificationDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/notifications/pages/NotificationDetailsPage"
     );
 
+    return {
+      default: module.NotificationDetailsPage,
+    };
+  },
+);
 
-export const EditNotificationPage =
-  lazy(
-    () =>
-      import(
-        "../../features/notifications/pages/EditNotificationPage"
-      )
-      .then(
-        (module) => ({
-          default:
-            module.EditNotificationPage,
-        }),
-      ),
+export const EditNotificationPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/notifications/pages/EditNotificationPage"
     );
 
-  export const AttachmentsPage =
-  lazy(
-    () =>
-      import(
-        "../../features/attachments/pages/AttachmentsPage"
-      ).then(
-        (module) => ({
-          default:
-            module.AttachmentsPage,
-        }),
-      ),
-  );
+    return {
+      default: module.EditNotificationPage,
+    };
+  },
+);
 
+/**
+ * Attachments pages.
+ */
+export const AttachmentsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/attachments/pages/AttachmentsPage"
+    );
 
-export const CreateAttachmentPage =
-  lazy(
-    () =>
-      import(
-        "../../features/attachments/pages/CreateAttachmentPage"
-      ).then(
-        (module) => ({
-          default:
-            module.CreateAttachmentPage,
-        }),
-      ),
-  );
+    return {
+      default: module.AttachmentsPage,
+    };
+  },
+);
 
+export const CreateAttachmentPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/attachments/pages/CreateAttachmentPage"
+    );
 
-export const EditAttachmentPage =
-  lazy(
-    () =>
-      import(
-        "../../features/attachments/pages/EditAttachmentPage"
-      ).then(
-        (module) => ({
-          default:
-            module.EditAttachmentPage,
-        }),
-      ),
-  );
+    return {
+      default: module.CreateAttachmentPage,
+    };
+  },
+);
 
+export const EditAttachmentPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/attachments/pages/EditAttachmentPage"
+    );
 
-export const AttachmentDetailsPage =
-  lazy(
-    () =>
-      import(
-        "../../features/attachments/pages/AttachmentDetailsPage"
-      ).then(
-        (module) => ({
-          default:
-            module.AttachmentDetailsPage,
-        }),
-      ),
-  );
+    return {
+      default: module.EditAttachmentPage,
+    };
+  },
+);
 
-  export const UsersPage =
-  lazy(
-    () =>
-      import(
-        "../../features/users/pages/UsersPage"
-      ).then(
-        (module) => ({
-          default:
-            module.UsersPage,
-        }),
-      ),
-  );
+export const AttachmentDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/attachments/pages/AttachmentDetailsPage"
+    );
 
+    return {
+      default: module.AttachmentDetailsPage,
+    };
+  },
+);
 
-export const UserDetailsPage =
-  lazy(
-    () =>
-      import(
-        "../../features/users/pages/UserDetailsPage"
-      ).then(
-        (module) => ({
-          default:
-            module.UserDetailsPage,
-        }),
-      ),
-  );
+/**
+ * Organizations pages.
+ */
+export const OrganizationsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/organizations/pages/OrganizationsPage"
+    );
 
+    return {
+      default: module.OrganizationsPage,
+    };
+  },
+);
 
-export const CreateUserPage =
-  lazy(
-    () =>
-      import(
-        "../../features/users/pages/CreateUserPage"
-      ).then(
-        (module) => ({
-          default:
-            module.CreateUserPage,
-        }),
-      ),
-  );
+export const CreateOrganizationPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/organizations/pages/CreateOrganizationPage"
+    );
 
+    return {
+      default: module.CreateOrganizationPage,
+    };
+  },
+);
 
-export const EditUserPage =
-  lazy(
-    () =>
-      import(
-        "../../features/users/pages/EditUserPage"
-      ).then(
-        (module) => ({
-          default:
-            module.EditUserPage,
-        }),
-      ),
-  );
+export const OrganizationDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/organizations/pages/OrganizationDetailsPage"
+    );
 
-  /**
+    return {
+      default: module.OrganizationDetailsPage,
+    };
+  },
+);
+
+export const EditOrganizationPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/organizations/pages/EditOrganizationPage"
+    );
+
+    return {
+      default: module.EditOrganizationPage,
+    };
+  },
+);
+
+/**
+ * Users pages.
+ */
+export const UsersPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/users/pages/UsersPage"
+    );
+
+    return {
+      default: module.UsersPage,
+    };
+  },
+);
+
+export const UserDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/users/pages/UserDetailsPage"
+    );
+
+    return {
+      default: module.UserDetailsPage,
+    };
+  },
+);
+
+export const CreateUserPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/users/pages/CreateUserPage"
+    );
+
+    return {
+      default: module.CreateUserPage,
+    };
+  },
+);
+
+export const EditUserPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/users/pages/EditUserPage"
+    );
+
+    return {
+      default: module.EditUserPage,
+    };
+  },
+);
+
+/**
  * Projects pages.
  */
-export const ProjectsPage =
-lazy(
-  () =>
-    import(
+export const ProjectsPage = lazy(
+  async () => {
+    const module = await import(
       "../../features/projects/pages/ProjectsPage"
-    ).then(
-      (module) => ({
-        default:
-          module.ProjectsPage,
-      }),
-    ),
+    );
+
+    return {
+      default: module.ProjectsPage,
+    };
+  },
 );
 
-
-export const CreateProjectPage =
-lazy(
-  () =>
-    import(
+export const CreateProjectPage = lazy(
+  async () => {
+    const module = await import(
       "../../features/projects/pages/CreateProjectPage"
-    ).then(
-      (module) => ({
-        default:
-          module.CreateProjectPage,
-      }),
-    ),
+    );
+
+    return {
+      default: module.CreateProjectPage,
+    };
+  },
 );
 
-
-export const ProjectDetailsPage =
-lazy(
-  () =>
-    import(
+export const ProjectDetailsPage = lazy(
+  async () => {
+    const module = await import(
       "../../features/projects/pages/ProjectDetailsPage"
-    ).then(
-      (module) => ({
-        default:
-          module.ProjectDetailsPage,
-      }),
-    ),
+    );
+
+    return {
+      default: module.ProjectDetailsPage,
+    };
+  },
 );
 
-
-export const EditProjectPage =
-lazy(
-  () =>
-    import(
+export const EditProjectPage = lazy(
+  async () => {
+    const module = await import(
       "../../features/projects/pages/EditProjectPage"
-    ).then(
-      (module) => ({
-        default:
-          module.EditProjectPage,
-      }),
-    ),
-);
+    );
 
+    return {
+      default: module.EditProjectPage,
+    };
+  },
+);
 
 /**
  * Teams pages.
  */
-export const TeamsPage =
-lazy(
-  () =>
-    import(
+export const TeamsPage = lazy(
+  async () => {
+    const module = await import(
       "../../features/teams/pages/TeamsPage"
-    ).then(
-      (module) => ({
-        default:
-          module.TeamsPage,
-      }),
-    ),
+    );
+
+    return {
+      default: module.TeamsPage,
+    };
+  },
 );
 
-
-export const TeamDetailsPage =
-lazy(
-  () =>
-    import(
+export const TeamDetailsPage = lazy(
+  async () => {
+    const module = await import(
       "../../features/teams/pages/TeamDetailsPage"
-    ).then(
-      (module) => ({
-        default:
-          module.TeamDetailsPage,
-      }),
-    ),
+    );
+
+    return {
+      default: module.TeamDetailsPage,
+    };
+  },
 );
 
-
-export const CreateTeamPage =
-lazy(
-  () =>
-    import(
+export const CreateTeamPage = lazy(
+  async () => {
+    const module = await import(
       "../../features/teams/pages/CreateTeamPage"
-    ).then(
-      (module) => ({
-        default:
-          module.CreateTeamPage,
-      }),
-    ),
+    );
+
+    return {
+      default: module.CreateTeamPage,
+    };
+  },
 );
 
-
-export const EditTeamPage =
-lazy(
-  () =>
-    import(
+export const EditTeamPage = lazy(
+  async () => {
+    const module = await import(
       "../../features/teams/pages/EditTeamPage"
-    ).then(
-      (module) => ({
-        default:
-          module.EditTeamPage,
-      }),
-    ),
-);
+    );
 
+    return {
+      default: module.EditTeamPage,
+    };
+  },
+);
 
 /**
  * Roles pages.
  */
-export const RolesPage =
-  lazy(
-    () =>
-      import(
-        "../../features/roles/pages/RolesPage"
-      ).then(
-        (module) => ({
-          default:
-            module.RolesPage,
-        }),
-      ),
-  );
+export const RolesPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/roles/pages/RolesPage"
+    );
 
+    return {
+      default: module.RolesPage,
+    };
+  },
+);
 
+export const CreateRolePage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/roles/pages/CreateRolePage"
+    );
 
-export const CreateRolePage =
-  lazy(
-    () =>
-      import(
-        "../../features/roles/pages/CreateRolePage"
-      ).then(
-        (module) => ({
-          default:
-            module.CreateRolePage,
-        }),
-      ),
-  );
+    return {
+      default: module.CreateRolePage,
+    };
+  },
+);
 
+export const EditRolePage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/roles/pages/EditRolePage"
+    );
 
+    return {
+      default: module.EditRolePage,
+    };
+  },
+);
 
-export const EditRolePage =
-  lazy(
-    () =>
-      import(
-        "../../features/roles/pages/EditRolePage"
-      ).then(
-        (module) => ({
-          default:
-            module.EditRolePage,
-        }),
-      ),
-  );
+export const RoleDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/roles/pages/RoleDetailsPage"
+    );
 
+    return {
+      default: module.RoleDetailsPage,
+    };
+  },
+);
 
-
-export const RoleDetailsPage =
-  lazy(
-    () =>
-      import(
-        "../../features/roles/pages/RoleDetailsPage"
-      ).then(
-        (module) => ({
-          default:
-            module.RoleDetailsPage,
-        }),
-      ),
-  );
-
-
-  /**
+/**
  * Permissions pages.
  */
 export const PermissionsPage = lazy(
-  () =>
-    import(
+  async () => {
+    const module = await import(
       "../../features/permissions/pages/PermissionsPage"
-    ).then((module) => ({
+    );
+
+    return {
       default: module.PermissionsPage,
-    })),
+    };
+  },
 );
 
 export const CreatePermissionPage = lazy(
-  () =>
-    import(
+  async () => {
+    const module = await import(
       "../../features/permissions/pages/CreatePermissionPage"
-    ).then((module) => ({
+    );
+
+    return {
       default: module.CreatePermissionPage,
-    })),
+    };
+  },
 );
 
 export const EditPermissionPage = lazy(
-  () =>
-    import(
+  async () => {
+    const module = await import(
       "../../features/permissions/pages/EditPermissionPage"
-    ).then((module) => ({
+    );
+
+    return {
       default: module.EditPermissionPage,
-    })),
+    };
+  },
 );
 
 export const PermissionDetailsPage = lazy(
-  () =>
-    import(
+  async () => {
+    const module = await import(
       "../../features/permissions/pages/PermissionDetailsPage"
-    ).then((module) => ({
+    );
+
+    return {
       default: module.PermissionDetailsPage,
-    })),
+    };
+  },
+);
+
+/**
+ * Settings page.
+ */
+export const SettingsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/settings/pages/SettingsPage"
+    );
+
+    return {
+      default: module.SettingsPage,
+    };
+  },
 );

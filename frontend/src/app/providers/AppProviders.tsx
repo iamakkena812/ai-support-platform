@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Application providers.
  *
  * Composes all global providers required by the application.
  */
 
-import { AppRouter } from "../routing/AppRouter";
 import { ThemeProvider } from "../providers/theme";
+import { AppRouter } from "../routing/AppRouter";
 
 import { AuthProvider } from "./auth/AuthProvider";
 import { QueryProvider } from "./QueryProvider";
@@ -20,11 +20,11 @@ export function AppProviders(): React.JSX.Element {
   return (
     <ThemeProvider>
       <QueryProvider>
-        <AuthProvider>
-          <RouterProvider>
+        <RouterProvider>
+          <AuthProvider>
             <AppRouter />
-          </RouterProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </RouterProvider>
       </QueryProvider>
     </ThemeProvider>
   );

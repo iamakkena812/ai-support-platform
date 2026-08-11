@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Router provider.
  *
  * Provides the BrowserRouter context for the application.
@@ -11,7 +11,7 @@ import { BrowserRouter } from "react-router-dom";
  * Router provider component.
  *
  * @param props Provider props.
- * @returns Wrapped application.
+ * @returns Wrapped application with router context.
  */
 export function RouterProvider({
   children,

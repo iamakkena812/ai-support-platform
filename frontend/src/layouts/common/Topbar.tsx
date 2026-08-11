@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Topbar component.
  *
  * Displays the application actions.
@@ -20,26 +20,20 @@ import { useTheme } from "../../app/providers/theme";
  * @returns Topbar component.
  */
 export function Topbar(): React.JSX.Element {
-  const {
-    theme,
-    toggleTheme,
-  } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="flex items-center gap-4">
-      {/* Search */}
-
+    <div className="flex items-center gap-2">
       <div className="relative hidden lg:block">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
         <input
           type="search"
           placeholder="Search..."
-          className="w-72 rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500"
+          className="w-72 rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          aria-label="Search"
         />
       </div>
-
-      {/* Theme */}
 
       <button
         type="button"
@@ -54,8 +48,6 @@ export function Topbar(): React.JSX.Element {
         )}
       </button>
 
-      {/* Notifications */}
-
       <button
         type="button"
         className="relative rounded-lg p-2 transition hover:bg-slate-100"
@@ -66,11 +58,10 @@ export function Topbar(): React.JSX.Element {
         <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
       </button>
 
-      {/* User */}
-
       <button
         type="button"
         className="flex items-center gap-2 rounded-lg px-2 py-1 transition hover:bg-slate-100"
+        aria-label="User menu"
       >
         <UserCircle className="h-8 w-8 text-slate-600" />
 

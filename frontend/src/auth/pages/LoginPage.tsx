@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../app/providers/auth/useAuth";
+import { PROTECTED_ROUTES } from "../../app/routing/route-config";
 import { authService } from "../services/auth.service";
 
 /**
@@ -50,7 +51,7 @@ export function LoginPage(): React.JSX.Element {
         response.refresh_token ?? "",
       );
 
-      navigate("/dashboard", {
+      navigate(PROTECTED_ROUTES.DASHBOARD, {
         replace: true,
       });
     } catch (error) {

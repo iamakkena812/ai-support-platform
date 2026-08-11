@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dashboard layout.
  *
  * Layout wrapper for authenticated dashboard pages.
@@ -17,9 +17,5 @@ import { AppLayout } from "./AppLayout";
 export function DashboardLayout({
   children,
 }: PropsWithChildren): React.JSX.Element {
-  return (
-    <AppLayout>
-      {children}
-    </AppLayout>
-  );
+  return <AppLayout>{children}</AppLayout>;
 }
