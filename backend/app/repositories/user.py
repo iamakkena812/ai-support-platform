@@ -32,9 +32,16 @@ class UserRepository(BaseRepository[User]):
         self,
         email: str,
     ) -> User | None:
-        """Return a user by email."""
+        """Return a user by email.
+
+        The lookup is case-insensitive and ignores surrounding
+        whitespace, since email addresses are not case-sensitive
+        in practice and stored values may predate normalization.
+        """
+        normalized_email = email.strip().lower()
+
         statement = select(User).where(
-            User.email == email,
+            func.lower(User.email) == normalized_email,
             User.is_deleted.is_(False),
         )
 

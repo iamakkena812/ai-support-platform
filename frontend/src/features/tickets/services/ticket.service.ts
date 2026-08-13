@@ -9,6 +9,11 @@ import {
   ticketApi,
 } from "../api/ticket.api";
 
+import {
+  ticketListResponseSchema,
+  ticketSchema,
+} from "../schemas/ticket.schema";
+
 import type {
   CreateTicketPayload,
   Ticket,
@@ -32,8 +37,13 @@ export const ticketService = {
   async getTickets(
     query?: TicketQueryFilters,
   ): Promise<TicketListResponse> {
-    return ticketApi.getTickets(
-      query,
+    const response =
+      await ticketApi.getTickets(
+        query,
+      );
+
+    return ticketListResponseSchema.parse(
+      response,
     );
   },
 
@@ -47,8 +57,13 @@ export const ticketService = {
   async getTicket(
     id: string,
   ): Promise<Ticket> {
-    return ticketApi.getTicket(
-      id,
+    const response =
+      await ticketApi.getTicket(
+        id,
+      );
+
+    return ticketSchema.parse(
+      response,
     );
   },
 
@@ -62,8 +77,13 @@ export const ticketService = {
   async createTicket(
     payload: CreateTicketPayload,
   ): Promise<Ticket> {
-    return ticketApi.createTicket(
-      payload,
+    const response =
+      await ticketApi.createTicket(
+        payload,
+      );
+
+    return ticketSchema.parse(
+      response,
     );
   },
 
@@ -79,9 +99,14 @@ export const ticketService = {
     id: string,
     payload: UpdateTicketPayload,
   ): Promise<Ticket> {
-    return ticketApi.updateTicket(
-      id,
-      payload,
+    const response =
+      await ticketApi.updateTicket(
+        id,
+        payload,
+      );
+
+    return ticketSchema.parse(
+      response,
     );
   },
 

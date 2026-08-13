@@ -40,8 +40,12 @@ export const RoleApi = {
       await apiClient.get<RoleListResponse>(
         "/roles",
         {
-          params:
-            query,
+          params: {
+            page: query?.page,
+            pageSize: query?.pageSize,
+            search: query?.filters?.search,
+            isSystem: query?.filters?.isSystem,
+          },
         },
       );
 

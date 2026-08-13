@@ -23,15 +23,12 @@ export {
   PermissionError,
   PermissionFilters,
   PermissionForm,
-  PermissionGroupCard,
   PermissionHeader,
   PermissionSkeleton,
   PermissionStats,
   PermissionStatusBadge,
   PermissionSummary,
   PermissionTable,
-  PermissionTree,
-  RolePermissionMatrix,
 } from "./components";
 
 /**
@@ -43,14 +40,8 @@ export {
   useCreatePermission,
   useUpdatePermission,
   useDeletePermission,
-  usePermissionGroups,
   usePermissionStatistics,
 } from "./hooks/usePermissions";
-
-export {
-  useRolePermissions,
-  useUpdateRolePermissions,
-} from "./hooks/useRolePermissions";
 
 /**
  * Services.
@@ -64,16 +55,12 @@ export {
  */
 export type {
   Permission,
-  PermissionGroup,
   CreatePermissionRequest,
   UpdatePermissionRequest,
   PermissionFilterValues,
   PermissionListQuery,
   PermissionListResponse,
-  PermissionGroupListResponse,
   PermissionStatistics,
-  RolePermissionMapping,
-  UpdateRolePermissionMappingRequest,
 } from "./types/permission.types";
 
 /**

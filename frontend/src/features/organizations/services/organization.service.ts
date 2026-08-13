@@ -8,13 +8,13 @@ import { OrganizationApi } from "../api/organization.api";
 
 import {
   organizationListResponseSchema,
-  organizationResponseSchema,
+  organizationSchema,
 } from "../schemas/organization.schema";
 
 import type {
   CreateOrganizationRequest,
+  Organization,
   OrganizationListResponse,
-  OrganizationResponse,
   UpdateOrganizationRequest,
 } from "../types/organization.types";
 
@@ -27,12 +27,12 @@ export class OrganizationService {
    */
   public static async getOrganizations(
     page = 1,
-    size = 10,
+    pageSize = 10,
   ): Promise<OrganizationListResponse> {
     const response =
       await OrganizationApi.getOrganizations(
         page,
-        size,
+        pageSize,
       );
 
     return organizationListResponseSchema.parse(
@@ -45,13 +45,13 @@ export class OrganizationService {
    */
   public static async getOrganization(
     organizationId: string,
-  ): Promise<OrganizationResponse> {
+  ): Promise<Organization> {
     const response =
       await OrganizationApi.getOrganization(
         organizationId,
       );
 
-    return organizationResponseSchema.parse(
+    return organizationSchema.parse(
       response,
     );
   }
@@ -61,13 +61,13 @@ export class OrganizationService {
    */
   public static async createOrganization(
     payload: CreateOrganizationRequest,
-  ): Promise<OrganizationResponse> {
+  ): Promise<Organization> {
     const response =
       await OrganizationApi.createOrganization(
         payload,
       );
 
-    return organizationResponseSchema.parse(
+    return organizationSchema.parse(
       response,
     );
   }
@@ -78,14 +78,14 @@ export class OrganizationService {
   public static async updateOrganization(
     organizationId: string,
     payload: UpdateOrganizationRequest,
-  ): Promise<OrganizationResponse> {
+  ): Promise<Organization> {
     const response =
       await OrganizationApi.updateOrganization(
         organizationId,
         payload,
       );
 
-    return organizationResponseSchema.parse(
+    return organizationSchema.parse(
       response,
     );
   }

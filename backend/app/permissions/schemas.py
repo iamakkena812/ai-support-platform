@@ -5,8 +5,9 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
+from app.core.schemas import CamelModel
 from app.permissions.constants import (
     DEFAULT_PERMISSION_PAGE,
     DEFAULT_PERMISSION_PAGE_SIZE,
@@ -18,7 +19,7 @@ from app.permissions.constants import (
 )
 
 
-class PermissionBase(BaseModel):
+class PermissionBase(CamelModel):
     """Shared permission fields."""
 
     name: str = Field(
@@ -46,7 +47,7 @@ class PermissionCreate(PermissionBase):
     """Permission creation request."""
 
 
-class PermissionUpdate(BaseModel):
+class PermissionUpdate(CamelModel):
     """Permission update request."""
 
     name: str | None = Field(
@@ -83,7 +84,7 @@ class PermissionResponse(PermissionBase):
     updated_at: datetime
 
 
-class PermissionListQuery(BaseModel):
+class PermissionListQuery(CamelModel):
     """Permission list query parameters."""
 
     page: int = Field(
@@ -115,7 +116,7 @@ class PermissionListQuery(BaseModel):
     )
 
 
-class PermissionListResponse(BaseModel):
+class PermissionListResponse(CamelModel):
     """Paginated permission response."""
 
     items: list[PermissionResponse]
@@ -125,7 +126,7 @@ class PermissionListResponse(BaseModel):
     total_pages: int
 
 
-class PermissionStatistics(BaseModel):
+class PermissionStatistics(CamelModel):
     """Permission statistics."""
 
     total: int

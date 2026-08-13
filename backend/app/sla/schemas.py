@@ -25,9 +25,12 @@ class SLAPolicyBase(BaseModel):
 
 
 class SLAPolicyCreate(SLAPolicyBase):
-    """Schema for creating an SLA policy."""
+    """Schema for creating an SLA policy.
 
-    organization_id: UUID
+    ``organization_id`` is deliberately not a field here -- it is derived
+    from the authenticated caller in the router, never trusted from the
+    request body (see ``app/sla/router.py``).
+    """
 
 
 class SLAPolicyUpdate(BaseModel):
@@ -89,3 +92,9 @@ class BreachedTicket(BaseModel):
     policy_id: UUID
     first_response_breached: bool
     resolution_breached: bool
+
+
+class SLAPolicyAssignRequest(BaseModel):
+    """Schema for assigning an SLA policy to a ticket."""
+
+    policy_id: UUID

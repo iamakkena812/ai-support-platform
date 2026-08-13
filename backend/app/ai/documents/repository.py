@@ -44,36 +44,49 @@ class DocumentRepository:
 
     def list(
         self,
+        organization_id: UUID,
         *,
         offset: int = 0,
         limit: int = 20,
     ) -> list[Document]:
-        """Return documents.
+        """Return documents belonging to an organization.
 
         Args:
+            organization_id: Organization identifier.
             offset: Result offset.
             limit: Maximum number of results.
 
         Returns:
             Documents.
         """
-        statement = select(Document).offset(offset).limit(limit)
+        statement = (
+            select(Document)
+            .where(Document.organization_id == organization_id)
+            .order_by(Document.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
 
         return list(self._db.scalars(statement).all())
 
     def get(
         self,
         document_id: UUID,
+        organization_id: UUID,
     ) -> Document | None:
-        """Return a document.
+        """Return a document scoped to an organization.
 
         Args:
             document_id: Document identifier.
+            organization_id: Organization identifier.
 
         Returns:
             Document if found.
         """
-        statement = select(Document).where(Document.id == document_id)
+        statement = select(Document).where(
+            Document.id == document_id,
+            Document.organization_id == organization_id,
+        )
 
         return self._db.scalar(statement)
 
@@ -107,27 +120,44 @@ class DocumentRepository:
         self._db.delete(document)
         self._db.commit()
 
-    def count(self) -> int:
-        """Return the total number of documents.
+    def count(
+        self,
+        organization_id: UUID,
+    ) -> int:
+        """Return the total number of documents in an organization.
+
+        Args:
+            organization_id: Organization identifier.
 
         Returns:
             Total documents.
         """
-        statement = select(func.count()).select_from(Document)
+        statement = (
+            select(func.count())
+            .select_from(Document)
+            .where(Document.organization_id == organization_id)
+        )
 
         return self._db.scalar(statement) or 0
 
-    def statistics(self) -> dict[str, int]:
-        """Return document statistics.
+    def statistics(
+        self,
+        organization_id: UUID,
+    ) -> dict[str, int]:
+        """Return document statistics for an organization.
+
+        Args:
+            organization_id: Organization identifier.
 
         Returns:
             Document statistics.
         """
-        total = self.count()
+        total = self.count(organization_id)
 
         indexed = (
             self._db.scalar(
                 select(func.count()).where(
+                    Document.organization_id == organization_id,
                     Document.status == "indexed",
                 ),
             )
@@ -137,6 +167,7 @@ class DocumentRepository:
         failed = (
             self._db.scalar(
                 select(func.count()).where(
+                    Document.organization_id == organization_id,
                     Document.status == "failed",
                 ),
             )
@@ -146,6 +177,7 @@ class DocumentRepository:
         deleted = (
             self._db.scalar(
                 select(func.count()).where(
+                    Document.organization_id == organization_id,
                     Document.status == "deleted",
                 ),
             )

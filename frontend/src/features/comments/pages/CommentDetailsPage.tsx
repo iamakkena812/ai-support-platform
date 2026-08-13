@@ -91,9 +91,7 @@ export function CommentDetailsPage(): React.JSX.Element {
             </dt>
 
             <dd className="mt-1 text-gray-900">
-              {comment.ticket
-                ? `${comment.ticket.ticketNumber} — ${comment.ticket.title}`
-                : "—"}
+              {comment.ticket.title}
             </dd>
           </div>
 

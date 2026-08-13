@@ -38,7 +38,10 @@ export const customerApi = {
       await apiClient.get<CustomerListResponse>(
         CUSTOMER_ENDPOINT,
         {
-          params: filters,
+          params: {
+            page: filters?.page,
+            pageSize: filters?.pageSize,
+          },
         },
       );
 

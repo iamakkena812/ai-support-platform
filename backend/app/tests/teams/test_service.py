@@ -12,6 +12,7 @@ from app.core.exceptions import (
     ResourceNotFoundException,
 )
 from app.models.team import Team
+from app.teams.constants import TeamStatus
 from app.teams.schemas import (
     CreateTeamRequest,
     UpdateTeamRequest,
@@ -60,6 +61,7 @@ def team() -> Team:
         name="Engineering",
         code="ENG",
         description="Engineering Team",
+        status=TeamStatus.ACTIVE,
     )
 
 
@@ -101,6 +103,30 @@ def test_list_teams(
     assert result[0] == team
 
 
+def test_list_teams_paginated(
+    service: TeamService,
+    repository: Mock,
+    team: Team,
+) -> None:
+    """Test paginated, filtered list of teams."""
+    repository.list_paginated.return_value = [team]
+
+    organization_id = uuid4()
+    result = service.list_teams_paginated(
+        organization_id=organization_id,
+    )
+
+    assert result == [team]
+
+    repository.list_paginated.assert_called_once_with(
+        organization_id=organization_id,
+        offset=0,
+        limit=100,
+        search=None,
+        status=None,
+    )
+
+
 def test_create_team(
     service: TeamService,
     repository: Mock,
@@ -108,20 +134,47 @@ def test_create_team(
 ) -> None:
     """Test create team."""
     request = CreateTeamRequest(
-        organization_id=uuid4(),
         name="Engineering",
-        code="ENG",
     )
+
+    organization_id = uuid4()
 
     organization_repository.get.return_value = object()
     repository.exists_by_name.return_value = False
     repository.exists_by_code.return_value = False
     repository.create.side_effect = lambda entity: entity
 
-    result = service.create_team(request)
+    result = service.create_team(
+        request,
+        organization_id=organization_id,
+    )
 
     assert result.name == "Engineering"
-    assert result.code == "ENG"
+    assert result.code
+    assert result.organization_id == organization_id
+
+
+def test_create_team_generates_unique_code(
+    service: TeamService,
+    repository: Mock,
+    organization_repository: Mock,
+) -> None:
+    """Generate a fresh code when the derived code already exists."""
+    request = CreateTeamRequest(
+        name="Engineering",
+    )
+
+    organization_repository.get.return_value = object()
+    repository.exists_by_name.return_value = False
+    repository.exists_by_code.side_effect = [True, False]
+    repository.create.side_effect = lambda entity: entity
+
+    result = service.create_team(
+        request,
+        organization_id=uuid4(),
+    )
+
+    assert result.code.endswith("2")
 
 
 def test_duplicate_name(
@@ -131,36 +184,17 @@ def test_duplicate_name(
 ) -> None:
     """Test duplicate team name."""
     request = CreateTeamRequest(
-        organization_id=uuid4(),
         name="Engineering",
-        code="ENG",
     )
 
     organization_repository.get.return_value = object()
     repository.exists_by_name.return_value = True
 
     with pytest.raises(ConflictException):
-        service.create_team(request)
-
-
-def test_duplicate_code(
-    service: TeamService,
-    repository: Mock,
-    organization_repository: Mock,
-) -> None:
-    """Test duplicate team code."""
-    request = CreateTeamRequest(
-        organization_id=uuid4(),
-        name="Engineering",
-        code="ENG",
-    )
-
-    organization_repository.get.return_value = object()
-    repository.exists_by_name.return_value = False
-    repository.exists_by_code.return_value = True
-
-    with pytest.raises(ConflictException):
-        service.create_team(request)
+        service.create_team(
+            request,
+            organization_id=uuid4(),
+        )
 
 
 def test_missing_organization(
@@ -169,15 +203,16 @@ def test_missing_organization(
 ) -> None:
     """Test missing organization."""
     request = CreateTeamRequest(
-        organization_id=uuid4(),
         name="Engineering",
-        code="ENG",
     )
 
     organization_repository.get.return_value = None
 
     with pytest.raises(ResourceNotFoundException):
-        service.create_team(request)
+        service.create_team(
+            request,
+            organization_id=uuid4(),
+        )
 
 
 def test_update_team(
@@ -188,11 +223,11 @@ def test_update_team(
     """Test update team."""
     repository.get.return_value = team
     repository.exists_by_name.return_value = False
-    repository.exists_by_code.return_value = False
     repository.update.side_effect = lambda entity: entity
 
     request = UpdateTeamRequest(
         description="Updated description",
+        status=TeamStatus.ARCHIVED,
     )
 
     result = service.update_team(
@@ -201,6 +236,7 @@ def test_update_team(
     )
 
     assert result.description == "Updated description"
+    assert result.status == TeamStatus.ARCHIVED
 
 
 def test_delete_team(
@@ -214,3 +250,19 @@ def test_delete_team(
     service.delete_team(team.id)
 
     repository.delete.assert_called_once_with(team)
+
+
+def test_get_statistics(
+    service: TeamService,
+    repository: Mock,
+) -> None:
+    """Return aggregate team statistics."""
+    repository.count.return_value = 10
+    repository.count_by_status.side_effect = [4, 3, 2]
+
+    result = service.get_statistics(uuid4())
+
+    assert result.total == 10
+    assert result.active == 4
+    assert result.inactive == 3
+    assert result.archived == 2

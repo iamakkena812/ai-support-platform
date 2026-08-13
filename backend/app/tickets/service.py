@@ -61,7 +61,7 @@ class TicketService:
 
         if ticket is None:
             raise ResourceNotFoundException(
-                "Ticket not found.",
+                "Ticket",
             )
 
         return ticket
@@ -77,6 +77,10 @@ class TicketService:
             offset=offset,
             limit=limit,
         )
+
+    def count_tickets(self) -> int:
+        """Return the total number of tickets."""
+        return self._repository.count()
 
     def update_ticket(
         self,

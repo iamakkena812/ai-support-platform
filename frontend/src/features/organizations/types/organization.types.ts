@@ -2,7 +2,9 @@
  * Organization domain types.
  *
  * Defines TypeScript models used throughout
- * the Organizations feature.
+ * the Organizations feature. Field names and shapes
+ * mirror the backend's OrganizationResponse/OrganizationListResponse
+ * (backend/app/organizations/schemas.py) exactly.
  */
 
 /**
@@ -20,24 +22,64 @@ export interface Organization {
   readonly name: string;
 
   /**
-   * Organization description.
+   * Unique organization code.
    */
-  readonly description?: string | null;
+  readonly code: string;
+
+  /**
+   * Contact email.
+   */
+  readonly email?: string | null;
+
+  /**
+   * Contact phone.
+   */
+  readonly phone?: string | null;
+
+  /**
+   * Website URL.
+   */
+  readonly website?: string | null;
+
+  /**
+   * Logo URL.
+   */
+  readonly logoUrl?: string | null;
+
+  /**
+   * Street address.
+   */
+  readonly address?: string | null;
+
+  /**
+   * City.
+   */
+  readonly city?: string | null;
+
+  /**
+   * State or region.
+   */
+  readonly state?: string | null;
+
+  /**
+   * Country.
+   */
+  readonly country?: string | null;
+
+  /**
+   * Postal code.
+   */
+  readonly postalCode?: string | null;
+
+  /**
+   * IANA timezone.
+   */
+  readonly timezone: string;
 
   /**
    * Active status.
    */
   readonly isActive: boolean;
-
-  /**
-   * Member count.
-   */
-  readonly memberCount?: number;
-
-  /**
-   * Project count.
-   */
-  readonly projectCount?: number;
 
   /**
    * Created timestamp.
@@ -55,15 +97,18 @@ export interface Organization {
  * Create organization request.
  */
 export interface CreateOrganizationRequest {
-  /**
-   * Organization name.
-   */
   readonly name: string;
-
-  /**
-   * Organization description.
-   */
-  readonly description?: string | null;
+  readonly code: string;
+  readonly email?: string | null;
+  readonly phone?: string | null;
+  readonly website?: string | null;
+  readonly logoUrl?: string | null;
+  readonly address?: string | null;
+  readonly city?: string | null;
+  readonly state?: string | null;
+  readonly country?: string | null;
+  readonly postalCode?: string | null;
+  readonly timezone?: string;
 }
 
 
@@ -71,19 +116,18 @@ export interface CreateOrganizationRequest {
  * Update organization request.
  */
 export interface UpdateOrganizationRequest {
-  /**
-   * Organization name.
-   */
   readonly name?: string;
-
-  /**
-   * Organization description.
-   */
-  readonly description?: string | null;
-
-  /**
-   * Active status.
-   */
+  readonly code?: string;
+  readonly email?: string | null;
+  readonly phone?: string | null;
+  readonly website?: string | null;
+  readonly logoUrl?: string | null;
+  readonly address?: string | null;
+  readonly city?: string | null;
+  readonly state?: string | null;
+  readonly country?: string | null;
+  readonly postalCode?: string | null;
+  readonly timezone?: string;
   readonly isActive?: boolean;
 }
 
@@ -105,60 +149,16 @@ export interface OrganizationFilterValues {
 
 
 /**
- * Organization list query.
- */
-export interface OrganizationListQuery {
-  /**
-   * Page number.
-   */
-  readonly page?: number;
-
-  /**
-   * Page size.
-   */
-  readonly size?: number;
-
-  /**
-   * Filters.
-   */
-  readonly filters?: OrganizationFilterValues;
-}
-
-
-/**
  * Organization list response.
+ *
+ * Matches backend/app/organizations/schemas.py OrganizationListResponse.
  */
 export interface OrganizationListResponse {
-  /**
-   * Organizations.
-   */
-  readonly items: readonly Organization[];
-
-  /**
-   * Total records.
-   */
+  readonly organizations: readonly Organization[];
   readonly total: number;
-
-  /**
-   * Current page.
-   */
   readonly page: number;
-
-  /**
-   * Page size.
-   */
-  readonly size: number;
-}
-
-
-/**
- * Organization response.
- */
-export interface OrganizationResponse {
-  /**
-   * Organization.
-   */
-  readonly organization: Organization;
+  readonly pageSize: number;
+  readonly totalPages: number;
 }
 
 

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from math import ceil
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.models.user import User
 from app.rbac.dependencies import require_permission
@@ -68,18 +69,25 @@ async def create_user(
 async def list_users(
     _: ViewUserPermission,
     service: UserServiceDependency,
-    offset: int = 0,
-    limit: int = 100,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100, alias="pageSize"),
 ) -> UserListResponse:
-    """Return all users."""
+    """Return a paginated list of users."""
+    offset = (page - 1) * page_size
+
     users = service.list_users(
         offset=offset,
-        limit=limit,
+        limit=page_size,
     )
+
+    total = service.count_users()
 
     return UserListResponse(
         users=[UserResponse.model_validate(user) for user in users],
-        total=len(users),
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=ceil(total / page_size) if total else 0,
     )
 
 

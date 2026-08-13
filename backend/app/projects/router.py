@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
+from app.auth.dependencies import CurrentActiveUserDependency
+from app.projects.constants import ProjectPriority, ProjectStatus
 from app.projects.dependencies import ProjectServiceDependency
 from app.projects.exceptions import (
-    ProjectKeyAlreadyExistsError,
     ProjectNameAlreadyExistsError,
     ProjectNotFoundError,
 )
@@ -17,6 +18,7 @@ from app.projects.schemas import (
     ProjectDeleteResponse,
     ProjectListResponse,
     ProjectResponse,
+    ProjectStatisticsResponse,
     ProjectUpdateRequest,
 )
 
@@ -34,20 +36,34 @@ router = APIRouter(
 def create_project(
     request: ProjectCreateRequest,
     service: ProjectServiceDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> ProjectResponse:
-    """Create a project."""
+    """Create a project owned by the requesting user."""
     try:
-        project = service.create_project(request)
-    except (
-        ProjectNameAlreadyExistsError,
-        ProjectKeyAlreadyExistsError,
-    ) as exc:
+        project = service.create_project(
+            request,
+            organization_id=current_user.organization_id,
+            owner_id=current_user.id,
+        )
+    except ProjectNameAlreadyExistsError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(exc),
         ) from exc
 
-    return ProjectResponse.model_validate(project)
+    return ProjectResponse.from_project(project)
+
+
+@router.get(
+    "/statistics",
+    response_model=ProjectStatisticsResponse,
+)
+def get_project_statistics(
+    service: ProjectServiceDependency,
+    _: CurrentActiveUserDependency,
+) -> ProjectStatisticsResponse:
+    """Return aggregate project statistics."""
+    return service.get_statistics()
 
 
 @router.get(
@@ -56,18 +72,35 @@ def create_project(
 )
 def list_projects(
     service: ProjectServiceDependency,
-    offset: int = 0,
-    limit: int = 100,
+    _: CurrentActiveUserDependency,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100, alias="pageSize"),
+    search: str | None = Query(default=None),
+    status: ProjectStatus | None = Query(default=None),
+    priority: ProjectPriority | None = Query(default=None),
 ) -> ProjectListResponse:
-    """List projects."""
+    """Return a paginated list of projects, optionally filtered."""
+    offset = (page - 1) * page_size
+
     projects = service.list_projects(
         offset=offset,
-        limit=limit,
+        limit=page_size,
+        search=search,
+        status=status,
+        priority=priority,
+    )
+    total = service.count_projects(
+        search=search,
+        status=status,
+        priority=priority,
     )
 
     return ProjectListResponse(
-        projects=[ProjectResponse.model_validate(project) for project in projects],
-        total=len(projects),
+        items=[ProjectResponse.from_project(project) for project in projects],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=-(-total // page_size) if total else 0,
     )
 
 
@@ -78,6 +111,7 @@ def list_projects(
 def get_project(
     project_id: UUID,
     service: ProjectServiceDependency,
+    _: CurrentActiveUserDependency,
 ) -> ProjectResponse:
     """Get a project."""
     try:
@@ -88,7 +122,7 @@ def get_project(
             detail=str(exc),
         ) from exc
 
-    return ProjectResponse.model_validate(project)
+    return ProjectResponse.from_project(project)
 
 
 @router.put(
@@ -99,6 +133,7 @@ def update_project(
     project_id: UUID,
     request: ProjectUpdateRequest,
     service: ProjectServiceDependency,
+    _: CurrentActiveUserDependency,
 ) -> ProjectResponse:
     """Update a project."""
     try:
@@ -111,8 +146,13 @@ def update_project(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         ) from exc
+    except ProjectNameAlreadyExistsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
 
-    return ProjectResponse.model_validate(project)
+    return ProjectResponse.from_project(project)
 
 
 @router.delete(
@@ -122,6 +162,7 @@ def update_project(
 def delete_project(
     project_id: UUID,
     service: ProjectServiceDependency,
+    _: CurrentActiveUserDependency,
 ) -> ProjectDeleteResponse:
     """Delete a project."""
     try:

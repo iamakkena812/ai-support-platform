@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+
+from app.core.schemas import CamelModel
 
 
-class RoleCreate(BaseModel):
+class RoleCreate(CamelModel):
     """Request schema for creating a role."""
 
     name: str = Field(min_length=1, max_length=100)
@@ -15,14 +18,14 @@ class RoleCreate(BaseModel):
     is_system: bool = False
 
 
-class RoleUpdate(BaseModel):
+class RoleUpdate(CamelModel):
     """Request schema for updating a role."""
 
     name: str | None = Field(default=None, min_length=1, max_length=100)
     description: str | None = Field(default=None, max_length=255)
 
 
-class RoleListQuery(BaseModel):
+class RoleListQuery(CamelModel):
     """Query parameters for listing roles."""
 
     page: int = Field(default=1, ge=1)
@@ -31,7 +34,7 @@ class RoleListQuery(BaseModel):
     is_system: bool | None = None
 
 
-class RoleResponse(BaseModel):
+class RoleResponse(CamelModel):
     """Response schema for a role."""
 
     model_config = ConfigDict(from_attributes=True)
@@ -40,9 +43,11 @@ class RoleResponse(BaseModel):
     name: str
     description: str | None
     is_system: bool
+    created_at: datetime
+    updated_at: datetime
 
 
-class RoleListResponse(BaseModel):
+class RoleListResponse(CamelModel):
     """Paginated role response."""
 
     items: list[RoleResponse]
@@ -52,7 +57,7 @@ class RoleListResponse(BaseModel):
     total_pages: int
 
 
-class RoleStatistics(BaseModel):
+class RoleStatistics(CamelModel):
     """Role statistics response."""
 
     total: int

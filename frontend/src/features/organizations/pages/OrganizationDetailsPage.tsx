@@ -46,7 +46,7 @@ export function OrganizationDetailsPage(): React.JSX.Element {
     );
   }
 
-  const organization = data.organization;
+  const organization = data;
 
   return (
     <div className="space-y-6 p-8">
@@ -78,12 +78,69 @@ export function OrganizationDetailsPage(): React.JSX.Element {
 
           <div>
             <h2 className="text-sm font-medium text-slate-500">
-              Description
+              Code
             </h2>
 
             <p>
-              {organization.description ??
-                "No description"}
+              {organization.code}
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-medium text-slate-500">
+              Email
+            </h2>
+
+            <p>
+              {organization.email ?? "—"}
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-medium text-slate-500">
+              Phone
+            </h2>
+
+            <p>
+              {organization.phone ?? "—"}
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-medium text-slate-500">
+              Website
+            </h2>
+
+            <p>
+              {organization.website ?? "—"}
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-medium text-slate-500">
+              Address
+            </h2>
+
+            <p>
+              {[
+                organization.address,
+                organization.city,
+                organization.state,
+                organization.postalCode,
+                organization.country,
+              ]
+                .filter(Boolean)
+                .join(", ") || "—"}
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-medium text-slate-500">
+              Timezone
+            </h2>
+
+            <p>
+              {organization.timezone}
             </p>
           </div>
 

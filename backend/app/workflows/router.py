@@ -6,6 +6,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, status
 
+from app.auth.dependencies import CurrentActiveUserDependency
+
 from .dependencies import WorkflowServiceDependency
 from .models import Workflow
 from .schemas import (
@@ -30,9 +32,13 @@ router = APIRouter(
 def create_workflow(
     workflow: WorkflowCreate,
     service: WorkflowServiceDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> Workflow:
-    """Create a workflow."""
-    return service.create_workflow(workflow)
+    """Create a workflow owned by the caller's organization."""
+    return service.create_workflow(
+        workflow,
+        organization_id=current_user.organization_id,
+    )
 
 
 @router.get(
@@ -41,12 +47,12 @@ def create_workflow(
 )
 def list_workflows(
     service: WorkflowServiceDependency,
-    organization_id: UUID | None = Query(default=None),
+    current_user: CurrentActiveUserDependency,
     active_only: bool = Query(default=False),
 ) -> list[Workflow]:
-    """List workflows."""
+    """List workflows belonging to the caller's organization."""
     return service.list_workflows(
-        organization_id=organization_id,
+        organization_id=current_user.organization_id,
         active_only=active_only,
     )
 
@@ -58,9 +64,13 @@ def list_workflows(
 def get_workflow(
     workflow_id: UUID,
     service: WorkflowServiceDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> Workflow:
-    """Get a workflow by identifier."""
-    return service.get_workflow(workflow_id)
+    """Get a workflow belonging to the caller's organization."""
+    return service.get_workflow(
+        workflow_id,
+        current_user.organization_id,
+    )
 
 
 @router.patch(
@@ -71,10 +81,12 @@ def update_workflow(
     workflow_id: UUID,
     workflow: WorkflowUpdate,
     service: WorkflowServiceDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> Workflow:
-    """Update a workflow."""
+    """Update a workflow belonging to the caller's organization."""
     return service.update_workflow(
         workflow_id,
+        current_user.organization_id,
         workflow,
     )
 
@@ -86,9 +98,13 @@ def update_workflow(
 def delete_workflow(
     workflow_id: UUID,
     service: WorkflowServiceDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> None:
-    """Delete a workflow."""
-    service.delete_workflow(workflow_id)
+    """Delete a workflow belonging to the caller's organization."""
+    service.delete_workflow(
+        workflow_id,
+        current_user.organization_id,
+    )
 
 
 @router.post(
@@ -98,9 +114,13 @@ def delete_workflow(
 def activate_workflow(
     workflow_id: UUID,
     service: WorkflowServiceDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> Workflow:
-    """Activate a workflow."""
-    return service.activate_workflow(workflow_id)
+    """Activate a workflow belonging to the caller's organization."""
+    return service.activate_workflow(
+        workflow_id,
+        current_user.organization_id,
+    )
 
 
 @router.post(
@@ -110,9 +130,13 @@ def activate_workflow(
 def deactivate_workflow(
     workflow_id: UUID,
     service: WorkflowServiceDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> Workflow:
-    """Deactivate a workflow."""
-    return service.deactivate_workflow(workflow_id)
+    """Deactivate a workflow belonging to the caller's organization."""
+    return service.deactivate_workflow(
+        workflow_id,
+        current_user.organization_id,
+    )
 
 
 @router.post(
@@ -123,9 +147,11 @@ def execute_workflow(
     workflow_id: UUID,
     request: WorkflowExecuteRequest,
     service: WorkflowServiceDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> WorkflowExecuteResponse:
-    """Execute a workflow."""
+    """Execute a workflow belonging to the caller's organization."""
     return service.execute_workflow(
         workflow_id,
+        current_user.organization_id,
         request.ticket_id,
     )

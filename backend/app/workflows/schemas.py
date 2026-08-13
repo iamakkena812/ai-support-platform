@@ -85,9 +85,12 @@ class WorkflowActionRead(BaseModel):
 
 
 class WorkflowCreate(BaseModel):
-    """Schema for creating a workflow."""
+    """Schema for creating a workflow.
 
-    organization_id: UUID
+    ``organization_id`` is deliberately not a field here -- it is derived
+    from the authenticated caller in the router, never trusted from the
+    request body (see ``app/workflows/router.py``).
+    """
 
     name: str = Field(..., max_length=255)
 

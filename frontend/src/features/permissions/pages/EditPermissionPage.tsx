@@ -13,7 +13,6 @@ import {
 
 import {
   usePermission,
-  usePermissionGroups,
   useUpdatePermission,
 } from "../hooks/usePermissions";
 
@@ -44,11 +43,6 @@ export function EditPermissionPage() {
   } = usePermission(id);
 
   const {
-    data: groupData,
-    isLoading: isGroupsLoading,
-  } = usePermissionGroups();
-
-  const {
     mutateAsync: updatePermission,
     isPending,
     isError: isUpdateError,
@@ -64,13 +58,11 @@ export function EditPermissionPage() {
 
     const payload: UpdatePermissionRequest = {
       name: values.name,
+      resource: values.resource,
+      action: values.action,
       description:
         values.description.length > 0
           ? values.description
-          : null,
-      groupId:
-        values.groupId.length > 0
-          ? values.groupId
           : null,
     };
 
@@ -178,9 +170,7 @@ export function EditPermissionPage() {
 
       <PermissionForm
         permission={permission}
-        groups={groupData?.items ?? []}
         isSubmitting={isPending}
-        disabled={isGroupsLoading}
         onSubmit={handleSubmit}
         onCancel={() => {
           navigate(`/permissions/${permission.id}`);

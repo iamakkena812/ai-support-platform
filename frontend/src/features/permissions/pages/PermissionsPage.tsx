@@ -5,7 +5,7 @@
  * statistics, filters, and the permission list.
  */
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -19,7 +19,6 @@ import {
 } from "../components";
 
 import {
-  usePermissionGroups,
   usePermissionStatistics,
   usePermissions,
 } from "../hooks/usePermissions";
@@ -50,30 +49,16 @@ export function PermissionsPage() {
   });
 
   const {
-    data: groupData,
-    isLoading: isGroupsLoading,
-  } = usePermissionGroups();
-
-  const {
     data: statistics,
     isLoading: isStatisticsLoading,
   } = usePermissionStatistics();
 
   const permissions = data?.items ?? [];
 
-  const groups = useMemo(
-    () =>
-      (groupData?.items ?? []).map((group) => ({
-        id: group.id,
-        name: group.name,
-      })),
-    [groupData],
-  );
-
   const hasFilters =
     Boolean(filters.search) ||
-    Boolean(filters.groupId) ||
-    Boolean(filters.resource);
+    Boolean(filters.resource) ||
+    Boolean(filters.action);
 
   const handleClearFilters = (): void => {
     setFilters({});
@@ -116,7 +101,6 @@ export function PermissionsPage() {
         filters={filters}
         onChange={setFilters}
         onClear={handleClearFilters}
-        groups={groups}
       />
 
       {isError ? (
@@ -127,7 +111,6 @@ export function PermissionsPage() {
       ) : (
         <>
           {!isLoading &&
-            !isGroupsLoading &&
             permissions.length === 0 ? (
             <PermissionEmpty
               hasFilters={hasFilters}

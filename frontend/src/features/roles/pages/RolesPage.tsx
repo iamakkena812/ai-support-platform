@@ -22,6 +22,7 @@ import {
   RoleTable,
 } from "../components";
 
+import { useDeleteRole } from "../hooks/useRole";
 import {
   useRoles,
   useRoleStatistics,
@@ -57,6 +58,8 @@ export function RolesPage(): React.JSX.Element {
   } =
     useRoleStatistics();
 
+  const deleteRole = useDeleteRole();
+
 
 
   const roles =
@@ -91,18 +94,6 @@ export function RolesPage(): React.JSX.Element {
               undefined,
 
 
-            permissionCount:
-              0,
-
-
-            userCount:
-              0,
-
-
-            status:
-              role.status,
-
-
             isSystem:
               role.isSystem ?? false,
 
@@ -113,6 +104,10 @@ export function RolesPage(): React.JSX.Element {
         roles,
       ],
     );
+
+  async function handleDelete(id: string): Promise<void> {
+    await deleteRole.mutateAsync(id);
+  }
 
 
 
@@ -190,40 +185,21 @@ export function RolesPage(): React.JSX.Element {
         statistics ? (
 
           <RoleStats
-
-            totalRoles={
-              statistics.total
-            }
-
-
-            activeRoles={
-              statistics.active
-            }
-
-
-            inactiveRoles={
-              statistics.inactive
-            }
-
-
-            systemRoles={
-              0
-            }
-
-
-            totalPermissions={
-              0
-            }
-
-
-            assignedUsers={
-              0
-            }
-
+            total={statistics.total}
+            system={statistics.system}
+            custom={statistics.custom}
+            assigned={statistics.assigned}
+            unassigned={statistics.unassigned}
           />
 
         ) : null
       }
+
+      {deleteRole.isError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Failed to delete role. Please try again.
+        </div>
+      )}
 
 
 
@@ -267,6 +243,10 @@ export function RolesPage(): React.JSX.Element {
                   `/roles/${id}/edit`,
                 )
             }
+
+            onDelete={(id) => {
+              void handleDelete(id);
+            }}
 
           />
 

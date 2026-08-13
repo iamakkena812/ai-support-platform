@@ -107,7 +107,7 @@ export const TeamService = {
   ): Promise<Team> {
 
     const response =
-      await apiClient.put<Team>(
+      await apiClient.patch<Team>(
         `/teams/${id}`,
         payload,
       );

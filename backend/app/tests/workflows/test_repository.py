@@ -42,10 +42,10 @@ def test_get_workflow(
     organization: Organization,
     workflow: Workflow,
 ) -> None:
-    """Test getting a workflow."""
+    """Test getting a workflow scoped to its organization."""
     repository = WorkflowRepository(db_session)
 
-    result = repository.get_workflow(workflow.id)
+    result = repository.get_workflow(workflow.id, organization.id)
 
     assert result is not None
     assert result.id == workflow.id
@@ -53,32 +53,33 @@ def test_get_workflow(
 
 def test_get_workflow_not_found(
     db_session: Session,
+    organization: Organization,
 ) -> None:
     """Test getting an unknown workflow."""
     repository = WorkflowRepository(db_session)
 
-    result = repository.get_workflow(uuid4())
+    result = repository.get_workflow(uuid4(), organization.id)
 
     assert result is None
 
 
-def test_list_workflows(
+def test_get_workflow_isolated_from_other_organization(
     db_session: Session,
     workflow: Workflow,
 ) -> None:
-    """Test listing workflows."""
+    """A workflow is invisible when queried under another organization."""
     repository = WorkflowRepository(db_session)
 
-    workflows = repository.list_workflows()
+    result = repository.get_workflow(workflow.id, uuid4())
 
-    assert workflow in workflows
+    assert result is None
 
 
 def test_list_workflows_by_organization(
     db_session: Session,
     workflow: Workflow,
 ) -> None:
-    """Test filtering workflows by organization."""
+    """Test listing workflows scoped to an organization."""
     repository = WorkflowRepository(db_session)
 
     workflows = repository.list_workflows(
@@ -87,6 +88,36 @@ def test_list_workflows_by_organization(
 
     assert len(workflows) == 1
     assert workflows[0].id == workflow.id
+
+
+def test_list_workflows_isolated_from_other_organization(
+    db_session: Session,
+    workflow: Workflow,
+) -> None:
+    """Listing under another organization returns no results."""
+    repository = WorkflowRepository(db_session)
+
+    workflows = repository.list_workflows(organization_id=uuid4())
+
+    assert workflows == []
+
+
+def test_list_workflows_active_only(
+    db_session: Session,
+    workflow: Workflow,
+) -> None:
+    """Test filtering workflows by active status."""
+    repository = WorkflowRepository(db_session)
+
+    workflow.is_active = False
+    db_session.commit()
+
+    workflows = repository.list_workflows(
+        organization_id=workflow.organization_id,
+        active_only=True,
+    )
+
+    assert workflows == []
 
 
 def test_update_workflow(
@@ -105,6 +136,7 @@ def test_update_workflow(
 
 def test_delete_workflow(
     db_session: Session,
+    organization: Organization,
     workflow: Workflow,
 ) -> None:
     """Test deleting a workflow."""
@@ -112,7 +144,7 @@ def test_delete_workflow(
 
     repository.delete_workflow(workflow)
 
-    assert repository.get_workflow(workflow.id) is None
+    assert repository.get_workflow(workflow.id, organization.id) is None
 
 
 def test_create_condition(

@@ -51,22 +51,11 @@ export function UserDetails(
 
         <div>
           <p className="text-sm text-slate-500">
-            First Name
+            Username
           </p>
 
           <p className="font-medium">
-            {user.firstName}
-          </p>
-        </div>
-
-
-        <div>
-          <p className="text-sm text-slate-500">
-            Last Name
-          </p>
-
-          <p className="font-medium">
-            {user.lastName}
+            {user.username}
           </p>
         </div>
 
@@ -84,61 +73,45 @@ export function UserDetails(
 
         <div>
           <p className="text-sm text-slate-500">
-            Phone
-          </p>
-
-          <p className="font-medium">
-            {user.phone ?? "-"}
-          </p>
-        </div>
-
-
-        <div>
-          <p className="text-sm text-slate-500">
             Status
           </p>
 
-          <p className="font-medium capitalize">
-            {user.status}
+          <p className="font-medium">
+            {user.isActive ? "Active" : "Inactive"}
           </p>
         </div>
 
 
         <div>
           <p className="text-sm text-slate-500">
-            Organization
+            Superuser
           </p>
 
           <p className="font-medium">
-            {
-              user.organization?.name ?? "-"
-            }
+            {user.isSuperuser ? "Yes" : "No"}
           </p>
         </div>
 
-      </div>
+
+        <div>
+          <p className="text-sm text-slate-500">
+            Organization Id
+          </p>
+
+          <p className="font-medium">
+            {user.organizationId}
+          </p>
+        </div>
 
 
-      <div>
-        <p className="text-sm text-slate-500">
-          Roles
-        </p>
+        <div>
+          <p className="text-sm text-slate-500">
+            Created
+          </p>
 
-        <div className="mt-2 flex flex-wrap gap-2">
-
-          {
-            user.roles.map(
-              (role) => (
-                <span
-                  key={role.id}
-                  className="rounded bg-slate-100 px-3 py-1 text-sm"
-                >
-                  {role.name}
-                </span>
-              ),
-            )
-          }
-
+          <p className="font-medium">
+            {new Date(user.createdAt).toLocaleString()}
+          </p>
         </div>
 
       </div>

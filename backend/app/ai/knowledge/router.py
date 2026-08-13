@@ -60,9 +60,10 @@ def list_knowledge(
     service: AIKnowledgeService = Depends(get_ai_knowledge_service),
     current_user: User = Depends(get_current_user),
 ) -> KnowledgeListResponse:
-    """List knowledge bases."""
+    """List knowledge bases visible to the caller."""
     return service.list_knowledge(
         organization_id=current_user.organization_id,
+        user_id=current_user.id,
         offset=offset,
         limit=limit,
     )
@@ -82,6 +83,7 @@ def get_knowledge(
     return service.get_knowledge(
         knowledge_id=knowledge_id,
         organization_id=current_user.organization_id,
+        user_id=current_user.id,
     )
 
 
@@ -119,5 +121,6 @@ def delete_knowledge(
     service.delete_knowledge(
         knowledge_id=knowledge_id,
         organization_id=current_user.organization_id,
+        user_id=current_user.id,
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -48,7 +48,6 @@ export {
   organizationSchema,
   createOrganizationSchema,
   updateOrganizationSchema,
-  organizationResponseSchema,
   organizationListResponseSchema,
 } from "./schemas/organization.schema";
 
@@ -60,6 +59,5 @@ export type {
   Organization,
   CreateOrganizationRequest,
   UpdateOrganizationRequest,
-  OrganizationResponse,
   OrganizationListResponse,
 } from "./types/organization.types";

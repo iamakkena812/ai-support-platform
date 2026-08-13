@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
-from app.permissions.exceptions import (
-    PermissionAlreadyExistsError,
-    PermissionInUseError,
-    PermissionNotFoundError,
-)
+from collections.abc import Callable
 from uuid import UUID, uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 
+from app.models.permission import Permission
+from app.permissions.exceptions import PermissionInUseError
 from app.permissions.service import PermissionService
 
 
 def test_list_permissions(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission list endpoint should return permissions."""
     permission_factory(
@@ -25,7 +25,7 @@ def test_list_permissions(
         action="create",
     )
 
-    response = client.get("/api/v1/permissions")
+    response = client.get("/api/v1/permissions", headers=auth_headers)
 
     assert response.status_code == 200
 
@@ -33,15 +33,16 @@ def test_list_permissions(
 
     assert body["total"] == 1
     assert body["page"] == 1
-    assert body["page_size"] == 20
-    assert body["total_pages"] == 1
+    assert body["pageSize"] == 20
+    assert body["totalPages"] == 1
     assert len(body["items"]) == 1
     assert body["items"][0]["name"] == "Create User"
 
 
 def test_list_permissions_with_filters(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission list endpoint should support resource filtering."""
     permission_factory(
@@ -59,6 +60,7 @@ def test_list_permissions_with_filters(
     response = client.get(
         "/api/v1/permissions",
         params={"resource": "ticket"},
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -71,7 +73,8 @@ def test_list_permissions_with_filters(
 
 def test_list_permissions_with_action_filter(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission list endpoint should support action filtering."""
     permission_factory(
@@ -89,6 +92,7 @@ def test_list_permissions_with_action_filter(
     response = client.get(
         "/api/v1/permissions",
         params={"action": "read"},
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -101,7 +105,8 @@ def test_list_permissions_with_action_filter(
 
 def test_get_permission_success(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission detail endpoint should return a permission."""
     permission = permission_factory(
@@ -112,6 +117,7 @@ def test_get_permission_success(
 
     response = client.get(
         f"/api/v1/permissions/{permission.id}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -126,10 +132,12 @@ def test_get_permission_success(
 
 def test_get_permission_not_found(
     client: TestClient,
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission detail endpoint should return 404."""
     response = client.get(
         f"/api/v1/permissions/{uuid4()}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 404
@@ -137,6 +145,7 @@ def test_get_permission_not_found(
 
 def test_create_permission_success(
     client: TestClient,
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission creation endpoint should create a permission."""
     payload = {
@@ -149,6 +158,7 @@ def test_create_permission_success(
     response = client.post(
         "/api/v1/permissions",
         json=payload,
+        headers=auth_headers,
     )
 
     assert response.status_code == 201
@@ -164,7 +174,8 @@ def test_create_permission_success(
 
 def test_create_permission_duplicate(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission creation should reject duplicate resource/action."""
     permission_factory(
@@ -181,6 +192,7 @@ def test_create_permission_duplicate(
     response = client.post(
         "/api/v1/permissions",
         json=payload,
+        headers=auth_headers,
     )
 
     assert response.status_code == 409
@@ -188,6 +200,7 @@ def test_create_permission_duplicate(
 
 def test_create_permission_validation_error(
     client: TestClient,
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission creation should validate required fields."""
     response = client.post(
@@ -197,6 +210,7 @@ def test_create_permission_validation_error(
             "resource": "user",
             "action": "create",
         },
+        headers=auth_headers,
     )
 
     assert response.status_code == 422
@@ -204,7 +218,8 @@ def test_create_permission_validation_error(
 
 def test_update_permission_success(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission update endpoint should update a permission."""
     permission = permission_factory(
@@ -219,6 +234,7 @@ def test_update_permission_success(
             "name": "Create Users",
             "description": "Updated description.",
         },
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -232,6 +248,7 @@ def test_update_permission_success(
 
 def test_update_permission_not_found(
     client: TestClient,
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission update should return 404 for missing permission."""
     response = client.patch(
@@ -239,6 +256,7 @@ def test_update_permission_not_found(
         json={
             "name": "Updated Permission",
         },
+        headers=auth_headers,
     )
 
     assert response.status_code == 404
@@ -246,7 +264,8 @@ def test_update_permission_not_found(
 
 def test_update_permission_duplicate(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission update should reject duplicate resource/action."""
     first = permission_factory(
@@ -267,6 +286,7 @@ def test_update_permission_duplicate(
             "resource": first.resource,
             "action": first.action,
         },
+        headers=auth_headers,
     )
 
     assert response.status_code == 409
@@ -274,7 +294,8 @@ def test_update_permission_duplicate(
 
 def test_delete_permission_success(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission delete endpoint should delete a permission."""
     permission = permission_factory(
@@ -285,6 +306,7 @@ def test_delete_permission_success(
 
     response = client.delete(
         f"/api/v1/permissions/{permission.id}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 204
@@ -293,10 +315,12 @@ def test_delete_permission_success(
 
 def test_delete_permission_not_found(
     client: TestClient,
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission delete should return 404 for missing permission."""
     response = client.delete(
         f"/api/v1/permissions/{uuid4()}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 404
@@ -304,8 +328,9 @@ def test_delete_permission_not_found(
 
 def test_delete_permission_in_use(
     client: TestClient,
-    permission_factory,
-    monkeypatch,
+    permission_factory: Callable[..., Permission],
+    monkeypatch: pytest.MonkeyPatch,
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission delete should return 409 when permission is in use."""
     permission = permission_factory(
@@ -331,6 +356,7 @@ def test_delete_permission_in_use(
 
     response = client.delete(
         f"/api/v1/permissions/{permission.id}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 409
@@ -338,7 +364,8 @@ def test_delete_permission_in_use(
 
 def test_permission_statistics(
     client: TestClient,
-    permission_factory,
+    permission_factory: Callable[..., Permission],
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission statistics endpoint should return statistics."""
     permission_factory(
@@ -361,6 +388,7 @@ def test_permission_statistics(
 
     response = client.get(
         "/api/v1/permissions/statistics",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -375,10 +403,12 @@ def test_permission_statistics(
 
 def test_invalid_permission_id(
     client: TestClient,
+    auth_headers: dict[str, str],
 ) -> None:
     """Permission endpoint should reject an invalid UUID."""
     response = client.get(
         "/api/v1/permissions/not-a-uuid",
+        headers=auth_headers,
     )
 
     assert response.status_code == 422

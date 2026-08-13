@@ -37,7 +37,13 @@ async (
     await apiClient.get<NotificationListResponse>(
       BASE_PATH,
       {
-        params: query,
+        params: {
+          page: query?.page,
+          pageSize: query?.pageSize,
+          type: query?.filters?.type,
+          status: query?.filters?.status,
+          search: query?.filters?.search,
+        },
       },
     );
 

@@ -33,7 +33,14 @@ export const getComments = async (
     await apiClient.get<CommentListResponse>(
       BASE_PATH,
       {
-        params: query,
+        params: {
+          page: query?.page,
+          pageSize: query?.pageSize,
+          ticketId: query?.filters?.ticketId,
+          authorId: query?.filters?.authorId,
+          isInternal: query?.filters?.isInternal,
+          search: query?.filters?.search,
+        },
       },
     );
 
@@ -66,10 +73,12 @@ export const getComment = async (
 export const createComment = async (
   payload: CreateCommentRequest,
 ): Promise<Comment> => {
+  const { ticketId, ...body } = payload;
+
   const { data } =
     await apiClient.post<Comment>(
-      BASE_PATH,
-      payload,
+      `${BASE_PATH}/tickets/${ticketId}`,
+      body,
     );
 
   return data;

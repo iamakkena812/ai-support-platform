@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, HttpUrl
+from pydantic import ConfigDict, EmailStr, Field, HttpUrl
+
+from app.core.schemas import CamelModel
 
 
-class CreateOrganizationRequest(BaseModel):
+class CreateOrganizationRequest(CamelModel):
     """Request model for creating an organization."""
 
     name: str = Field(
@@ -62,7 +65,7 @@ class CreateOrganizationRequest(BaseModel):
     )
 
 
-class UpdateOrganizationRequest(BaseModel):
+class UpdateOrganizationRequest(CamelModel):
     """Request model for updating an organization."""
 
     name: str | None = Field(
@@ -121,7 +124,7 @@ class UpdateOrganizationRequest(BaseModel):
     is_active: bool | None = None
 
 
-class OrganizationResponse(BaseModel):
+class OrganizationResponse(CamelModel):
     """Organization response model."""
 
     model_config = ConfigDict(
@@ -142,9 +145,15 @@ class OrganizationResponse(BaseModel):
     postal_code: str | None
     timezone: str
     is_active: bool
+    created_at: datetime
+    updated_at: datetime
 
 
-class OrganizationListResponse(BaseModel):
+class OrganizationListResponse(CamelModel):
     """Organization list response."""
 
     organizations: list[OrganizationResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

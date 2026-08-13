@@ -9,18 +9,23 @@ import type { ComponentType } from "react";
 import {
   Bell,
   BookOpen,
+  Bot,
   Building2,
+  FileText,
   FolderKanban,
   Gauge,
   LayoutDashboard,
   MessageSquare,
   Paperclip,
+  Search,
   Settings,
   Shield,
   ShieldCheck,
   Ticket,
+  Timer,
   UserRound,
   Users,
+  Workflow,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -78,6 +83,16 @@ const navigationSections: readonly NavigationSection[] = [
         path: PROTECTED_ROUTES.TEAMS,
         icon: Shield,
       },
+      {
+        label: "Workflows",
+        path: PROTECTED_ROUTES.WORKFLOWS,
+        icon: Workflow,
+      },
+      {
+        label: "SLA",
+        path: PROTECTED_ROUTES.SLA,
+        icon: Timer,
+      },
     ],
   },
   {
@@ -124,9 +139,24 @@ const navigationSections: readonly NavigationSection[] = [
     title: "AI & Insights",
     items: [
       {
+        label: "AI Assistant",
+        path: PROTECTED_ROUTES.AI_CHAT,
+        icon: Bot,
+      },
+      {
+        label: "AI Documents",
+        path: PROTECTED_ROUTES.AI_DOCUMENTS,
+        icon: FileText,
+      },
+      {
         label: "Knowledge Base",
         path: PROTECTED_ROUTES.AI_KNOWLEDGE,
         icon: BookOpen,
+      },
+      {
+        label: "AI Retrieval",
+        path: PROTECTED_ROUTES.AI_RETRIEVAL,
+        icon: Search,
       },
       {
         label: "Reports",

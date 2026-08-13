@@ -1,23 +1,37 @@
 /**
  * Profile settings component.
+ *
+ * Binds only to fields that actually exist on the real `User` model
+ * (backend/app/users/schemas.py) -- job title, phone number, and avatar
+ * are not supported by the current architecture and are not shown.
  */
 
-import type {
-  ChangeEvent,
-} from "react";
+import type { ChangeEvent } from "react";
 
-import type {
-  ProfileSettings as ProfileSettingsModel,
-} from "../types/settings.types";
+import type { User } from "../../users/types/user.types";
+
+/**
+ * Editable profile fields.
+ */
+export interface ProfileFormValues {
+  readonly fullName: string;
+  readonly email: string;
+  readonly username: string;
+}
 
 /**
  * Component properties.
  */
 export interface ProfileSettingsProps {
   /**
-   * Profile settings.
+   * Current user.
    */
-  readonly profile: ProfileSettingsModel;
+  readonly profile: User;
+
+  /**
+   * Editable form values.
+   */
+  readonly values: ProfileFormValues;
 
   /**
    * Indicates whether the form is disabled.
@@ -25,13 +39,11 @@ export interface ProfileSettingsProps {
   readonly disabled?: boolean;
 
   /**
-   * Invoked when the profile changes.
+   * Invoked when a field changes.
    *
-   * @param profile - Updated profile.
+   * @param values - Updated form values.
    */
-  readonly onChange: (
-    profile: ProfileSettingsModel,
-  ) => void;
+  readonly onChange: (values: ProfileFormValues) => void;
 }
 
 /**
@@ -42,44 +54,20 @@ export interface ProfileSettingsProps {
  */
 export function ProfileSettings({
   profile,
+  values,
   disabled = false,
   onChange,
 }: ProfileSettingsProps): React.JSX.Element {
   /**
-   * Updates a profile field.
-   *
-   * @param field - Field name.
-   * @param value - Field value.
-   */
-  const updateField = <
-    K extends keyof ProfileSettingsModel,
-  >(
-    field: K,
-    value: ProfileSettingsModel[K],
-  ): void => {
-    onChange({
-      ...profile,
-      [field]: value,
-    });
-  };
-
-  /**
-   * Handles input changes.
+   * Creates an input change handler for a field.
    *
    * @param field - Field name.
    * @returns Change handler.
    */
   const createChangeHandler =
-    (
-      field: keyof ProfileSettingsModel,
-    ) =>
-    (
-      event: ChangeEvent<HTMLInputElement>,
-    ): void => {
-      updateField(
-        field,
-        event.target.value,
-      );
+    (field: keyof ProfileFormValues) =>
+    (event: ChangeEvent<HTMLInputElement>): void => {
+      onChange({ ...values, [field]: event.target.value });
     };
 
   return (
@@ -96,15 +84,9 @@ export function ProfileSettings({
 
           <input
             type="text"
-            value={
-              profile.fullName
-            }
-            onChange={createChangeHandler(
-              "fullName",
-            )}
-            disabled={
-              disabled
-            }
+            value={values.fullName}
+            onChange={createChangeHandler("fullName")}
+            disabled={disabled}
             className="w-full rounded border border-gray-300 px-3 py-2 disabled:bg-gray-100"
           />
         </div>
@@ -116,59 +98,35 @@ export function ProfileSettings({
 
           <input
             type="email"
-            value={
-              profile.email
-            }
-            onChange={createChangeHandler(
-              "email",
-            )}
-            disabled={
-              disabled
-            }
+            value={values.email}
+            onChange={createChangeHandler("email")}
+            disabled={disabled}
             className="w-full rounded border border-gray-300 px-3 py-2 disabled:bg-gray-100"
           />
         </div>
 
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
-            Job Title
+            Username
           </label>
 
           <input
             type="text"
-            value={
-              profile.jobTitle ??
-              ""
-            }
-            onChange={createChangeHandler(
-              "jobTitle",
-            )}
-            disabled={
-              disabled
-            }
+            value={values.username}
+            onChange={createChangeHandler("username")}
+            disabled={disabled}
             className="w-full rounded border border-gray-300 px-3 py-2 disabled:bg-gray-100"
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Phone Number
-          </label>
+          <span className="mb-2 block text-sm font-medium text-gray-700">
+            Role
+          </span>
 
-          <input
-            type="tel"
-            value={
-              profile.phoneNumber ??
-              ""
-            }
-            onChange={createChangeHandler(
-              "phoneNumber",
-            )}
-            disabled={
-              disabled
-            }
-            className="w-full rounded border border-gray-300 px-3 py-2 disabled:bg-gray-100"
-          />
+          <p className="px-3 py-2 text-sm text-gray-500">
+            {profile.isSuperuser ? "Superuser" : "Member"}
+          </p>
         </div>
       </div>
     </section>

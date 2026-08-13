@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from sqlalchemy import func, select
+from uuid import UUID
+
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.ai.embeddings.models import Embedding
+from app.ai.retrieval.constants import MAX_LIMIT
 
 
 class RetrievalRepository:
@@ -22,46 +25,42 @@ class RetrievalRepository:
         """
         self._db = db
 
-    def semantic_search(
+    def search_by_terms(
         self,
+        organization_id: UUID,
+        terms: list[str],
         *,
-        offset: int = 0,
-        limit: int = 10,
+        limit: int = MAX_LIMIT,
     ) -> list[Embedding]:
-        """Return embeddings for semantic retrieval.
+        """Return org-scoped embeddings whose content matches at least one term.
+
+        A term match here is a case-insensitive substring match, used as a
+        candidate filter. Precise relevance scoring happens in the service.
 
         Args:
-            offset: Result offset.
-            limit: Maximum number of results.
+            organization_id: Organization scope.
+            terms: Normalized query terms to match against content.
+            limit: Maximum number of candidate rows to return.
 
         Returns:
-            Retrieved embeddings.
+            Candidate embeddings, unranked.
         """
-        statement = select(Embedding).offset(offset).limit(limit)
+        statement = select(Embedding).where(
+            Embedding.organization_id == organization_id,
+        )
 
-        return list(self._db.scalars(statement).all())
+        if terms:
+            statement = statement.where(
+                or_(*[Embedding.content.ilike(f"%{term}%") for term in terms]),
+            )
 
-    def hybrid_search(
-        self,
-        *,
-        offset: int = 0,
-        limit: int = 10,
-    ) -> list[Embedding]:
-        """Return embeddings for hybrid retrieval.
-
-        Args:
-            offset: Result offset.
-            limit: Maximum number of results.
-
-        Returns:
-            Retrieved embeddings.
-        """
-        statement = select(Embedding).offset(offset).limit(limit)
+        statement = statement.limit(limit)
 
         return list(self._db.scalars(statement).all())
 
     def metadata_search(
         self,
+        organization_id: UUID,
         metadata: dict[str, object],
         *,
         limit: int = 10,
@@ -69,13 +68,16 @@ class RetrievalRepository:
         """Search embeddings by metadata.
 
         Args:
+            organization_id: Organization scope.
             metadata: Metadata filters.
             limit: Maximum number of results.
 
         Returns:
             Matching embeddings.
         """
-        statement = select(Embedding)
+        statement = select(Embedding).where(
+            Embedding.organization_id == organization_id,
+        )
 
         for key, value in metadata.items():
             statement = statement.where(
@@ -86,12 +88,19 @@ class RetrievalRepository:
 
         return list(self._db.scalars(statement).all())
 
-    def count_documents(self) -> int:
-        """Return the total indexed documents.
+    def count_documents(self, organization_id: UUID) -> int:
+        """Return the total indexed documents for an organization.
+
+        Args:
+            organization_id: Organization scope.
 
         Returns:
             Total indexed documents.
         """
-        statement = select(func.count()).select_from(Embedding)
+        statement = (
+            select(func.count())
+            .select_from(Embedding)
+            .where(Embedding.organization_id == organization_id)
+        )
 
         return self._db.scalar(statement) or 0

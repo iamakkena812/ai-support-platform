@@ -20,6 +20,11 @@ import type {
   CustomerFormValues,
 } from "../components/CustomerForm";
 
+import type {
+  CustomerStatus,
+  CustomerType,
+} from "../types/customer.types";
+
 /**
  * Create customer page component.
  *
@@ -34,25 +39,27 @@ export function CreateCustomerPage(): React.JSX.Element {
   ): Promise<void> {
     await customerService.createCustomer({
       name: values.name,
-      company:
-        values.company || undefined,
+      companyName:
+        values.companyName || undefined,
       email: values.email,
       phone:
         values.phone || undefined,
-      contactPerson:
-        values.contactPerson || undefined,
-      industry:
-        values.industry || undefined,
+      website:
+        values.website || undefined,
       address:
         values.address || undefined,
+      city:
+        values.city || undefined,
+      state:
+        values.state || undefined,
+      country:
+        values.country || undefined,
+      postalCode:
+        values.postalCode || undefined,
+      customerType:
+        values.customerType as CustomerType,
       status:
-        values.status as
-          | "ACTIVE"
-          | "INACTIVE"
-          | "PROSPECT"
-          | "PENDING"
-          | "SUSPENDED"
-          | "BLOCKED",
+        values.status as CustomerStatus,
     });
 
     navigate(

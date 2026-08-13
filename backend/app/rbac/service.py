@@ -195,18 +195,7 @@ class RBACService:
         if permission is None:
             return False
 
-        user_roles = self.user_role_repository.list_by_user(
+        return self.role_permission_repository.user_has_permission(
             user_id=user_id,
+            permission_id=permission.id,
         )
-
-        if not user_roles:
-            return False
-
-        for user_role in user_roles:
-            if self.role_permission_repository.has_permission(
-                role_id=user_role.role_id,
-                permission_id=permission.id,
-            ):
-                return True
-
-        return False

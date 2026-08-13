@@ -5,18 +5,18 @@ from __future__ import annotations
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Query, status
 
-from app.core.dependencies import DatabaseDependency
-from app.models import User
-from app.notifications.repository import NotificationRepository
+from app.auth.dependencies import CurrentActiveUserDependency
+from app.notifications.constants import NotificationType
+from app.notifications.dependencies import NotificationServiceDependency
 from app.notifications.schemas import (
     CreateNotificationRequest,
-    NotificationResponse,
+    NotificationListResponse,
+    NotificationRead,
+    NotificationStatus,
     UpdateNotificationRequest,
 )
-from app.notifications.service import NotificationService
-from app.rbac.dependencies import require_permission
 
 router = APIRouter(
     prefix="/notifications",
@@ -24,90 +24,119 @@ router = APIRouter(
 )
 
 
-def get_notification_service(
-    db: DatabaseDependency,
-) -> NotificationService:
-    """Return a notification service."""
-    repository = NotificationRepository(db)
-
-    return NotificationService(repository)
-
-
-NotificationServiceDependency = Annotated[
-    NotificationService,
-    Depends(get_notification_service),
-]
-
-NotificationReadPermission = Depends(
-    require_permission(
-        "notification",
-        "read",
-    ),
-)
-
-NotificationCreatePermission = Depends(
-    require_permission(
-        "notification",
-        "create",
-    ),
-)
-
-NotificationUpdatePermission = Depends(
-    require_permission(
-        "notification",
-        "update",
-    ),
-)
-
-
 @router.get(
     "",
-    response_model=list[NotificationResponse],
+    response_model=NotificationListResponse,
     status_code=status.HTTP_200_OK,
     summary="List notifications",
 )
 async def list_notifications(
     service: NotificationServiceDependency,
-    current_user: User = NotificationReadPermission,
-    offset: Annotated[int, Query(ge=0)] = 0,
-    limit: Annotated[int, Query(ge=1, le=100)] = 100,
-) -> list[NotificationResponse]:
-    """Return notifications for the current user."""
-    notifications = service.list_recipient_notifications(
-        current_user.id,
+    current_user: CurrentActiveUserDependency,
+    notification_type: Annotated[
+        NotificationType | None,
+        Query(alias="type"),
+    ] = None,
+    status_filter: Annotated[
+        NotificationStatus | None,
+        Query(alias="status"),
+    ] = None,
+    search: Annotated[str | None, Query()] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100, alias="pageSize")] = 10,
+) -> NotificationListResponse:
+    """Return the current user's own notifications."""
+    offset = (page - 1) * page_size
+
+    notifications = service.list_notifications(
+        organization_id=current_user.organization_id,
+        recipient_id=current_user.id,
+        notification_type=notification_type,
+        status=status_filter,
+        search=search,
         offset=offset,
-        limit=limit,
+        limit=page_size,
+    )
+    total = service.count_notifications(
+        organization_id=current_user.organization_id,
+        recipient_id=current_user.id,
+        notification_type=notification_type,
+        status=status_filter,
+        search=search,
     )
 
-    return [
-        NotificationResponse.model_validate(notification)
-        for notification in notifications
-    ]
+    return NotificationListResponse(
+        items=[NotificationRead.from_notification(n) for n in notifications],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=-(-total // page_size) if total else 0,
+    )
 
 
 @router.post(
     "",
-    response_model=NotificationResponse,
+    response_model=NotificationRead,
     status_code=status.HTTP_201_CREATED,
     summary="Create notification",
 )
 async def create_notification(
     request: CreateNotificationRequest,
     service: NotificationServiceDependency,
-    current_user: User = NotificationCreatePermission,
-) -> NotificationResponse:
-    """Create a notification."""
+    current_user: CurrentActiveUserDependency,
+) -> NotificationRead:
+    """Create a notification for a recipient in the caller's organization."""
     notification = service.create_notification(
         organization_id=current_user.organization_id,
         request=request,
     )
 
-    return NotificationResponse.model_validate(notification)
+    return NotificationRead.from_notification(notification)
+
+
+@router.get(
+    "/unread",
+    response_model=list[NotificationRead],
+    status_code=status.HTTP_200_OK,
+    summary="List unread notifications",
+)
+async def list_unread_notifications(
+    service: NotificationServiceDependency,
+    current_user: CurrentActiveUserDependency,
+) -> list[NotificationRead]:
+    """Return unread notifications for the current user."""
+    notifications = service.list_unread_notifications(
+        current_user.id,
+        current_user.organization_id,
+    )
+
+    return [NotificationRead.from_notification(n) for n in notifications]
+
+
+@router.get(
+    "/{notification_id}",
+    response_model=NotificationRead,
+    status_code=status.HTTP_200_OK,
+    summary="Get notification",
+)
+async def get_notification(
+    notification_id: UUID,
+    service: NotificationServiceDependency,
+    current_user: CurrentActiveUserDependency,
+) -> NotificationRead:
+    """Return a notification. Only the recipient may view it."""
+    notification = service.get_notification(
+        notification_id,
+        current_user.organization_id,
+        current_user.id,
+    )
+
+    return NotificationRead.from_notification(notification)
 
 
 @router.put(
     "/{notification_id}",
-    response_model=NotificationResponse,
+    response_model=NotificationRead,
     status_code=status.HTTP_200_OK,
     summary="Update notification",
 )
@@ -115,99 +144,59 @@ async def update_notification(
     notification_id: UUID,
     request: UpdateNotificationRequest,
     service: NotificationServiceDependency,
-    current_user: User = NotificationUpdatePermission,
-) -> NotificationResponse:
-    """Update a notification."""
+    current_user: CurrentActiveUserDependency,
+) -> NotificationRead:
+    """Update a notification. Only the recipient may update it."""
     notification = service.update_notification(
         notification_id,
+        current_user.organization_id,
+        current_user.id,
         request,
     )
 
-    return NotificationResponse.model_validate(notification)
-
-
-@router.get(
-    "/unread",
-    response_model=list[NotificationResponse],
-    status_code=status.HTTP_200_OK,
-    summary="List unread notifications",
-)
-async def list_unread_notifications(
-    service: NotificationServiceDependency,
-    current_user: User = NotificationReadPermission,
-) -> list[NotificationResponse]:
-    """Return unread notifications for the current user."""
-    notifications = service.list_unread_notifications(
-        current_user.id,
-    )
-
-    return [
-        NotificationResponse.model_validate(notification)
-        for notification in notifications
-    ]
-
-
-@router.get(
-    "/{notification_id}",
-    response_model=NotificationResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Get notification",
-)
-async def get_notification(
-    notification_id: UUID,
-    service: NotificationServiceDependency,
-    current_user: User = NotificationReadPermission,
-) -> NotificationResponse:
-    """Return a notification by its identifier."""
-    notification = service.get_notification(
-        notification_id,
-    )
-
-    return NotificationResponse.model_validate(
-        notification,
-    )
+    return NotificationRead.from_notification(notification)
 
 
 @router.patch(
     "/{notification_id}/read",
-    response_model=NotificationResponse,
+    response_model=NotificationRead,
     status_code=status.HTTP_200_OK,
     summary="Mark notification as read",
 )
 async def mark_notification_read(
     notification_id: UUID,
     service: NotificationServiceDependency,
-    current_user: User = NotificationUpdatePermission,
-) -> NotificationResponse:
-    """Mark a notification as read."""
+    current_user: CurrentActiveUserDependency,
+) -> NotificationRead:
+    """Mark a notification as read. Only the recipient may mark it."""
     notification = service.mark_as_read(
         notification_id,
+        current_user.organization_id,
+        current_user.id,
     )
 
-    return NotificationResponse.model_validate(
-        notification,
-    )
+    return NotificationRead.from_notification(notification)
 
 
 @router.patch(
     "/{notification_id}/unread",
-    response_model=NotificationResponse,
+    response_model=NotificationRead,
     status_code=status.HTTP_200_OK,
     summary="Mark notification as unread",
 )
 async def mark_notification_unread(
     notification_id: UUID,
     service: NotificationServiceDependency,
-    current_user: User = NotificationUpdatePermission,
-) -> NotificationResponse:
-    """Mark a notification as unread."""
+    current_user: CurrentActiveUserDependency,
+) -> NotificationRead:
+    """Mark a notification as unread. Only the recipient may mark it."""
     notification = service.mark_as_unread(
         notification_id,
+        current_user.organization_id,
+        current_user.id,
     )
 
-    return NotificationResponse.model_validate(
-        notification,
-    )
+    return NotificationRead.from_notification(notification)
 
 
 @router.delete(
@@ -218,14 +207,11 @@ async def mark_notification_unread(
 async def delete_notification(
     notification_id: UUID,
     service: NotificationServiceDependency,
-    current_user: User = Depends(
-        require_permission(
-            "notification",
-            "delete",
-        ),
-    ),
+    current_user: CurrentActiveUserDependency,
 ) -> None:
-    """Soft delete a notification."""
+    """Delete a notification. Only the recipient may delete it."""
     service.delete_notification(
         notification_id,
+        current_user.organization_id,
+        current_user.id,
     )

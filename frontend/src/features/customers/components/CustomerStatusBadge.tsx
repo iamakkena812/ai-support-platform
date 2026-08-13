@@ -7,10 +7,7 @@
 
 import {
   CheckCircle2,
-  Clock3,
   PauseCircle,
-  ShieldAlert,
-  UserPlus,
   XCircle,
 } from "lucide-react";
 
@@ -43,7 +40,7 @@ function getStatusConfig(
   readonly icon: React.JSX.Element;
 } {
   switch (status) {
-    case "ACTIVE":
+    case "active":
       return {
         label: "Active",
         className:
@@ -55,7 +52,7 @@ function getStatusConfig(
         ),
       };
 
-    case "INACTIVE":
+    case "inactive":
       return {
         label: "Inactive",
         className:
@@ -67,31 +64,7 @@ function getStatusConfig(
         ),
       };
 
-    case "PROSPECT":
-      return {
-        label: "Prospect",
-        className:
-          "border-blue-200 bg-blue-100 text-blue-700",
-        icon: (
-          <UserPlus
-            size={16}
-          />
-        ),
-      };
-
-    case "PENDING":
-      return {
-        label: "Pending",
-        className:
-          "border-yellow-200 bg-yellow-100 text-yellow-700",
-        icon: (
-          <Clock3
-            size={16}
-          />
-        ),
-      };
-
-    case "SUSPENDED":
+    case "suspended":
       return {
         label: "Suspended",
         className:
@@ -103,25 +76,13 @@ function getStatusConfig(
         ),
       };
 
-    case "BLOCKED":
-      return {
-        label: "Blocked",
-        className:
-          "border-red-200 bg-red-100 text-red-700",
-        icon: (
-          <ShieldAlert
-            size={16}
-          />
-        ),
-      };
-
     default:
       return {
         label: "Unknown",
         className:
           "border-slate-200 bg-slate-100 text-slate-700",
         icon: (
-          <ShieldAlert
+          <XCircle
             size={16}
           />
         ),

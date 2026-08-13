@@ -40,11 +40,6 @@ export interface TicketReference {
   readonly id: string;
 
   /**
-   * Ticket number.
-   */
-  readonly ticketNumber: string;
-
-  /**
    * Ticket title.
    */
   readonly title: string;
@@ -82,7 +77,7 @@ export interface Comment {
   /**
    * Associated ticket.
    */
-  readonly ticket?: TicketReference | null;
+  readonly ticket: TicketReference;
 
   /**
    * Creation timestamp.

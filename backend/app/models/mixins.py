@@ -6,8 +6,9 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import DateTime, ForeignKey, func
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
+
+from app.database.types import GUID
 
 
 class TimestampMixin:
@@ -31,7 +32,7 @@ class OrganizationMixin:
     """Mixin providing organization ownership."""
 
     organization_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
+        GUID(),
         ForeignKey("organizations.id", ondelete="RESTRICT"),
         nullable=False,
         index=True,

@@ -45,10 +45,15 @@ class ChatMapper:
     @staticmethod
     def conversation_response(
         conversation: Conversation,
+        message_count: int = 0,
     ) -> ConversationResponse:
         """Convert conversation model to response schema."""
-        return ConversationResponse.model_validate(
+        response = ConversationResponse.model_validate(
             conversation,
+        )
+
+        return response.model_copy(
+            update={"message_count": message_count},
         )
 
     @staticmethod

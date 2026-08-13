@@ -79,14 +79,21 @@ export function PermissionTable({
               scope="col"
               className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
             >
-              Description
+              Resource
             </th>
 
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
             >
-              ID
+              Action
+            </th>
+
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
+            >
+              Description
             </th>
           </tr>
         </thead>
@@ -126,12 +133,16 @@ export function PermissionTable({
                 {permission.name}
               </td>
 
-              <td className="px-6 py-4 text-sm text-gray-600">
-                {permission.description ?? "—"}
+              <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-gray-700">
+                {permission.resource}
               </td>
 
-              <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-gray-500">
-                {permission.id}
+              <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-gray-700">
+                {permission.action}
+              </td>
+
+              <td className="px-6 py-4 text-sm text-gray-600">
+                {permission.description ?? "—"}
               </td>
             </tr>
           ))}

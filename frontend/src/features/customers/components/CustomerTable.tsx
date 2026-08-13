@@ -40,7 +40,7 @@ export interface CustomerTableRow {
   /**
    * Company name.
    */
-  readonly company?: string;
+  readonly companyName?: string | null;
 
   /**
    * Email.
@@ -50,27 +50,12 @@ export interface CustomerTableRow {
   /**
    * Phone.
    */
-  readonly phone?: string;
+  readonly phone?: string | null;
 
   /**
    * Status.
    */
   readonly status: CustomerStatus;
-
-  /**
-   * Organization count.
-   */
-  readonly organizationCount: number;
-
-  /**
-   * Project count.
-   */
-  readonly projectCount: number;
-
-  /**
-   * Ticket count.
-   */
-  readonly ticketCount: number;
 }
 
 /**
@@ -132,18 +117,6 @@ export function CustomerTable({
 
             <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
               Company
-            </th>
-
-            <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
-              Organizations
-            </th>
-
-            <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
-              Projects
-            </th>
-
-            <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
-              Tickets
             </th>
 
             <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
@@ -227,32 +200,11 @@ export function CustomerTable({
                     />
 
                     {
-                      customer.company ??
+                      customer.companyName ??
                       "-"
                     }
 
                   </div>
-                </td>
-
-
-                <td className="px-6 py-4 text-center text-sm text-slate-700">
-                  {
-                    customer.organizationCount
-                  }
-                </td>
-
-
-                <td className="px-6 py-4 text-center text-sm text-slate-700">
-                  {
-                    customer.projectCount
-                  }
-                </td>
-
-
-                <td className="px-6 py-4 text-center text-sm text-slate-700">
-                  {
-                    customer.ticketCount
-                  }
                 </td>
 
 

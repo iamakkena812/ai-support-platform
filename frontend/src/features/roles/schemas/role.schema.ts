@@ -1,132 +1,47 @@
 /**
  * Role validation schemas.
  *
- * Provides Zod schemas used for
- * role forms and validation.
+ * Mirrors backend/app/roles/schemas.py exactly.
  */
 
-import {
-  z,
-} from "zod";
-
-
-
-/**
- * Role status values.
- */
-export const roleStatusSchema =
-  z.enum(
-    [
-      "ACTIVE",
-      "INACTIVE",
-      "ARCHIVED",
-    ],
-  );
-
+import { z } from "zod";
 
 
 /**
  * Create role schema.
  */
-export const createRoleSchema =
-  z.object({
+export const createRoleSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Role name must contain at least 2 characters.")
+    .max(100, "Role name cannot exceed 100 characters."),
 
-    name:
-      z
-        .string()
-        .min(
-          2,
-          "Role name must contain at least 2 characters.",
-        )
-        .max(
-          100,
-          "Role name cannot exceed 100 characters.",
-        ),
-
-
-    description:
-      z
-        .string()
-        .max(
-          500,
-          "Description cannot exceed 500 characters.",
-        )
-        .nullable()
-        .optional(),
-
-
-    permissionIds:
-      z
-        .array(
-          z.string(),
-        )
-        .optional(),
-
-  });
-
+  description: z
+    .string()
+    .max(255, "Description cannot exceed 255 characters.")
+    .nullable()
+    .optional(),
+});
 
 
 /**
  * Update role schema.
  */
-export const updateRoleSchema =
-  z.object({
+export const updateRoleSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Role name must contain at least 2 characters.")
+    .max(100, "Role name cannot exceed 100 characters.")
+    .optional(),
 
-    name:
-      z
-        .string()
-        .min(
-          2,
-          "Role name must contain at least 2 characters.",
-        )
-        .max(
-          100,
-          "Role name cannot exceed 100 characters.",
-        )
-        .optional(),
+  description: z
+    .string()
+    .max(255, "Description cannot exceed 255 characters.")
+    .nullable()
+    .optional(),
+});
 
 
-    description:
-      z
-        .string()
-        .max(
-          500,
-          "Description cannot exceed 500 characters.",
-        )
-        .nullable()
-        .optional(),
+export type CreateRoleFormValues = z.infer<typeof createRoleSchema>;
 
-
-    status:
-      roleStatusSchema
-        .optional(),
-
-
-    permissionIds:
-      z
-        .array(
-          z.string(),
-        )
-        .optional(),
-
-  });
-
-
-
-/**
- * Create role form values.
- */
-export type CreateRoleFormValues =
-  z.infer<
-    typeof createRoleSchema
-  >;
-
-
-
-/**
- * Update role form values.
- */
-export type UpdateRoleFormValues =
-  z.infer<
-    typeof updateRoleSchema
-  >;
+export type UpdateRoleFormValues = z.infer<typeof updateRoleSchema>;

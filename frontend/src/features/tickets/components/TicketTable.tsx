@@ -45,23 +45,23 @@ const getStatusClassName = (
 
   switch (status) {
 
-    case "OPEN":
+    case "open":
       return "bg-blue-100 text-blue-800";
 
 
-    case "IN_PROGRESS":
+    case "in_progress":
       return "bg-indigo-100 text-indigo-800";
 
 
-    case "WAITING":
+    case "pending":
       return "bg-yellow-100 text-yellow-800";
 
 
-    case "RESOLVED":
+    case "resolved":
       return "bg-green-100 text-green-800";
 
 
-    case "CLOSED":
+    case "closed":
       return "bg-gray-100 text-gray-800";
 
 
@@ -82,19 +82,19 @@ const getPriorityClassName = (
 
   switch (priority) {
 
-    case "LOW":
+    case "low":
       return "bg-green-100 text-green-800";
 
 
-    case "MEDIUM":
+    case "medium":
       return "bg-yellow-100 text-yellow-800";
 
 
-    case "HIGH":
+    case "high":
       return "bg-orange-100 text-orange-800";
 
 
-    case "URGENT":
+    case "critical":
       return "bg-red-100 text-red-800";
 
 
@@ -124,10 +124,6 @@ export const TicketTable: FC<TicketTableProps> = ({
           </th>
 
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
-            Customer
-          </th>
-
-          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
             Assignee
           </th>
 
@@ -154,7 +150,7 @@ export const TicketTable: FC<TicketTableProps> = ({
           <tr>
             <td
               className="px-4 py-8 text-center text-sm text-gray-500"
-              colSpan={7}
+              colSpan={6}
             >
               No tickets found.
             </td>
@@ -178,11 +174,9 @@ export const TicketTable: FC<TicketTableProps> = ({
               </td>
 
               <td className="px-4 py-4 text-sm text-gray-700">
-                {ticket.customer?.name ?? "—"}
-              </td>
-
-              <td className="px-4 py-4 text-sm text-gray-700">
-                {ticket.assignedUserName ?? "Unassigned"}
+                {ticket.assignedTo
+                  ? `#${ticket.assignedTo.slice(0, 8)}`
+                  : "Unassigned"}
               </td>
 
               <td className="px-4 py-4">

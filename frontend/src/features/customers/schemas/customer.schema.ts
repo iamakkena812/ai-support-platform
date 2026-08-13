@@ -2,7 +2,7 @@
  * Customer validation schemas.
  *
  * Contains Zod schemas for
- * customer forms.
+ * customer forms and API contracts.
  */
 
 import {
@@ -14,13 +14,55 @@ import {
  */
 export const customerStatusSchema =
   z.enum([
-    "ACTIVE",
-    "INACTIVE",
-    "PROSPECT",
-    "PENDING",
-    "SUSPENDED",
-    "BLOCKED",
+    "active",
+    "inactive",
+    "suspended",
   ]);
+
+/**
+ * Customer type schema.
+ */
+export const customerTypeSchema =
+  z.enum([
+    "individual",
+    "business",
+  ]);
+
+/**
+ * Customer entity schema.
+ */
+export const customerSchema =
+  z.object({
+    id: z.string(),
+    organizationId: z.string(),
+    name: z.string(),
+    companyName: z.string().nullish(),
+    email: z.string(),
+    phone: z.string().nullish(),
+    website: z.string().nullish(),
+    address: z.string().nullish(),
+    city: z.string().nullish(),
+    state: z.string().nullish(),
+    country: z.string().nullish(),
+    postalCode: z.string().nullish(),
+    customerType: customerTypeSchema,
+    status: customerStatusSchema,
+    isActive: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  });
+
+/**
+ * Customer list response schema.
+ */
+export const customerListResponseSchema =
+  z.object({
+    items: z.array(customerSchema),
+    total: z.number(),
+    page: z.number(),
+    pageSize: z.number(),
+    totalPages: z.number(),
+  });
 
 /**
  * Create customer schema.
@@ -33,22 +75,22 @@ export const createCustomerSchema =
     name: z
       .string()
       .min(
-        2,
-        "Customer name must contain at least 2 characters.",
+        1,
+        "Customer name is required.",
       )
       .max(
-        100,
-        "Customer name cannot exceed 100 characters.",
+        255,
+        "Customer name cannot exceed 255 characters.",
       ),
 
     /**
-     * Company.
+     * Company name.
      */
-    company: z
+    companyName: z
       .string()
       .max(
-        150,
-        "Company name cannot exceed 150 characters.",
+        255,
+        "Company name cannot exceed 255 characters.",
       )
       .optional(),
 
@@ -67,30 +109,19 @@ export const createCustomerSchema =
     phone: z
       .string()
       .max(
-        30,
-        "Phone number cannot exceed 30 characters.",
+        20,
+        "Phone number cannot exceed 20 characters.",
       )
       .optional(),
 
     /**
-     * Contact person.
+     * Website.
      */
-    contactPerson: z
+    website: z
       .string()
       .max(
-        100,
-        "Contact person cannot exceed 100 characters.",
-      )
-      .optional(),
-
-    /**
-     * Industry.
-     */
-    industry: z
-      .string()
-      .max(
-        100,
-        "Industry cannot exceed 100 characters.",
+        255,
+        "Website cannot exceed 255 characters.",
       )
       .optional(),
 
@@ -103,6 +134,57 @@ export const createCustomerSchema =
         500,
         "Address cannot exceed 500 characters.",
       )
+      .optional(),
+
+    /**
+     * City.
+     */
+    city: z
+      .string()
+      .max(
+        100,
+        "City cannot exceed 100 characters.",
+      )
+      .optional(),
+
+    /**
+     * State.
+     */
+    state: z
+      .string()
+      .max(
+        100,
+        "State cannot exceed 100 characters.",
+      )
+      .optional(),
+
+    /**
+     * Country.
+     */
+    country: z
+      .string()
+      .max(
+        100,
+        "Country cannot exceed 100 characters.",
+      )
+      .optional(),
+
+    /**
+     * Postal code.
+     */
+    postalCode: z
+      .string()
+      .max(
+        20,
+        "Postal code cannot exceed 20 characters.",
+      )
+      .optional(),
+
+    /**
+     * Customer type.
+     */
+    customerType:
+      customerTypeSchema
       .optional(),
 
     /**

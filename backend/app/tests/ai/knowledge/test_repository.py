@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
+from app.ai.knowledge.constants import KnowledgeVisibility
 from app.ai.knowledge.models import KnowledgeBase
 from app.ai.knowledge.repository import AIKnowledgeRepository
 
@@ -61,6 +62,30 @@ def test_get_by_id(
     assert found.id == knowledge.id
 
 
+def test_get_by_id_isolated_from_other_organization(
+    db_session: Session,
+) -> None:
+    """Test a knowledge base is not visible from another organization."""
+    repository = AIKnowledgeRepository(db_session)
+
+    knowledge = repository.create(
+        KnowledgeBase(
+            organization_id=uuid4(),
+            name="KB",
+            description="Description",
+            created_by=uuid4(),
+            updated_by=uuid4(),
+        ),
+    )
+
+    found = repository.get_by_id(
+        knowledge_id=knowledge.id,
+        organization_id=uuid4(),
+    )
+
+    assert found is None
+
+
 def test_get_by_name(
     db_session: Session,
 ) -> None:
@@ -91,18 +116,19 @@ def test_get_by_name(
 def test_list_knowledge(
     db_session: Session,
 ) -> None:
-    """Test listing knowledge bases."""
+    """Test listing knowledge bases owned by the caller."""
     repository = AIKnowledgeRepository(db_session)
 
     organization_id = uuid4()
+    user_id = uuid4()
 
     repository.create(
         KnowledgeBase(
             organization_id=organization_id,
             name="KB 1",
             description=None,
-            created_by=uuid4(),
-            updated_by=uuid4(),
+            created_by=user_id,
+            updated_by=user_id,
         ),
     )
 
@@ -111,6 +137,32 @@ def test_list_knowledge(
             organization_id=organization_id,
             name="KB 2",
             description=None,
+            created_by=user_id,
+            updated_by=user_id,
+        ),
+    )
+
+    results = repository.list(
+        organization_id=organization_id,
+        user_id=user_id,
+    )
+
+    assert len(results) == 2
+
+
+def test_list_knowledge_includes_organization_wide_items(
+    db_session: Session,
+) -> None:
+    """Test listing includes organization-wide items from other users."""
+    repository = AIKnowledgeRepository(db_session)
+
+    organization_id = uuid4()
+
+    repository.create(
+        KnowledgeBase(
+            organization_id=organization_id,
+            name="Shared",
+            visibility=KnowledgeVisibility.ORGANIZATION,
             created_by=uuid4(),
             updated_by=uuid4(),
         ),
@@ -118,9 +170,64 @@ def test_list_knowledge(
 
     results = repository.list(
         organization_id=organization_id,
+        user_id=uuid4(),
     )
 
-    assert len(results) == 2
+    assert len(results) == 1
+    assert results[0].name == "Shared"
+
+
+def test_list_knowledge_excludes_other_users_private_items(
+    db_session: Session,
+) -> None:
+    """Test listing excludes private items owned by other users."""
+    repository = AIKnowledgeRepository(db_session)
+
+    organization_id = uuid4()
+
+    repository.create(
+        KnowledgeBase(
+            organization_id=organization_id,
+            name="Private",
+            visibility=KnowledgeVisibility.PRIVATE,
+            created_by=uuid4(),
+            updated_by=uuid4(),
+        ),
+    )
+
+    results = repository.list(
+        organization_id=organization_id,
+        user_id=uuid4(),
+    )
+
+    assert results == []
+
+
+def test_count_knowledge_excludes_other_users_private_items(
+    db_session: Session,
+) -> None:
+    """Test counting excludes private items owned by other users."""
+    repository = AIKnowledgeRepository(db_session)
+
+    organization_id = uuid4()
+
+    repository.create(
+        KnowledgeBase(
+            organization_id=organization_id,
+            name="Private",
+            visibility=KnowledgeVisibility.PRIVATE,
+            created_by=uuid4(),
+            updated_by=uuid4(),
+        ),
+    )
+
+    assert (
+        repository.count(
+            organization_id=organization_id,
+            user_id=uuid4(),
+        )
+        == 0
+    )
 
 
 def test_exists(

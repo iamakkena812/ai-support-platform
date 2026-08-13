@@ -148,18 +148,7 @@ no_implicit_optional = true
 # --------------------------------------------------------------------
 # Pytest
 # --------------------------------------------------------------------
-
-[tool.pytest.ini_options]
-testpaths = [
-    "app/tests",
-]
-
-python_files = [
-    "test_*.py",
-]
-
-addopts = "-ra -q"
-
-# --------------------------------------------------------------------
-# Coverage
-# --------------------------------------------------------------------
+#
+# Test configuration lives in pytest.ini, which takes precedence
+# over this section whenever both exist. Keeping it there avoids a
+# second, silently-ignored copy of the same settings.

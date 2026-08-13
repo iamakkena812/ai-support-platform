@@ -33,6 +33,20 @@ class AttachmentNotFoundError(AttachmentError):
         )
 
 
+class AttachmentParentNotFoundError(AttachmentError):
+    """Raised when the parent ticket/comment is missing from the caller's org."""
+
+    def __init__(
+        self,
+        message: str = "Parent entity not found.",
+    ) -> None:
+        """Initialize the exception."""
+        super().__init__(
+            message=message,
+            status_code=HTTPStatus.NOT_FOUND,
+        )
+
+
 class AttachmentAlreadyExistsError(AttachmentError):
     """Raised when attempting to create a duplicate attachment."""
 

@@ -5,8 +5,9 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import ConfigDict, EmailStr, Field
 
+from app.core.schemas import CamelModel
 from app.customers.constants import (
     MAX_ADDRESS_LENGTH,
     MAX_CITY_LENGTH,
@@ -23,7 +24,7 @@ from app.customers.constants import (
 )
 
 
-class CreateCustomerRequest(BaseModel):
+class CreateCustomerRequest(CamelModel):
     """Request schema for creating a customer."""
 
     name: str = Field(
@@ -71,7 +72,7 @@ class CreateCustomerRequest(BaseModel):
     status: CustomerStatus = CustomerStatus.ACTIVE
 
 
-class UpdateCustomerRequest(BaseModel):
+class UpdateCustomerRequest(CamelModel):
     """Request schema for updating a customer."""
 
     name: str | None = Field(
@@ -116,7 +117,7 @@ class UpdateCustomerRequest(BaseModel):
     status: CustomerStatus | None = None
 
 
-class CustomerResponse(BaseModel):
+class CustomerResponse(CamelModel):
     """Customer response schema."""
 
     model_config = ConfigDict(from_attributes=True)
@@ -147,8 +148,11 @@ class CustomerResponse(BaseModel):
     updated_at: datetime
 
 
-class CustomerListResponse(BaseModel):
+class CustomerListResponse(CamelModel):
     """Paginated customer list response."""
 
     items: list[CustomerResponse]
     total: int
+    page: int
+    page_size: int
+    total_pages: int

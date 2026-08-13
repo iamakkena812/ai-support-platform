@@ -1,8 +1,9 @@
 /**
  * React Query hooks for user collection operations.
  *
- * Provides hooks for listing, creating,
- * deleting users, and retrieving statistics.
+ * Provides hooks for listing and creating users. Single-entity
+ * hooks (detail/update/delete) live in useUser.ts to avoid two
+ * competing definitions.
  */
 
 import {
@@ -10,6 +11,10 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+
+import {
+  userQueryKeys,
+} from "./useUser";
 
 import {
   userService,
@@ -24,28 +29,16 @@ import type {
 
 
 /**
- * User query keys.
+ * User list query keys.
  */
-export const userQueryKeys = {
+export const userListQueryKeys = {
+  all: userQueryKeys.all,
 
-  /**
-   * Base user key.
-   */
-  all: [
-    "users",
-  ] as const,
-
-
-  /**
-   * User list key.
-   *
-   * @param query User query.
-   */
   list: (
     query?: UserListQuery,
   ) =>
     [
-      "users",
+      ...userQueryKeys.all,
       "list",
       query,
     ] as const,
@@ -64,7 +57,7 @@ export function useUsers(
 
   return useQuery<UserListResponse>({
     queryKey:
-      userQueryKeys.list(
+      userListQueryKeys.list(
         query,
       ),
 
@@ -113,48 +106,6 @@ export function useCreateUser() {
 
         return userService.createUser(
           payload,
-        );
-      },
-
-
-    onSuccess:
-      async () => {
-
-        await queryClient.invalidateQueries(
-          {
-            queryKey:
-              userQueryKeys.all,
-          },
-        );
-      },
-  });
-}
-
-
-/**
- * Deletes a user.
- *
- * @returns User delete mutation.
- */
-export function useDeleteUser() {
-
-  const queryClient =
-    useQueryClient();
-
-
-  return useMutation<
-    void,
-    Error,
-    string
-  >({
-
-    mutationFn:
-      async (
-        id,
-      ) => {
-
-        await userService.deleteUser(
-          id,
         );
       },
 

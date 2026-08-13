@@ -53,7 +53,7 @@ export function OrganizationTable({
             </th>
 
             <th className="px-6 py-4 text-left text-sm font-semibold">
-              Description
+              Code
             </th>
 
             <th className="px-6 py-4 text-left text-sm font-semibold">
@@ -91,8 +91,7 @@ export function OrganizationTable({
                 </td>
 
                 <td className="px-6 py-4">
-                  {organization.description ??
-                    "-"}
+                  {organization.code}
                 </td>
 
                 <td className="px-6 py-4">

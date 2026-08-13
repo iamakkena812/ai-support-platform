@@ -9,6 +9,7 @@
  * Notification type.
  */
 export type NotificationType =
+  | "system"
   | "info"
   | "success"
   | "warning"

@@ -92,12 +92,19 @@ def get_current_user(
         ) from exc
 
     repository = UserRepository(db)
-    user = repository.get_by_id(user_id)
+    user = repository.get(user_id)
 
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account is inactive.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

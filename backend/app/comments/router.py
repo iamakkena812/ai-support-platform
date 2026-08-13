@@ -9,6 +9,7 @@ from fastapi import APIRouter, Query, status
 from app.auth.dependencies import CurrentActiveUserDependency
 from app.comments.dependencies import CommentServiceDependency
 from app.comments.schemas import (
+    CommentListResponse,
     CommentResponse,
     CreateCommentRequest,
     UpdateCommentRequest,
@@ -39,28 +40,50 @@ def create_comment(
         request=request,
     )
 
-    return CommentResponse.model_validate(comment)
+    return CommentResponse.from_comment(comment)
 
 
 @router.get(
     "",
-    response_model=list[CommentResponse],
+    response_model=CommentListResponse,
 )
 def list_comments(
     service: CommentServiceDependency,
-    _: CurrentActiveUserDependency,
-    ticket_id: UUID | None = Query(default=None),
-    offset: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=1, le=500),
-) -> list[CommentResponse]:
-    """Return comments."""
+    current_user: CurrentActiveUserDependency,
+    ticket_id: UUID | None = Query(default=None, alias="ticketId"),
+    author_id: UUID | None = Query(default=None, alias="authorId"),
+    is_internal: bool | None = Query(default=None, alias="isInternal"),
+    search: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100, alias="pageSize"),
+) -> CommentListResponse:
+    """Return a paginated list of comments, scoped to the caller's organization."""
+    offset = (page - 1) * page_size
+
     comments = service.list_comments(
+        organization_id=current_user.organization_id,
         ticket_id=ticket_id,
+        author_id=author_id,
+        is_internal=is_internal,
+        search=search,
         offset=offset,
-        limit=limit,
+        limit=page_size,
+    )
+    total = service.count_comments(
+        organization_id=current_user.organization_id,
+        ticket_id=ticket_id,
+        author_id=author_id,
+        is_internal=is_internal,
+        search=search,
     )
 
-    return [CommentResponse.model_validate(comment) for comment in comments]
+    return CommentListResponse(
+        items=[CommentResponse.from_comment(comment) for comment in comments],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=-(-total // page_size) if total else 0,
+    )
 
 
 @router.get(
@@ -70,12 +93,12 @@ def list_comments(
 def get_comment(
     comment_id: UUID,
     service: CommentServiceDependency,
-    _: CurrentActiveUserDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> CommentResponse:
-    """Return a comment."""
-    comment = service.get_comment(comment_id)
+    """Return a comment, scoped to the caller's organization."""
+    comment = service.get_comment(comment_id, current_user.organization_id)
 
-    return CommentResponse.model_validate(comment)
+    return CommentResponse.from_comment(comment)
 
 
 @router.put(
@@ -86,15 +109,17 @@ def update_comment(
     comment_id: UUID,
     request: UpdateCommentRequest,
     service: CommentServiceDependency,
-    _: CurrentActiveUserDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> CommentResponse:
-    """Update a comment."""
+    """Update a comment. Only the original author may update it."""
     comment = service.update_comment(
         comment_id,
+        current_user.organization_id,
+        current_user.id,
         request,
     )
 
-    return CommentResponse.model_validate(comment)
+    return CommentResponse.from_comment(comment)
 
 
 @router.delete(
@@ -104,7 +129,11 @@ def update_comment(
 def delete_comment(
     comment_id: UUID,
     service: CommentServiceDependency,
-    _: CurrentActiveUserDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> None:
-    """Delete a comment."""
-    service.delete_comment(comment_id)
+    """Delete a comment. Only the original author may delete it."""
+    service.delete_comment(
+        comment_id,
+        current_user.organization_id,
+        current_user.id,
+    )

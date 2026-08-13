@@ -5,8 +5,9 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
+from app.core.schemas import CamelModel
 from app.tickets.constants import (
     DESCRIPTION_MAX_LENGTH,
     DESCRIPTION_MIN_LENGTH,
@@ -17,7 +18,7 @@ from app.tickets.constants import (
 )
 
 
-class CreateTicketRequest(BaseModel):
+class CreateTicketRequest(CamelModel):
     """Request model for creating a ticket."""
 
     assigned_to: UUID | None = None
@@ -37,7 +38,7 @@ class CreateTicketRequest(BaseModel):
     priority: TicketPriority = TicketPriority.MEDIUM
 
 
-class UpdateTicketRequest(BaseModel):
+class UpdateTicketRequest(CamelModel):
     """Request model for updating a ticket."""
 
     title: str | None = Field(
@@ -61,13 +62,13 @@ class UpdateTicketRequest(BaseModel):
     is_active: bool | None = None
 
 
-class AssignTicketRequest(BaseModel):
+class AssignTicketRequest(CamelModel):
     """Assign a ticket to a user."""
 
     assignee_id: UUID
 
 
-class TicketResponse(BaseModel):
+class TicketResponse(CamelModel):
     """Ticket response."""
 
     model_config = ConfigDict(
@@ -97,9 +98,11 @@ class TicketResponse(BaseModel):
     updated_at: datetime
 
 
-class TicketListResponse(BaseModel):
+class TicketListResponse(CamelModel):
     """Paginated ticket response."""
 
+    items: list[TicketResponse]
     total: int
-
-    tickets: list[TicketResponse]
+    page: int
+    page_size: int
+    total_pages: int

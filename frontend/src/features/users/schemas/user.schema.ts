@@ -1,8 +1,9 @@
 /**
  * User validation schemas.
  *
- * Provides Zod schemas and inferred types for
- * user forms, API responses, and query validation.
+ * Mirrors backend/app/users/schemas.py exactly — field names,
+ * optionality, and the list-response shape must match what the
+ * API actually returns.
  */
 
 import { z } from "zod";
@@ -11,337 +12,165 @@ import { z } from "zod";
 /**
  * User entity schema.
  */
-export const UserSchema =
-  z.object({
-    id: z.string(),
+export const UserSchema = z.object({
+  id: z.string(),
 
-    firstName:
-      z.string(),
+  organizationId: z.string(),
 
-    lastName:
-      z.string(),
+  email: z.string(),
 
-    fullName:
-      z.string(),
+  username: z.string(),
 
-    email:
-      z.string(),
+  fullName: z.string(),
 
-    phone:
-      z.string()
-        .nullable()
-        .optional(),
+  isActive: z.boolean(),
 
-    avatarUrl:
-      z.string()
-        .nullable()
-        .optional(),
+  isSuperuser: z.boolean(),
 
-    status:
-      z.enum([
-        "active",
-        "inactive",
-        "suspended",
-      ]),
+  createdAt: z.string(),
 
-    organization:
-      z.object({
-        id:
-          z.string(),
-
-        name:
-          z.string(),
-      })
-      .nullable()
-      .optional(),
-
-    roles:
-      z.array(
-        z.object({
-          id:
-            z.string(),
-
-          name:
-            z.string(),
-
-          description:
-            z.string()
-              .nullable()
-              .optional(),
-        }),
-      ),
-
-    lastLoginAt:
-      z.string()
-        .nullable()
-        .optional(),
-
-    createdAt:
-      z.string(),
-
-    updatedAt:
-      z.string(),
-  });
+  updatedAt: z.string(),
+});
 
 
 /**
  * Create user schema.
  */
-export const createUserSchema =
-  z.object({
-    organizationId:
-      z.uuid(
-        "A valid organization identifier is required.",
-      ),
+export const createUserSchema = z.object({
+  organizationId: z.uuid("A valid organization identifier is required."),
 
-    firstName:
-      z.string()
-        .trim()
-        .min(
-          1,
-          "First name is required.",
-        )
-        .max(
-          100,
-          "First name must not exceed 100 characters.",
-        ),
+  username: z
+    .string()
+    .trim()
+    .min(3, "Username must be at least 3 characters.")
+    .max(100),
 
-    lastName:
-      z.string()
-        .trim()
-        .min(
-          1,
-          "Last name is required.",
-        )
-        .max(
-          100,
-          "Last name must not exceed 100 characters.",
-        ),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Full name is required.")
+    .max(255),
 
-    email:
-      z.string()
-        .trim()
-        .email(
-          "A valid email address is required.",
-        ),
+  email: z
+    .string()
+    .trim()
+    .email("A valid email address is required."),
 
-    password:
-      z.string()
-        .min(
-          8,
-          "Password must contain at least 8 characters.",
-        ),
+  password: z
+    .string()
+    .min(8, "Password must contain at least 8 characters."),
 
-    roleIds:
-      z.array(
-        z.uuid(),
-      )
-      .optional(),
-  });
+  isActive: z.boolean().optional(),
+
+  isSuperuser: z.boolean().optional(),
+});
 
 
 /**
  * Update user schema.
  */
-export const updateUserSchema =
-  z.object({
-    firstName:
-      z.string()
-        .trim()
-        .min(
-          1,
-          "First name is required.",
-        )
-        .max(
-          100,
-          "First name must not exceed 100 characters.",
-        )
-        .optional(),
+export const updateUserSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, "Username must be at least 3 characters.")
+    .max(100)
+    .optional(),
 
-    lastName:
-      z.string()
-        .trim()
-        .min(
-          1,
-          "Last name is required.",
-        )
-        .max(
-          100,
-          "Last name must not exceed 100 characters.",
-        )
-        .optional(),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Full name is required.")
+    .max(255)
+    .optional(),
 
-    phone:
-      z.string()
-        .trim()
-        .optional()
-        .or(
-          z.literal(""),
-        ),
+  email: z
+    .string()
+    .trim()
+    .email("A valid email address is required.")
+    .optional(),
 
-    avatarUrl:
-      z.string()
-        .trim()
-        .url(
-          "Avatar URL must be a valid URL.",
-        )
-        .optional()
-        .or(
-          z.literal(""),
-        ),
+  isActive: z.boolean().optional(),
 
-    status:
-      z.enum([
-        "active",
-        "inactive",
-        "suspended",
-      ])
-      .optional(),
-
-    roleIds:
-      z.array(
-        z.uuid(),
-      )
-      .optional(),
-  });
+  isSuperuser: z.boolean().optional(),
+});
 
 
 /**
  * User filters schema.
  */
-export const userFiltersSchema =
-  z.object({
-    search:
-      z.string()
-        .trim()
-        .optional(),
+export const userFiltersSchema = z.object({
+  search: z.string().trim().optional(),
 
-    organizationId:
-      z.uuid()
-        .optional(),
-
-    status:
-      z.enum([
-        "active",
-        "inactive",
-        "suspended",
-      ])
-      .optional(),
-
-    role:
-      z.enum([
-        "admin",
-        "manager",
-        "agent",
-        "customer",
-      ])
-      .optional(),
-  });
+  isActive: z.boolean().optional(),
+});
 
 
 /**
  * User list query schema.
  */
-export const userListQuerySchema =
-  z.object({
-    page:
-      z.number()
-        .int()
-        .positive()
-        .default(1),
+export const userListQuerySchema = z.object({
+  page: z.number().int().positive().default(1),
 
-    pageSize:
-      z.number()
-        .int()
-        .positive()
-        .max(100)
-        .default(10),
-  });
+  pageSize: z.number().int().positive().max(100).default(10),
+});
 
 
 /**
  * User list response schema.
  */
-export const userListResponseSchema =
-  z.object({
-    items:
-      z.array(
-        UserSchema,
-      ),
+export const userListResponseSchema = z.object({
+  users: z.array(UserSchema),
 
-    total:
-      z.number(),
+  total: z.number(),
 
-    page:
-      z.number(),
+  page: z.number(),
 
-    pageSize:
-      z.number(),
+  pageSize: z.number(),
 
-    totalPages:
-      z.number(),
-  });
+  totalPages: z.number(),
+});
 
 
 /**
- * User statistics schema.
+ * User form schema.
+ *
+ * Supports both create and update form modes.
  */
-export const userStatisticsSchema =
-  z.object({
-    total:
-      z.number(),
+export const userFormSchema = z.object({
+  organizationId: z.string().optional(),
 
-    active:
-      z.number(),
+  username: z
+    .string()
+    .trim()
+    .min(3, "Username must be at least 3 characters.")
+    .max(100),
 
-    inactive:
-      z.number(),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Full name is required.")
+    .max(255),
 
-    suspended:
-      z.number(),
-  });
+  email: z
+    .string()
+    .trim()
+    .email("A valid email address is required."),
 
+  password: z.string().optional(),
 
-/**
- * Create user form data.
- */
-export type CreateUserFormData =
-  z.infer<
-    typeof createUserSchema
-  >;
+  isActive: z.boolean().optional(),
 
-
-/**
- * Update user form data.
- */
-export type UpdateUserFormData =
-  z.infer<
-    typeof updateUserSchema
-  >;
+  isSuperuser: z.boolean().optional(),
+});
 
 
-/**
- * User filter form data.
- */
-export type UserFilterFormData =
-  z.infer<
-    typeof userFiltersSchema
-  >;
+export type CreateUserFormData = z.infer<typeof createUserSchema>;
 
+export type UpdateUserFormData = z.infer<typeof updateUserSchema>;
 
-/**
- * User list query form data.
- */
-export type UserListQueryFormData =
-  z.infer<
-    typeof userListQuerySchema
-  >;
+export type UserFilterFormData = z.infer<typeof userFiltersSchema>;
 
+export type UserListQueryFormData = z.infer<typeof userListQuerySchema>;
 
-/**
- * User schema type.
- */
-export type UserSchemaType =
-  z.infer<
-    typeof UserSchema
-  >;
+export type UserSchemaType = z.infer<typeof UserSchema>;

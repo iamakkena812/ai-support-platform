@@ -151,7 +151,7 @@ export function AttachmentDetailsPage(): React.JSX.Element {
 
             <dd className="mt-1 text-gray-900">
               {attachment.ticket
-                ? `${attachment.ticket.ticketNumber} — ${attachment.ticket.title}`
+                ? attachment.ticket.title
                 : "—"}
             </dd>
           </div>

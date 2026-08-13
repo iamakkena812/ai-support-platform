@@ -122,9 +122,9 @@ export function PermissionStats({
       />
 
       <StatisticItem
-        label="Permission Groups"
-        value={statistics.groups}
-        description="Logical permission groups"
+        label="Resources"
+        value={statistics.resources}
+        description="Distinct resources covered"
       />
 
       <StatisticItem

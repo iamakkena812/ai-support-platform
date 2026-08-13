@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
+
 PROJECT_NAME_MIN_LENGTH = 3
 PROJECT_NAME_MAX_LENGTH = 100
 
@@ -13,13 +15,27 @@ PROJECT_KEY_MAX_LENGTH = 10
 DEFAULT_PROJECT_LIMIT = 100
 DEFAULT_PROJECT_OFFSET = 0
 
-PROJECT_STATUS_ACTIVE = "active"
-PROJECT_STATUS_ARCHIVED = "archived"
 
-PROJECT_STATUSES: tuple[str, ...] = (
-    PROJECT_STATUS_ACTIVE,
-    PROJECT_STATUS_ARCHIVED,
-)
+class ProjectStatus(StrEnum):
+    """Supported project statuses."""
+
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    ARCHIVED = "archived"
+    COMPLETED = "completed"
+
+
+class ProjectPriority(StrEnum):
+    """Supported project priorities."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+DEFAULT_STATUS = ProjectStatus.ACTIVE
+DEFAULT_PRIORITY = ProjectPriority.MEDIUM
 
 PROJECT_NOT_FOUND = "Project not found."
 PROJECT_ALREADY_EXISTS = "Project already exists."

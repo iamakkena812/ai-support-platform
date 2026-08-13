@@ -180,7 +180,7 @@ export const AttachmentCard: FC<
           {attachment.ticket
             ? attachment
                 .ticket
-                .ticketNumber
+                .title
             : "—"}
         </span>
       </div>

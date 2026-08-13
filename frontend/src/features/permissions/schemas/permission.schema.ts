@@ -1,8 +1,7 @@
 /**
  * Permission validation schemas.
  *
- * Defines runtime validation schemas for permission
- * creation, updates, and filtering.
+ * Mirrors backend/app/permissions/schemas.py exactly.
  */
 
 import { z } from "zod";
@@ -17,16 +16,22 @@ export const createPermissionSchema = z.object({
     .min(1, "Permission name is required")
     .max(100, "Permission name must not exceed 100 characters"),
 
+  resource: z
+    .string()
+    .trim()
+    .min(1, "Resource is required")
+    .max(100, "Resource must not exceed 100 characters"),
+
+  action: z
+    .string()
+    .trim()
+    .min(1, "Action is required")
+    .max(100, "Action must not exceed 100 characters"),
+
   description: z
     .string()
     .trim()
-    .max(500, "Description must not exceed 500 characters")
-    .nullable()
-    .optional(),
-
-  groupId: z
-    .string()
-    .uuid("Invalid permission group identifier")
+    .max(255, "Description must not exceed 255 characters")
     .nullable()
     .optional(),
 });
@@ -42,16 +47,24 @@ export const updatePermissionSchema = z.object({
     .max(100, "Permission name must not exceed 100 characters")
     .optional(),
 
+  resource: z
+    .string()
+    .trim()
+    .min(1, "Resource is required")
+    .max(100, "Resource must not exceed 100 characters")
+    .optional(),
+
+  action: z
+    .string()
+    .trim()
+    .min(1, "Action is required")
+    .max(100, "Action must not exceed 100 characters")
+    .optional(),
+
   description: z
     .string()
     .trim()
-    .max(500, "Description must not exceed 500 characters")
-    .nullable()
-    .optional(),
-
-  groupId: z
-    .string()
-    .uuid("Invalid permission group identifier")
+    .max(255, "Description must not exceed 255 characters")
     .nullable()
     .optional(),
 });
@@ -66,25 +79,17 @@ export const permissionFilterSchema = z.object({
     .max(100, "Search text must not exceed 100 characters")
     .optional(),
 
-  groupId: z
-    .string()
-    .uuid("Invalid permission group identifier")
-    .optional(),
-
   resource: z
     .string()
     .trim()
     .max(100, "Resource must not exceed 100 characters")
     .optional(),
-});
 
-/**
- * Role permission mapping schema.
- */
-export const rolePermissionMappingSchema = z.object({
-  permissionIds: z
-    .array(z.string().uuid("Invalid permission identifier"))
-    .max(500, "A role cannot have more than 500 permissions"),
+  action: z
+    .string()
+    .trim()
+    .max(100, "Action must not exceed 100 characters")
+    .optional(),
 });
 
 /**
@@ -106,11 +111,4 @@ export type UpdatePermissionFormValues = z.infer<
  */
 export type PermissionFilterFormValues = z.infer<
   typeof permissionFilterSchema
->;
-
-/**
- * Inferred role permission mapping values.
- */
-export type RolePermissionMappingFormValues = z.infer<
-  typeof rolePermissionMappingSchema
 >;

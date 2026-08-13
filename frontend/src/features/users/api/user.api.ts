@@ -12,7 +12,6 @@ import type {
   User,
   UserListQuery,
   UserListResponse,
-  UserStatistics,
 } from "../types/user.types";
 
 
@@ -38,7 +37,10 @@ export const getUsers =
       await apiClient.get(
         BASE_PATH,
         {
-          params: query,
+          params: {
+            page: query?.page,
+            pageSize: query?.pageSize,
+          },
         },
       );
 
@@ -104,7 +106,7 @@ export const updateUser =
     const {
       data,
     } =
-      await apiClient.put(
+      await apiClient.patch(
         `${BASE_PATH}/${userId}`,
         payload,
       );
@@ -125,22 +127,4 @@ export const deleteUser =
     await apiClient.delete(
       `${BASE_PATH}/${userId}`,
     );
-  };
-
-
-/**
- * Retrieves user statistics.
- *
- * @returns User statistics.
- */
-export const getUserStatistics =
-  async (): Promise<UserStatistics> => {
-    const {
-      data,
-    } =
-      await apiClient.get(
-        `${BASE_PATH}/statistics`,
-      );
-
-    return data;
   };

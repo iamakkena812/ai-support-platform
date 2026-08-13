@@ -9,12 +9,16 @@
  * Customer status.
  */
 export type CustomerStatus =
-  | "ACTIVE"
-  | "INACTIVE"
-  | "PROSPECT"
-  | "PENDING"
-  | "SUSPENDED"
-  | "BLOCKED";
+  | "active"
+  | "inactive"
+  | "suspended";
+
+/**
+ * Customer type.
+ */
+export type CustomerType =
+  | "individual"
+  | "business";
 
 /**
  * Customer entity.
@@ -26,6 +30,11 @@ export interface Customer {
   readonly id: string;
 
   /**
+   * Organization identifier.
+   */
+  readonly organizationId: string;
+
+  /**
    * Customer name.
    */
   readonly name: string;
@@ -33,7 +42,7 @@ export interface Customer {
   /**
    * Company name.
    */
-  readonly company?: string;
+  readonly companyName?: string | null;
 
   /**
    * Email address.
@@ -43,22 +52,42 @@ export interface Customer {
   /**
    * Phone number.
    */
-  readonly phone?: string;
+  readonly phone?: string | null;
 
   /**
-   * Contact person.
+   * Website.
    */
-  readonly contactPerson?: string;
-
-  /**
-   * Industry.
-   */
-  readonly industry?: string;
+  readonly website?: string | null;
 
   /**
    * Address.
    */
-  readonly address?: string;
+  readonly address?: string | null;
+
+  /**
+   * City.
+   */
+  readonly city?: string | null;
+
+  /**
+   * State.
+   */
+  readonly state?: string | null;
+
+  /**
+   * Country.
+   */
+  readonly country?: string | null;
+
+  /**
+   * Postal code.
+   */
+  readonly postalCode?: string | null;
+
+  /**
+   * Customer type.
+   */
+  readonly customerType: CustomerType;
 
   /**
    * Customer status.
@@ -66,19 +95,9 @@ export interface Customer {
   readonly status: CustomerStatus;
 
   /**
-   * Organization count.
+   * Whether the customer is active.
    */
-  readonly organizationCount: number;
-
-  /**
-   * Project count.
-   */
-  readonly projectCount: number;
-
-  /**
-   * Ticket count.
-   */
-  readonly ticketCount: number;
+  readonly isActive: boolean;
 
   /**
    * Created timestamp.
@@ -101,9 +120,9 @@ export interface CreateCustomerPayload {
   readonly name: string;
 
   /**
-   * Company.
+   * Company name.
    */
-  readonly company?: string;
+  readonly companyName?: string;
 
   /**
    * Email.
@@ -116,19 +135,39 @@ export interface CreateCustomerPayload {
   readonly phone?: string;
 
   /**
-   * Contact person.
+   * Website.
    */
-  readonly contactPerson?: string;
-
-  /**
-   * Industry.
-   */
-  readonly industry?: string;
+  readonly website?: string;
 
   /**
    * Address.
    */
   readonly address?: string;
+
+  /**
+   * City.
+   */
+  readonly city?: string;
+
+  /**
+   * State.
+   */
+  readonly state?: string;
+
+  /**
+   * Country.
+   */
+  readonly country?: string;
+
+  /**
+   * Postal code.
+   */
+  readonly postalCode?: string;
+
+  /**
+   * Customer type.
+   */
+  readonly customerType?: CustomerType;
 
   /**
    * Status.
@@ -146,9 +185,9 @@ export interface UpdateCustomerPayload {
   readonly name?: string;
 
   /**
-   * Company.
+   * Company name.
    */
-  readonly company?: string;
+  readonly companyName?: string;
 
   /**
    * Email.
@@ -161,19 +200,39 @@ export interface UpdateCustomerPayload {
   readonly phone?: string;
 
   /**
-   * Contact person.
+   * Website.
    */
-  readonly contactPerson?: string;
-
-  /**
-   * Industry.
-   */
-  readonly industry?: string;
+  readonly website?: string;
 
   /**
    * Address.
    */
   readonly address?: string;
+
+  /**
+   * City.
+   */
+  readonly city?: string;
+
+  /**
+   * State.
+   */
+  readonly state?: string;
+
+  /**
+   * Country.
+   */
+  readonly country?: string;
+
+  /**
+   * Postal code.
+   */
+  readonly postalCode?: string;
+
+  /**
+   * Customer type.
+   */
+  readonly customerType?: CustomerType;
 
   /**
    * Status.
@@ -196,11 +255,6 @@ export interface CustomerQueryFilters {
   readonly status?: CustomerStatus;
 
   /**
-   * Industry filter.
-   */
-  readonly industry?: string;
-
-  /**
    * Page number.
    */
   readonly page?: number;
@@ -208,7 +262,7 @@ export interface CustomerQueryFilters {
   /**
    * Page size.
    */
-  readonly limit?: number;
+  readonly pageSize?: number;
 }
 
 /**
@@ -233,10 +287,10 @@ export interface CustomerListResponse {
   /**
    * Page size.
    */
-  readonly limit: number;
+  readonly pageSize: number;
 
   /**
    * Total pages.
    */
-  readonly pages: number;
+  readonly totalPages: number;
 }

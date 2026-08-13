@@ -10,6 +10,7 @@ from app.auth.dependencies import CurrentActiveUserDependency
 from app.customers.dependencies import CustomerServiceDependency
 from app.customers.schemas import (
     CreateCustomerRequest,
+    CustomerListResponse,
     CustomerResponse,
     UpdateCustomerRequest,
 )
@@ -41,21 +42,30 @@ def create_customer(
 
 @router.get(
     "",
-    response_model=list[CustomerResponse],
+    response_model=CustomerListResponse,
 )
 def list_customers(
     service: CustomerServiceDependency,
     _: CurrentActiveUserDependency,
-    offset: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=1, le=500),
-) -> list[CustomerResponse]:
-    """Return customers."""
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=100, ge=1, le=500, alias="pageSize"),
+) -> CustomerListResponse:
+    """Return a paginated list of customers."""
+    offset = (page - 1) * page_size
+
     customers = service.list_customers(
         offset=offset,
-        limit=limit,
+        limit=page_size,
     )
+    total = service.count_customers()
 
-    return [CustomerResponse.model_validate(customer) for customer in customers]
+    return CustomerListResponse(
+        items=[CustomerResponse.model_validate(customer) for customer in customers],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=-(-total // page_size) if total else 0,
+    )
 
 
 @router.get(
@@ -73,7 +83,7 @@ def get_customer(
     return CustomerResponse.model_validate(customer)
 
 
-@router.put(
+@router.patch(
     "/{customer_id}",
     response_model=CustomerResponse,
 )

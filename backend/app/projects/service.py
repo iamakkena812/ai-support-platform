@@ -5,13 +5,19 @@ from __future__ import annotations
 from uuid import UUID
 
 from app.models.project import Project
+from app.projects.constants import (
+    PROJECT_KEY_MAX_LENGTH,
+    PROJECT_KEY_MIN_LENGTH,
+    ProjectPriority,
+    ProjectStatus,
+)
 from app.projects.exceptions import (
-    ProjectKeyAlreadyExistsError,
     ProjectNameAlreadyExistsError,
     ProjectNotFoundError,
 )
 from app.projects.schemas import (
     ProjectCreateRequest,
+    ProjectStatisticsResponse,
     ProjectUpdateRequest,
 )
 from app.repositories.project import ProjectRepository
@@ -27,27 +33,53 @@ class ProjectService:
         """Initialize the project service."""
         self._repository = repository
 
+    def _generate_unique_key(
+        self,
+        name: str,
+    ) -> str:
+        """Derive a unique, short project key from its name."""
+        base = "".join(
+            character
+            for character in name.upper()
+            if character.isalnum()
+        )[:PROJECT_KEY_MAX_LENGTH]
+
+        if len(base) < PROJECT_KEY_MIN_LENGTH:
+            base = (base + "PROJECT")[:PROJECT_KEY_MAX_LENGTH]
+
+        candidate = base
+        suffix = 1
+
+        while self._repository.exists_by_key(candidate):
+            suffix += 1
+            suffix_text = str(suffix)
+            trimmed = base[: PROJECT_KEY_MAX_LENGTH - len(suffix_text)]
+            candidate = f"{trimmed}{suffix_text}"
+
+        return candidate
+
     def create_project(
         self,
         request: ProjectCreateRequest,
+        *,
+        organization_id: UUID,
+        owner_id: UUID,
     ) -> Project:
-        """Create a new project."""
+        """Create a new project owned by the requesting user."""
         if self._repository.exists_by_name(request.name):
             raise ProjectNameAlreadyExistsError(
                 "Project name already exists.",
             )
 
-        if self._repository.exists_by_key(request.key):
-            raise ProjectKeyAlreadyExistsError(
-                "Project key already exists.",
-            )
-
         project = Project(
             name=request.name,
-            key=request.key,
+            key=self._generate_unique_key(request.name),
             description=request.description,
-            organization_id=request.organization_id,
-            owner_id=request.owner_id,
+            organization_id=organization_id,
+            owner_id=owner_id,
+            priority=request.priority,
+            start_date=request.start_date,
+            end_date=request.end_date,
         )
 
         return self._repository.create(project)
@@ -71,11 +103,17 @@ class ProjectService:
         *,
         offset: int = 0,
         limit: int = 100,
+        search: str | None = None,
+        status: ProjectStatus | None = None,
+        priority: ProjectPriority | None = None,
     ) -> list[Project]:
-        """Return a list of projects."""
+        """Return a list of projects, optionally filtered."""
         return self._repository.list(
             offset=offset,
             limit=limit,
+            search=search,
+            status=status,
+            priority=priority,
         )
 
     def update_project(
@@ -86,17 +124,27 @@ class ProjectService:
         """Update a project."""
         project = self.get_project(project_id)
 
-        if request.name is not None:
+        if request.name is not None and request.name != project.name:
+            if self._repository.exists_by_name(request.name):
+                raise ProjectNameAlreadyExistsError(
+                    "Project name already exists.",
+                )
             project.name = request.name
 
         if request.description is not None:
             project.description = request.description
 
-        if request.owner_id is not None:
-            project.owner_id = request.owner_id
+        if request.status is not None:
+            project.status = request.status
 
-        if request.is_active is not None:
-            project.is_active = request.is_active
+        if request.priority is not None:
+            project.priority = request.priority
+
+        if request.start_date is not None:
+            project.start_date = request.start_date
+
+        if request.end_date is not None:
+            project.end_date = request.end_date
 
         return self._repository.update(project)
 
@@ -110,6 +158,25 @@ class ProjectService:
 
     def count_projects(
         self,
+        *,
+        search: str | None = None,
+        status: ProjectStatus | None = None,
+        priority: ProjectPriority | None = None,
     ) -> int:
-        """Return the total number of active projects."""
-        return self._repository.count()
+        """Return the total number of active projects, optionally filtered."""
+        return self._repository.count(
+            search=search,
+            status=status,
+            priority=priority,
+        )
+
+    def get_statistics(
+        self,
+    ) -> ProjectStatisticsResponse:
+        """Return aggregate project statistics."""
+        return ProjectStatisticsResponse(
+            total=self._repository.count(),
+            active=self._repository.count_by_status(ProjectStatus.ACTIVE),
+            completed=self._repository.count_by_status(ProjectStatus.COMPLETED),
+            archived=self._repository.count_by_status(ProjectStatus.ARCHIVED),
+        )

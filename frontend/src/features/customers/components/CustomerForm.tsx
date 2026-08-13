@@ -21,44 +21,31 @@ import {
 const STATUS_OPTIONS = [
   {
     label: "Active",
-    value: "ACTIVE",
+    value: "active",
   },
   {
     label: "Inactive",
-    value: "INACTIVE",
-  },
-  {
-    label: "Prospect",
-    value: "PROSPECT",
-  },
-  {
-    label: "Pending",
-    value: "PENDING",
+    value: "inactive",
   },
   {
     label: "Suspended",
-    value: "SUSPENDED",
-  },
-  {
-    label: "Blocked",
-    value: "BLOCKED",
+    value: "suspended",
   },
 ] as const;
 
 /**
- * Select option.
+ * Customer type options.
  */
-export interface CustomerSelectOption {
-  /**
-   * Option label.
-   */
-  readonly label: string;
-
-  /**
-   * Option value.
-   */
-  readonly value: string;
-}
+const TYPE_OPTIONS = [
+  {
+    label: "Business",
+    value: "business",
+  },
+  {
+    label: "Individual",
+    value: "individual",
+  },
+] as const;
 
 /**
  * Customer form values.
@@ -72,7 +59,7 @@ export interface CustomerFormValues {
   /**
    * Company name.
    */
-  readonly company: string;
+  readonly companyName: string;
 
   /**
    * Email.
@@ -85,19 +72,39 @@ export interface CustomerFormValues {
   readonly phone: string;
 
   /**
-   * Contact person.
+   * Website.
    */
-  readonly contactPerson: string;
-
-  /**
-   * Industry.
-   */
-  readonly industry: string;
+  readonly website: string;
 
   /**
    * Address.
    */
   readonly address: string;
+
+  /**
+   * City.
+   */
+  readonly city: string;
+
+  /**
+   * State.
+   */
+  readonly state: string;
+
+  /**
+   * Country.
+   */
+  readonly country: string;
+
+  /**
+   * Postal code.
+   */
+  readonly postalCode: string;
+
+  /**
+   * Customer type.
+   */
+  readonly customerType: string;
 
   /**
    * Status.
@@ -151,8 +158,8 @@ export function CustomerForm({
     name:
       initialValues?.name ?? "",
 
-    company:
-      initialValues?.company ?? "",
+    companyName:
+      initialValues?.companyName ?? "",
 
     email:
       initialValues?.email ?? "",
@@ -160,18 +167,31 @@ export function CustomerForm({
     phone:
       initialValues?.phone ?? "",
 
-    contactPerson:
-      initialValues?.contactPerson ?? "",
-
-    industry:
-      initialValues?.industry ?? "",
+    website:
+      initialValues?.website ?? "",
 
     address:
       initialValues?.address ?? "",
 
+    city:
+      initialValues?.city ?? "",
+
+    state:
+      initialValues?.state ?? "",
+
+    country:
+      initialValues?.country ?? "",
+
+    postalCode:
+      initialValues?.postalCode ?? "",
+
+    customerType:
+      initialValues?.customerType ??
+      "business",
+
     status:
       initialValues?.status ??
-      "PROSPECT",
+      "active",
   });
 
   function updateField<
@@ -215,11 +235,11 @@ export function CustomerForm({
         />
 
         <Input
-          label="Company"
-          value={values.company}
+          label="Company Name"
+          value={values.companyName}
           onChange={(event) =>
             updateField(
-              "company",
+              "companyName",
               event.target.value,
             )
           }
@@ -250,22 +270,11 @@ export function CustomerForm({
         />
 
         <Input
-          label="Contact Person"
-          value={values.contactPerson}
+          label="Website"
+          value={values.website}
           onChange={(event) =>
             updateField(
-              "contactPerson",
-              event.target.value,
-            )
-          }
-        />
-
-        <Input
-          label="Industry"
-          value={values.industry}
-          onChange={(event) =>
-            updateField(
-              "industry",
+              "website",
               event.target.value,
             )
           }
@@ -280,7 +289,62 @@ export function CustomerForm({
               event.target.value,
             )
           }
-          className="md:col-span-2"
+        />
+
+        <Input
+          label="City"
+          value={values.city}
+          onChange={(event) =>
+            updateField(
+              "city",
+              event.target.value,
+            )
+          }
+        />
+
+        <Input
+          label="State"
+          value={values.state}
+          onChange={(event) =>
+            updateField(
+              "state",
+              event.target.value,
+            )
+          }
+        />
+
+        <Input
+          label="Country"
+          value={values.country}
+          onChange={(event) =>
+            updateField(
+              "country",
+              event.target.value,
+            )
+          }
+        />
+
+        <Input
+          label="Postal Code"
+          value={values.postalCode}
+          onChange={(event) =>
+            updateField(
+              "postalCode",
+              event.target.value,
+            )
+          }
+        />
+
+        <Select
+          label="Customer Type"
+          value={values.customerType}
+          options={TYPE_OPTIONS}
+          onChange={(event) =>
+            updateField(
+              "customerType",
+              event.target.value,
+            )
+          }
         />
 
         <Select

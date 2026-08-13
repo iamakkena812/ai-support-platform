@@ -1,8 +1,9 @@
 /**
- * React Query hooks for organization operations.
+ * React Query hooks for organization list and mutations.
  *
- * Provides hooks for listing, retrieving,
- * creating, updating, and deleting organizations.
+ * Provides hooks for listing, creating, updating, and deleting
+ * organizations. The single-entity read hook lives in
+ * `useOrganization.ts` to avoid two competing definitions.
  */
 
 import {
@@ -10,6 +11,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+
+import { organizationQueryKeys } from "./useOrganization";
 
 import { OrganizationService } from "../services/organization.service";
 
@@ -21,13 +24,8 @@ import type {
 } from "../types/organization.types";
 
 
-/**
- * Organization query keys.
- */
-export const organizationQueryKeys = {
-  all: [
-    "organizations",
-  ] as const,
+export const organizationListQueryKeys = {
+  all: organizationQueryKeys.all,
 
   lists: () =>
     [
@@ -37,21 +35,12 @@ export const organizationQueryKeys = {
 
   list: (
     page: number,
-    size: number,
+    pageSize: number,
   ) =>
     [
-      ...organizationQueryKeys.lists(),
+      ...organizationListQueryKeys.lists(),
       page,
-      size,
-    ] as const,
-
-  detail: (
-    id: string,
-  ) =>
-    [
-      ...organizationQueryKeys.all,
-      "detail",
-      id,
+      pageSize,
     ] as const,
 };
 
@@ -60,24 +49,24 @@ export const organizationQueryKeys = {
  * Retrieves organizations.
  *
  * @param page Page number.
- * @param size Page size.
+ * @param pageSize Page size.
  * @returns Organization list query.
  */
 export function useOrganizations(
   page = 1,
-  size = 10,
+  pageSize = 10,
 ) {
   return useQuery<OrganizationListResponse>({
     queryKey:
-      organizationQueryKeys.list(
+      organizationListQueryKeys.list(
         page,
-        size,
+        pageSize,
       ),
 
     queryFn: () =>
       OrganizationService.getOrganizations(
         page,
-        size,
+        pageSize,
       ),
 
     staleTime:
@@ -95,36 +84,6 @@ export function useOrganizations(
 
 
 /**
- * Retrieves single organization.
- *
- * @param id Organization identifier.
- * @returns Organization query.
- */
-export function useOrganization(
-  id: string,
-) {
-  return useQuery<Organization>({
-    queryKey:
-      organizationQueryKeys.detail(
-        id,
-      ),
-
-    queryFn: async () => {
-      const response =
-        await OrganizationService.getOrganization(
-          id,
-        );
-
-      return response.organization;
-    },
-
-    enabled:
-      Boolean(id),
-  });
-}
-
-
-/**
  * Creates organization.
  */
 export function useCreateOrganization() {
@@ -137,16 +96,10 @@ export function useCreateOrganization() {
     CreateOrganizationRequest
   >({
     mutationFn:
-      async (
-        payload,
-      ) => {
-        const response =
-          await OrganizationService.createOrganization(
-            payload,
-          );
-
-        return response.organization;
-      },
+      (payload) =>
+        OrganizationService.createOrganization(
+          payload,
+        ),
 
     onSuccess: async () => {
       await queryClient.invalidateQueries(
@@ -164,12 +117,10 @@ export function useCreateOrganization() {
  * Update organization variables.
  */
 export interface UpdateOrganizationVariables {
-
   /**
    * Organization identifier.
    */
   readonly id: string;
-
 
   /**
    * Update payload.
@@ -191,18 +142,11 @@ export function useUpdateOrganization() {
     UpdateOrganizationVariables
   >({
     mutationFn:
-      async ({
-        id,
-        payload,
-      }) => {
-        const response =
-          await OrganizationService.updateOrganization(
-            id,
-            payload,
-          );
-
-        return response.organization;
-      },
+      ({ id, payload }) =>
+        OrganizationService.updateOrganization(
+          id,
+          payload,
+        ),
 
     onSuccess: async (
       _,
@@ -243,9 +187,7 @@ export function useDeleteOrganization() {
     string
   >({
     mutationFn:
-      (
-        id,
-      ) =>
+      (id) =>
         OrganizationService.deleteOrganization(
           id,
         ),

@@ -2,14 +2,26 @@
  * Ticket details page.
  */
 
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
+import {
+  ArrowLeft,
+  Pencil,
+} from "lucide-react";
+
+import {
+  Button,
+} from "../../../components/ui";
+
+import { TicketDetails } from "../components/TicketDetails";
 import { useTicket } from "../hooks/useTicket";
 
 /**
  * Ticket details page.
  */
 export function TicketDetailsPage(): React.JSX.Element {
+  const navigate = useNavigate();
+
   const { ticketId = "" } = useParams<{
     ticketId: string;
   }>();
@@ -49,142 +61,39 @@ export function TicketDetailsPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-gray-500">
-              {ticket.ticketNumber}
-            </p>
+      <div className="flex items-center justify-between">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() =>
+            navigate("/tickets")
+          }
+        >
+          <ArrowLeft size={18} />
+          Back
+        </Button>
 
-            <h1 className="mt-1 text-3xl font-bold text-gray-900">
-              {ticket.title}
-            </h1>
-          </div>
+        <Button
+          type="button"
+          onClick={() =>
+            navigate(`/tickets/${ticket.id}/edit`)
+          }
+        >
+          <Pencil size={18} />
+          Edit Ticket
+        </Button>
+      </div>
 
-          <div className="flex gap-2">
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-              {ticket.status.replaceAll("_", " ")}
-            </span>
-
-            <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-700">
-              {ticket.priority}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">
-          Description
-        </h2>
-
-        <p className="whitespace-pre-wrap text-gray-700">
-          {ticket.description}
-        </p>
-      </section>
-
-      <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">
-          Ticket Information
-        </h2>
-
-        <dl className="grid gap-4 md:grid-cols-2">
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Type
-            </dt>
-
-            <dd className="mt-1 text-gray-900">
-              {ticket.type.replaceAll("_", " ")}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Customer
-            </dt>
-
-            <dd className="mt-1 text-gray-900">
-              {ticket.customer?.name ??
-                "—"}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Project
-            </dt>
-
-            <dd className="mt-1 text-gray-900">
-              {ticket.project?.name ??
-                "—"}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Assignee
-            </dt>
-
-            <dd className="mt-1 text-gray-900">
-              {ticket.assignee?.name ??
-                "Unassigned"}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Created
-            </dt>
-
-            <dd className="mt-1 text-gray-900">
-              {new Date(
-                ticket.createdAt,
-              ).toLocaleString()}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Updated
-            </dt>
-
-            <dd className="mt-1 text-gray-900">
-              {new Date(
-                ticket.updatedAt,
-              ).toLocaleString()}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Resolved
-            </dt>
-
-            <dd className="mt-1 text-gray-900">
-              {ticket.resolvedAt
-                ? new Date(
-                    ticket.resolvedAt,
-                  ).toLocaleString()
-                : "—"}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-gray-500">
-              Closed
-            </dt>
-
-            <dd className="mt-1 text-gray-900">
-              {ticket.closedAt
-                ? new Date(
-                    ticket.closedAt,
-                  ).toLocaleString()
-                : "—"}
-            </dd>
-          </div>
-        </dl>
-      </section>
+      <TicketDetails
+        id={ticket.id}
+        title={ticket.title}
+        description={ticket.description}
+        status={ticket.status}
+        priority={ticket.priority}
+        assignedTo={ticket.assignedTo}
+        createdAt={ticket.createdAt}
+        updatedAt={ticket.updatedAt}
+      />
     </div>
   );
 }

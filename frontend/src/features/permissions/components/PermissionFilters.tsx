@@ -2,7 +2,8 @@
  * Permission filters.
  *
  * Provides search and filtering controls for the
- * Permissions feature.
+ * Permissions feature. All three filters map directly to
+ * real backend query params (search, resource, action).
  */
 
 import type { PermissionFilterValues } from "../types/permission.types";
@@ -27,14 +28,6 @@ export interface PermissionFiltersProps {
    * Optional callback to clear all filters.
    */
   readonly onClear?: () => void;
-
-  /**
-   * Permission groups available for filtering.
-   */
-  readonly groups?: readonly {
-    readonly id: string;
-    readonly name: string;
-  }[];
 }
 
 /**
@@ -47,12 +40,11 @@ export function PermissionFilters({
   filters,
   onChange,
   onClear,
-  groups = [],
 }: PermissionFiltersProps) {
   const hasFilters =
     Boolean(filters.search) ||
-    Boolean(filters.groupId) ||
-    Boolean(filters.resource);
+    Boolean(filters.resource) ||
+    Boolean(filters.action);
 
   const updateFilter = (
     key: keyof PermissionFilterValues,
@@ -95,40 +87,6 @@ export function PermissionFilters({
 
         <div>
           <label
-            htmlFor="permission-group"
-            className="mb-1.5 block text-sm font-medium text-gray-700"
-          >
-            Permission group
-          </label>
-
-          <select
-            id="permission-group"
-            value={filters.groupId ?? ""}
-            onChange={(event) => {
-              updateFilter(
-                "groupId",
-                event.target.value,
-              );
-            }}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-          >
-            <option value="">
-              All groups
-            </option>
-
-            {groups.map((group) => (
-              <option
-                key={group.id}
-                value={group.id}
-              >
-                {group.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label
             htmlFor="permission-resource"
             className="mb-1.5 block text-sm font-medium text-gray-700"
           >
@@ -145,7 +103,30 @@ export function PermissionFilters({
                 event.target.value,
               );
             }}
-            placeholder="e.g. tickets"
+            placeholder="e.g. ticket"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="permission-action"
+            className="mb-1.5 block text-sm font-medium text-gray-700"
+          >
+            Action
+          </label>
+
+          <input
+            id="permission-action"
+            type="text"
+            value={filters.action ?? ""}
+            onChange={(event) => {
+              updateFilter(
+                "action",
+                event.target.value,
+              );
+            }}
+            placeholder="e.g. create"
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
           />
         </div>

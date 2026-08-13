@@ -41,7 +41,10 @@ export const ticketApi = {
       await apiClient.get<TicketListResponse>(
         TICKET_ENDPOINT,
         {
-          params: query,
+          params: {
+            page: query?.page,
+            pageSize: query?.pageSize,
+          },
         },
       );
 

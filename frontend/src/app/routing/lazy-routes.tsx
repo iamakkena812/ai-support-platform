@@ -618,6 +618,231 @@ export const PermissionDetailsPage = lazy(
 );
 
 /**
+ * AI Assistant pages.
+ */
+export const AIAssistantPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-assistant/pages/AIAssistantPage"
+    );
+
+    return {
+      default: module.AIAssistantPage,
+    };
+  },
+);
+
+export const AIConversationPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-assistant/pages/AIConversationPage"
+    );
+
+    return {
+      default: module.AIConversationPage,
+    };
+  },
+);
+
+/**
+ * AI Documents pages.
+ */
+export const AIDocumentsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-documents/pages/AIDocumentsPage"
+    );
+
+    return {
+      default: module.AIDocumentsPage,
+    };
+  },
+);
+
+export const CreateAIDocumentPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-documents/pages/CreateAIDocumentPage"
+    );
+
+    return {
+      default: module.CreateAIDocumentPage,
+    };
+  },
+);
+
+export const AIDocumentDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-documents/pages/AIDocumentDetailsPage"
+    );
+
+    return {
+      default: module.AIDocumentDetailsPage,
+    };
+  },
+);
+
+/**
+ * AI Knowledge pages.
+ */
+export const AIKnowledgePage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-knowledge/pages/AIKnowledgePage"
+    );
+
+    return {
+      default: module.AIKnowledgePage,
+    };
+  },
+);
+
+export const CreateAIKnowledgePage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-knowledge/pages/CreateAIKnowledgePage"
+    );
+
+    return {
+      default: module.CreateAIKnowledgePage,
+    };
+  },
+);
+
+export const AIKnowledgeDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-knowledge/pages/AIKnowledgeDetailsPage"
+    );
+
+    return {
+      default: module.AIKnowledgeDetailsPage,
+    };
+  },
+);
+
+export const EditAIKnowledgePage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-knowledge/pages/EditAIKnowledgePage"
+    );
+
+    return {
+      default: module.EditAIKnowledgePage,
+    };
+  },
+);
+
+/**
+ * AI Retrieval pages.
+ */
+export const AIRetrievalPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/ai-retrieval/pages/AIRetrievalPage"
+    );
+
+    return {
+      default: module.AIRetrievalPage,
+    };
+  },
+);
+
+/**
+ * Workflows pages.
+ */
+export const WorkflowsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/workflows/pages/WorkflowsPage"
+    );
+
+    return {
+      default: module.WorkflowsPage,
+    };
+  },
+);
+
+export const CreateWorkflowPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/workflows/pages/CreateWorkflowPage"
+    );
+
+    return {
+      default: module.CreateWorkflowPage,
+    };
+  },
+);
+
+export const WorkflowDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/workflows/pages/WorkflowDetailsPage"
+    );
+
+    return {
+      default: module.WorkflowDetailsPage,
+    };
+  },
+);
+
+/**
+ * SLA pages.
+ */
+export const SLAPoliciesPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/sla/pages/SLAPoliciesPage"
+    );
+
+    return {
+      default: module.SLAPoliciesPage,
+    };
+  },
+);
+
+export const CreateSLAPolicyPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/sla/pages/CreateSLAPolicyPage"
+    );
+
+    return {
+      default: module.CreateSLAPolicyPage,
+    };
+  },
+);
+
+export const SLAPolicyDetailsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/sla/pages/SLAPolicyDetailsPage"
+    );
+
+    return {
+      default: module.SLAPolicyDetailsPage,
+    };
+  },
+);
+
+/**
+ * Analytics pages.
+ */
+export const AnalyticsPage = lazy(
+  async () => {
+    const module = await import(
+      "../../features/analytics/pages/AnalyticsPage"
+    );
+
+    return {
+      default: module.AnalyticsPage,
+    };
+  },
+);
+
+/**
  * Settings page.
  */
 export const SettingsPage = lazy(

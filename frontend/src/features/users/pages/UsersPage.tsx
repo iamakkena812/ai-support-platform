@@ -6,11 +6,13 @@
  */
 
 import {
+  useMemo,
   useState,
 } from "react";
 
 import {
   Link,
+  useNavigate,
 } from "react-router-dom";
 
 import {
@@ -21,13 +23,13 @@ import {
   UserSkeleton,
 } from "../components";
 
+import { useDeleteUser } from "../hooks/useUser";
 import {
   useUsers,
 } from "../hooks/useUsers";
 
 import type {
   UserFilterValues,
-  UserListQuery,
 } from "../types/user.types";
 
 
@@ -38,43 +40,45 @@ import type {
  */
 export function UsersPage(): React.JSX.Element {
 
-  const [
-    query,
-    setQuery,
-  ] = useState<UserListQuery>({
-    page: 1,
-    pageSize: 10,
-  });
+  const navigate = useNavigate();
 
+  const [page, setPage] = useState(1);
+
+  const [filters, setFilters] = useState<UserFilterValues>({});
 
   const {
     data,
     isLoading,
     isError,
     error,
-  } = useUsers(
-    query,
-  );
+  } = useUsers({ page, pageSize: 10 });
 
+  const deleteUser = useDeleteUser();
 
-  /**
-   * Handles user filters.
-   *
-   * @param filters - User filters.
-   */
-  function handleFilters(
-    filters: UserFilterValues,
-  ): void {
+  const filteredUsers = useMemo(() => {
+    if (!data) {
+      return [];
+    }
 
-    setQuery(
-      {
-        ...query,
-        page: 1,
-        filters,
-      },
-    );
+    return data.users.filter((user) => {
+      const matchesSearch = filters.search
+        ? user.fullName.toLowerCase().includes(filters.search.toLowerCase()) ||
+          user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
+          user.username.toLowerCase().includes(filters.search.toLowerCase())
+        : true;
+
+      const matchesStatus =
+        filters.isActive === undefined
+          ? true
+          : user.isActive === filters.isActive;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [data, filters]);
+
+  async function handleDelete(id: string): Promise<void> {
+    await deleteUser.mutateAsync(id);
   }
-
 
   if (isLoading) {
     return (
@@ -98,7 +102,7 @@ export function UsersPage(): React.JSX.Element {
 
   if (
     !data ||
-    data.items.length === 0
+    data.users.length === 0
   ) {
     return (
       <UserEmpty />
@@ -143,31 +147,57 @@ export function UsersPage(): React.JSX.Element {
 
 
       <UserFilters
-        onChange={
-          handleFilters
-        }
+        filters={filters}
+        onChange={setFilters}
       />
 
+      {deleteUser.isError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Failed to delete user. Please try again.
+        </div>
+      )}
 
       <UserTable
-        users={
-          data.items
-        }
+        users={filteredUsers}
+        onView={(id) => navigate(`/users/${id}`)}
+        onEdit={(id) => navigate(`/users/${id}/edit`)}
+        onDelete={(id) => {
+          void handleDelete(id);
+        }}
       />
 
 
       <div
-        className="flex justify-between text-sm text-slate-600"
+        className="flex items-center justify-between text-sm text-slate-600"
       >
-
-        <span>
-          Page {data.page} of {data.totalPages}
-        </span>
-
 
         <span>
           Total Users: {data.total}
         </span>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="rounded-lg border border-slate-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <span>
+            Page {data.page} of {Math.max(data.totalPages, 1)}
+          </span>
+
+          <button
+            type="button"
+            disabled={page >= data.totalPages}
+            onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+            className="rounded-lg border border-slate-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
 
       </div>
 

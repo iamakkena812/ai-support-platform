@@ -49,41 +49,41 @@ class WorkflowRepository:
     def get_workflow(
         self,
         workflow_id: UUID,
+        organization_id: UUID,
     ) -> Workflow | None:
-        """Get a workflow by identifier.
+        """Get a workflow by identifier, scoped to an organization.
 
         Args:
             workflow_id: Workflow identifier.
+            organization_id: Organization identifier.
 
         Returns:
             Workflow if found, otherwise None.
         """
         stmt = select(Workflow).where(
             Workflow.id == workflow_id,
+            Workflow.organization_id == organization_id,
         )
 
         return self._session.scalar(stmt)
 
     def list_workflows(
         self,
-        organization_id: UUID | None = None,
+        organization_id: UUID,
         active_only: bool = False,
     ) -> list[Workflow]:
-        """List workflows.
+        """List workflows belonging to an organization.
 
         Args:
-            organization_id: Optional organization identifier.
+            organization_id: Organization identifier.
             active_only: Whether to return only active workflows.
 
         Returns:
             List of workflows.
         """
-        stmt = select(Workflow)
-
-        if organization_id is not None:
-            stmt = stmt.where(
-                Workflow.organization_id == organization_id,
-            )
+        stmt = select(Workflow).where(
+            Workflow.organization_id == organization_id,
+        )
 
         if active_only:
             stmt = stmt.where(

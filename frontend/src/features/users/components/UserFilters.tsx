@@ -2,7 +2,10 @@
  * User filters component.
  *
  * Displays search and filter controls
- * for the users list.
+ * for the users list. Filtering happens
+ * client-side over the current page, since
+ * the backend does not support server-side
+ * user search/filtering.
  */
 
 import {
@@ -69,7 +72,7 @@ export function UserFilters(
 
 
       <div
-        className="grid gap-4 md:grid-cols-3"
+        className="grid gap-4 md:grid-cols-2"
       >
 
         <div
@@ -102,17 +105,21 @@ export function UserFilters(
 
         <select
           value={
-            filters.status ?? ""
+            filters.isActive === undefined
+              ? ""
+              : filters.isActive
+                ? "active"
+                : "inactive"
           }
           onChange={
             (event) =>
               onChange(
                 {
                   ...filters,
-                  status:
-                    event.target.value
-                      ? event.target.value as UserFilterValues["status"]
-                      : undefined,
+                  isActive:
+                    event.target.value === ""
+                      ? undefined
+                      : event.target.value === "active",
                 },
               )
           }
@@ -128,52 +135,6 @@ export function UserFilters(
 
           <option value="inactive">
             Inactive
-          </option>
-
-          <option value="suspended">
-            Suspended
-          </option>
-
-        </select>
-
-
-        <select
-          value={
-            filters.role ?? ""
-          }
-          onChange={
-            (event) =>
-              onChange(
-                {
-                  ...filters,
-                  role:
-                    event.target.value
-                      ? event.target.value as UserFilterValues["role"]
-                      : undefined,
-                },
-              )
-          }
-          className="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
-        >
-
-          <option value="">
-            All Roles
-          </option>
-
-          <option value="admin">
-            Administrator
-          </option>
-
-          <option value="manager">
-            Manager
-          </option>
-
-          <option value="agent">
-            Support Agent
-          </option>
-
-          <option value="customer">
-            Customer
           </option>
 
         </select>

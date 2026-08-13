@@ -6,11 +6,14 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { AttachmentFilters } from "../components/AttachmentFilters";
 import { AttachmentList } from "../components/AttachmentList";
+import { DeleteAttachmentDialog } from "../components/DeleteAttachmentDialog";
 import {
   useAttachments,
+  useDeleteAttachment,
   useDownloadAttachment,
 } from "../hooks/useAttachments";
 
@@ -28,8 +31,13 @@ import type {
  * @returns Attachments page component.
  */
 export function AttachmentsPage(): React.JSX.Element {
+  const navigate = useNavigate();
+
   const [filters, setFilters] =
     useState<AttachmentFilterValues>({});
+
+  const [attachmentToDelete, setAttachmentToDelete] =
+    useState<Attachment | null>(null);
 
   const query = useMemo(
     () => ({
@@ -50,6 +58,9 @@ export function AttachmentsPage(): React.JSX.Element {
   const downloadAttachmentMutation =
     useDownloadAttachment();
 
+  const deleteAttachmentMutation =
+    useDeleteAttachment();
+
   /**
    * Handles viewing an attachment.
    *
@@ -58,10 +69,7 @@ export function AttachmentsPage(): React.JSX.Element {
   const handleView = (
     attachment: Attachment,
   ): void => {
-    console.info(
-      "View attachment",
-      attachment.id,
-    );
+    navigate(`/attachments/${attachment.id}`);
   };
 
   /**
@@ -72,10 +80,7 @@ export function AttachmentsPage(): React.JSX.Element {
   const handleEdit = (
     attachment: Attachment,
   ): void => {
-    console.info(
-      "Edit attachment",
-      attachment.id,
-    );
+    navigate(`/attachments/${attachment.id}/edit`);
   };
 
   /**
@@ -86,10 +91,19 @@ export function AttachmentsPage(): React.JSX.Element {
   const handleDelete = (
     attachment: Attachment,
   ): void => {
-    console.info(
-      "Delete attachment",
-      attachment.id,
-    );
+    setAttachmentToDelete(attachment);
+  };
+
+  /**
+   * Confirms deletion of the selected attachment.
+   *
+   * @param attachment - Attachment to delete.
+   */
+  const handleConfirmDelete = async (
+    attachment: Attachment,
+  ): Promise<void> => {
+    await deleteAttachmentMutation.mutateAsync(attachment.id);
+    setAttachmentToDelete(null);
   };
 
   /**
@@ -159,6 +173,7 @@ export function AttachmentsPage(): React.JSX.Element {
 
         <button
           type="button"
+          onClick={() => navigate("/attachments/create")}
           className="rounded bg-blue-600 px-5 py-2 text-white transition-colors hover:bg-blue-700"
         >
           Upload Attachment
@@ -196,6 +211,16 @@ export function AttachmentsPage(): React.JSX.Element {
           onDownload={
             handleDownload
           }
+        />
+      ) : null}
+
+      {attachmentToDelete ? (
+        <DeleteAttachmentDialog
+          attachment={attachmentToDelete}
+          isOpen
+          isDeleting={deleteAttachmentMutation.isPending}
+          onClose={() => setAttachmentToDelete(null)}
+          onConfirm={handleConfirmDelete}
         />
       ) : null}
     </div>

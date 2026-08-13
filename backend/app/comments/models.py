@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, Enum, ForeignKey, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.comments.constants import CommentVisibility
 from app.database.base import Base
 from app.models.mixins import TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.ticket import Ticket
+    from app.models.user import User
 
 
 class Comment(TimestampMixin, Base):
@@ -67,6 +72,16 @@ class Comment(TimestampMixin, Base):
         Boolean,
         default=False,
         nullable=False,
+    )
+
+    author: Mapped[User] = relationship(
+        "User",
+        lazy="select",
+    )
+
+    ticket: Mapped[Ticket] = relationship(
+        "Ticket",
+        lazy="select",
     )
 
     def mark_edited(self) -> None:

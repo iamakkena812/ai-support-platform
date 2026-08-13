@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.ticket import Ticket
@@ -77,6 +77,14 @@ class TicketRepository:
         )
 
         return list(self._session.scalars(statement).all())
+
+    def count(self) -> int:
+        """Return the total number of tickets."""
+        statement = select(func.count()).select_from(Ticket).where(
+            Ticket.is_deleted.is_(False),
+        )
+
+        return self._session.scalar(statement) or 0
 
     def update(
         self,

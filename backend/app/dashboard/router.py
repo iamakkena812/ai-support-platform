@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import CurrentActiveUserDependency
 from app.dashboard.schemas import (
     AIInsight,
     DashboardResponse,
@@ -26,6 +27,7 @@ router = APIRouter(
     response_model=DashboardResponse,
 )
 def get_dashboard(
+    _: CurrentActiveUserDependency,
     db: Session = Depends(get_db),
 ) -> DashboardResponse:
     """Return dashboard statistics."""
@@ -38,6 +40,7 @@ def get_dashboard(
     response_model=DashboardResponse,
 )
 def refresh_dashboard(
+    _: CurrentActiveUserDependency,
     db: Session = Depends(get_db),
 ) -> DashboardResponse:
     """Refresh dashboard."""
@@ -49,7 +52,9 @@ def refresh_dashboard(
     "/system-health",
     response_model=SystemHealth,
 )
-def get_system_health() -> SystemHealth:
+def get_system_health(
+    _: CurrentActiveUserDependency,
+) -> SystemHealth:
     """Return current system health."""
     return SystemHealth(
         status="healthy",
@@ -65,6 +70,8 @@ def get_system_health() -> SystemHealth:
     "/ai-insights",
     response_model=list[AIInsight],
 )
-def get_ai_insights() -> list[AIInsight]:
+def get_ai_insights(
+    _: CurrentActiveUserDependency,
+) -> list[AIInsight]:
     """Return AI insights."""
     return []

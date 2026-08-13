@@ -27,6 +27,11 @@ import type {
   CustomerFormValues,
 } from "../components/CustomerForm";
 
+import type {
+  CustomerStatus,
+  CustomerType,
+} from "../types/customer.types";
+
 /**
  * Edit customer page component.
  *
@@ -66,8 +71,8 @@ export function EditCustomerPage(): React.JSX.Element {
       {
         name: values.name,
 
-        company:
-          values.company ||
+        companyName:
+          values.companyName ||
           undefined,
 
         email:
@@ -77,26 +82,35 @@ export function EditCustomerPage(): React.JSX.Element {
           values.phone ||
           undefined,
 
-        contactPerson:
-          values.contactPerson ||
-          undefined,
-
-        industry:
-          values.industry ||
+        website:
+          values.website ||
           undefined,
 
         address:
           values.address ||
           undefined,
 
+        city:
+          values.city ||
+          undefined,
+
+        state:
+          values.state ||
+          undefined,
+
+        country:
+          values.country ||
+          undefined,
+
+        postalCode:
+          values.postalCode ||
+          undefined,
+
+        customerType:
+          values.customerType as CustomerType,
+
         status:
-          values.status as
-            | "ACTIVE"
-            | "INACTIVE"
-            | "PROSPECT"
-            | "PENDING"
-            | "SUSPENDED"
-            | "BLOCKED",
+          values.status as CustomerStatus,
       },
     );
 
@@ -146,8 +160,8 @@ export function EditCustomerPage(): React.JSX.Element {
           name:
             customer.name,
 
-          company:
-            customer.company ??
+          companyName:
+            customer.companyName ??
             "",
 
           email:
@@ -157,17 +171,32 @@ export function EditCustomerPage(): React.JSX.Element {
             customer.phone ??
             "",
 
-          contactPerson:
-            customer.contactPerson ??
-            "",
-
-          industry:
-            customer.industry ??
+          website:
+            customer.website ??
             "",
 
           address:
             customer.address ??
             "",
+
+          city:
+            customer.city ??
+            "",
+
+          state:
+            customer.state ??
+            "",
+
+          country:
+            customer.country ??
+            "",
+
+          postalCode:
+            customer.postalCode ??
+            "",
+
+          customerType:
+            customer.customerType,
 
           status:
             customer.status,

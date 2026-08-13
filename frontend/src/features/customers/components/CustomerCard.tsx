@@ -40,7 +40,7 @@ export interface CustomerCardProps {
   /**
    * Company name.
    */
-  readonly company?: string;
+  readonly companyName?: string | null;
 
   /**
    * Email.
@@ -50,27 +50,12 @@ export interface CustomerCardProps {
   /**
    * Phone.
    */
-  readonly phone?: string;
+  readonly phone?: string | null;
 
   /**
    * Status.
    */
   readonly status: CustomerStatus;
-
-  /**
-   * Organization count.
-   */
-  readonly organizationCount: number;
-
-  /**
-   * Project count.
-   */
-  readonly projectCount: number;
-
-  /**
-   * Ticket count.
-   */
-  readonly ticketCount: number;
 
   /**
    * View callback.
@@ -103,13 +88,10 @@ export interface CustomerCardProps {
 export function CustomerCard({
   id,
   name,
-  company,
+  companyName,
   email,
   phone,
   status,
-  organizationCount,
-  projectCount,
-  ticketCount,
   onView,
   onEdit,
   onDelete,
@@ -146,14 +128,14 @@ export function CustomerCard({
         />
       </div>
 
-      {company ? (
+      {companyName ? (
         <div className="flex items-center gap-3 text-sm text-slate-600">
           <Building2
             size={16}
           />
 
           <span>
-            {company}
+            {companyName}
           </span>
         </div>
       ) : null}
@@ -179,57 +161,6 @@ export function CustomerCard({
           </span>
         </div>
       ) : null}
-
-      <div className="grid grid-cols-3 gap-3">
-        <Metric
-          label="Organizations"
-          value={
-            organizationCount
-          }
-        />
-
-        <Metric
-          label="Projects"
-          value={
-            projectCount
-          }
-        />
-
-        <Metric
-          label="Tickets"
-          value={
-            ticketCount
-          }
-        />
-      </div>
-    </div>
-  );
-}
-
-/**
- * Metric properties.
- */
-interface MetricProps {
-  readonly label: string;
-  readonly value: number;
-}
-
-/**
- * Metric component.
- */
-function Metric({
-  label,
-  value,
-}: MetricProps): React.JSX.Element {
-  return (
-    <div className="rounded-md bg-slate-50 p-3 text-center">
-      <p className="text-xs text-slate-500">
-        {label}
-      </p>
-
-      <p className="text-lg font-semibold text-slate-900">
-        {value}
-      </p>
     </div>
   );
 }

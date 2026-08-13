@@ -2,7 +2,6 @@
  * Edit organization page.
  */
 
-import { useState } from "react";
 import {
   useNavigate,
   useParams,
@@ -10,7 +9,7 @@ import {
 
 import { OrganizationForm } from "../components/OrganizationForm";
 import { useOrganization } from "../hooks/useOrganization";
-import { OrganizationService } from "../services/organization.service";
+import { useUpdateOrganization } from "../hooks/useOrganizations";
 
 import type {
   CreateOrganizationRequest,
@@ -32,24 +31,17 @@ export function EditOrganizationPage(): React.JSX.Element {
     error,
   } = useOrganization(organizationId);
 
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
+  const updateOrganization = useUpdateOrganization();
 
   async function handleSubmit(
     values: CreateOrganizationRequest,
   ): Promise<void> {
-    try {
-      setIsSubmitting(true);
+    await updateOrganization.mutateAsync({
+      id: organizationId,
+      payload: values,
+    });
 
-      await OrganizationService.updateOrganization(
-        organizationId,
-        values,
-      );
-
-      navigate("/organizations");
-    } finally {
-      setIsSubmitting(false);
-    }
+    navigate("/organizations");
   }
 
   if (isLoading) {
@@ -89,9 +81,9 @@ export function EditOrganizationPage(): React.JSX.Element {
       </div>
 
       <OrganizationForm
-        initialValues={data.organization}
+        initialValues={data}
         onSubmit={handleSubmit}
-        isLoading={isSubmitting}
+        isLoading={updateOrganization.isPending}
       />
     </div>
   );

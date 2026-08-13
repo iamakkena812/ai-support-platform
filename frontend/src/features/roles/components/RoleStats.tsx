@@ -1,14 +1,14 @@
 /**
  * Role statistics component.
  *
- * Displays role-related statistics.
+ * Displays role-related statistics. Field names mirror
+ * backend/app/roles/schemas.py RoleStatistics exactly.
  */
 
 import {
   KeyRound,
   Shield,
   ShieldCheck,
-  Users,
   UserCog,
 } from "lucide-react";
 
@@ -24,46 +24,30 @@ import {
  */
 export interface RoleStatsProps {
 
-
   /**
    * Total roles.
    */
-  readonly totalRoles: number;
-
-
+  readonly total: number;
 
   /**
-   * Active roles.
+   * System-defined roles.
    */
-  readonly activeRoles: number;
-
-
+  readonly system: number;
 
   /**
-   * Inactive roles.
+   * Custom (non-system) roles.
    */
-  readonly inactiveRoles: number;
-
-
+  readonly custom: number;
 
   /**
-   * System roles.
+   * Roles with at least one permission assigned.
    */
-  readonly systemRoles: number;
-
-
+  readonly assigned: number;
 
   /**
-   * Total permissions.
+   * Roles with no permissions assigned.
    */
-  readonly totalPermissions: number;
-
-
-
-  /**
-   * Assigned users.
-   */
-  readonly assignedUsers: number;
+  readonly unassigned: number;
 
 }
 
@@ -76,12 +60,11 @@ export interface RoleStatsProps {
  * @returns Role statistics component.
  */
 export function RoleStats({
-  totalRoles,
-  activeRoles,
-  inactiveRoles,
-  systemRoles,
-  totalPermissions,
-  assignedUsers,
+  total,
+  system,
+  custom,
+  assigned,
+  unassigned,
 }: RoleStatsProps): React.JSX.Element {
 
 
@@ -95,7 +78,7 @@ export function RoleStats({
         title="Total Roles"
 
         value={
-          totalRoles
+          total
         }
 
         icon={
@@ -112,10 +95,10 @@ export function RoleStats({
 
       <StatCard
 
-        title="Active Roles"
+        title="System Roles"
 
         value={
-          activeRoles
+          system
         }
 
         icon={
@@ -132,10 +115,10 @@ export function RoleStats({
 
       <StatCard
 
-        title="Inactive Roles"
+        title="Custom Roles"
 
         value={
-          inactiveRoles
+          custom
         }
 
         icon={
@@ -152,30 +135,10 @@ export function RoleStats({
 
       <StatCard
 
-        title="System Roles"
+        title="With Permissions"
 
         value={
-          systemRoles
-        }
-
-        icon={
-
-          <Shield
-            size={20}
-          />
-
-        }
-
-      />
-
-
-
-      <StatCard
-
-        title="Permissions"
-
-        value={
-          totalPermissions
+          assigned
         }
 
         icon={
@@ -192,15 +155,15 @@ export function RoleStats({
 
       <StatCard
 
-        title="Assigned Users"
+        title="Without Permissions"
 
         value={
-          assignedUsers
+          unassigned
         }
 
         icon={
 
-          <Users
+          <KeyRound
             size={20}
           />
 

@@ -36,6 +36,14 @@ class SLAEventNotFoundException(ResourceNotFoundException):
         super().__init__(EVENT_NOT_FOUND)
 
 
+class SLATicketNotFoundException(ResourceNotFoundException):
+    """Raised when a ticket does not exist in the caller's organization."""
+
+    def __init__(self) -> None:
+        """Initialize the exception."""
+        super().__init__("Ticket")
+
+
 class SLAPolicyAlreadyExistsException(ResourceNotFoundException):
     """Raised when attempting to create a duplicate SLA policy."""
 

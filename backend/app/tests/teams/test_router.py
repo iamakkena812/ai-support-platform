@@ -1,165 +1,342 @@
-"""Tests for Team router."""
+"""Integration tests for the Team router."""
 
 from __future__ import annotations
 
-from collections.abc import Generator
-from datetime import UTC, datetime
-from types import SimpleNamespace
-from unittest.mock import Mock
 from uuid import uuid4
 
-import pytest
 from fastapi.testclient import TestClient
 
-from app.auth.dependencies import get_current_user
-from app.main import app
-from app.models.team import Team
-from app.teams.router import get_team_service
-from app.teams.schemas import TeamResponse
-from app.teams.service import TeamService
-
-
-@pytest.fixture
-def service() -> Mock:
-    """Return mocked TeamService."""
-    return Mock(spec=TeamService)
-
-
-@pytest.fixture
-def current_user() -> SimpleNamespace:
-    """Return authenticated test user."""
-    return SimpleNamespace(
-        id=uuid4(),
-        email="admin@example.com",
-        is_active=True,
-    )
-
-
-@pytest.fixture
-def client(
-    service: Mock,
-    current_user: SimpleNamespace,
-) -> Generator[TestClient]:
-    """Create API client."""
-    app.dependency_overrides[get_team_service] = lambda: service
-
-    app.dependency_overrides[get_current_user] = lambda: current_user
-
-    with TestClient(app) as client:
-        yield client
-
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def team() -> Team:
-    """Sample team."""
-    team = Team(
-        organization_id=uuid4(),
-        lead_id=None,
-        name="Engineering",
-        code="ENG",
-        description="Engineering Team",
-    )
-
-    team.id = uuid4()
-    team.is_active = True
-    team.created_at = datetime.now(UTC)
-    team.updated_at = datetime.now(UTC)
-
-    return team
-
-
-def test_get_team(
-    client: TestClient,
-    service: Mock,
-    team: Team,
-) -> None:
-    """Test GET /teams/{team_id}."""
-    service.get_team.return_value = team
-
-    response = client.get(
-        f"/api/v1/teams/{team.id}",
-    )
-
-    assert response.status_code == 200
-
-    result = TeamResponse.model_validate(
-        response.json(),
-    )
-
-    assert result.id == team.id
-    service.get_team.assert_called_once_with(team.id)
-
-
-def test_list_teams(
-    client: TestClient,
-    service: Mock,
-    team: Team,
-) -> None:
-    """Test GET organization teams."""
-    service.list_teams.return_value = [team]
-
-    response = client.get(
-        f"/api/v1/teams/organization/{team.organization_id}",
-    )
-
-    assert response.status_code == 200
-
-    payload = response.json()
-
-    assert len(payload["items"]) == 1
-    assert payload["total"] == 1
-
-    service.list_teams.assert_called_once_with(
-        team.organization_id,
-    )
+from app.models.organization import Organization
 
 
 def test_create_team(
     client: TestClient,
-    service: Mock,
-    team: Team,
+    auth_headers: dict[str, str],
+    organization: Organization,
 ) -> None:
-    """Test POST /teams."""
-    service.create_team.return_value = team
-
+    """Create a team under the authenticated user's organization."""
     response = client.post(
         "/api/v1/teams",
+        headers=auth_headers,
         json={
-            "organization_id": str(
-                team.organization_id,
-            ),
-            "lead_id": None,
-            "name": team.name,
-            "code": team.code,
-            "description": team.description,
+            "name": "Engineering",
+            "description": "Engineering team",
         },
     )
 
     assert response.status_code == 201
 
-    result = TeamResponse.model_validate(
-        response.json(),
+    body = response.json()
+
+    assert body["name"] == "Engineering"
+    assert body["status"] == "ACTIVE"
+    assert body["organization"]["id"] == str(organization.id)
+    assert body["members"] == []
+    assert body["projects"] == []
+    assert body["code"]
+
+
+def test_create_team_requires_authentication(
+    client: TestClient,
+) -> None:
+    """Reject anonymous team creation."""
+    response = client.post(
+        "/api/v1/teams",
+        json={"name": "Engineering"},
     )
 
-    assert result.name == team.name
+    assert response.status_code == 401
 
-    service.create_team.assert_called_once()
+
+def test_create_team_duplicate_name(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """Return conflict when the team name already exists."""
+    payload = {"name": "Duplicate Team"}
+
+    first = client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json=payload,
+    )
+    assert first.status_code == 201
+
+    second = client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json=payload,
+    )
+
+    assert second.status_code == 409
+
+
+def test_list_teams(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """List teams for the authenticated user's organization."""
+    client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Listed Team"},
+    )
+
+    response = client.get(
+        "/api/v1/teams",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert isinstance(body["items"], list)
+    assert body["total"] >= 1
+    assert "page" in body
+    assert "pageSize" in body
+    assert "totalPages" in body
+
+
+def test_list_teams_requires_authentication(
+    client: TestClient,
+) -> None:
+    """Reject anonymous team listing."""
+    response = client.get("/api/v1/teams")
+
+    assert response.status_code == 401
+
+
+def test_list_teams_filters_by_status(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """Filter teams by status."""
+    create_response = client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Archivable Team"},
+    )
+    team_id = create_response.json()["id"]
+
+    client.patch(
+        f"/api/v1/teams/{team_id}",
+        headers=auth_headers,
+        json={"status": "ARCHIVED"},
+    )
+
+    response = client.get(
+        "/api/v1/teams",
+        headers=auth_headers,
+        params={"status": "ARCHIVED"},
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert any(item["id"] == team_id for item in body["items"])
+    assert all(item["status"] == "ARCHIVED" for item in body["items"])
+
+
+def test_get_team(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """Return a team by id."""
+    create_response = client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Retrievable Team"},
+    )
+    team_id = create_response.json()["id"]
+
+    response = client.get(
+        f"/api/v1/teams/{team_id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["id"] == team_id
+
+
+def test_get_team_not_found(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """Return 404 for a missing team."""
+    response = client.get(
+        f"/api/v1/teams/{uuid4()}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_update_team(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """Update a team."""
+    create_response = client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Updatable Team"},
+    )
+    team_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/api/v1/teams/{team_id}",
+        headers=auth_headers,
+        json={
+            "name": "Updated Team",
+            "description": "Updated description",
+            "status": "INACTIVE",
+        },
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["name"] == "Updated Team"
+    assert body["description"] == "Updated description"
+    assert body["status"] == "INACTIVE"
+
+
+def test_update_team_not_found(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """Return 404 while updating a missing team."""
+    response = client.patch(
+        f"/api/v1/teams/{uuid4()}",
+        headers=auth_headers,
+        json={},
+    )
+
+    assert response.status_code == 404
 
 
 def test_delete_team(
     client: TestClient,
-    service: Mock,
-    team: Team,
+    auth_headers: dict[str, str],
 ) -> None:
-    """Test DELETE /teams/{team_id}."""
+    """Delete a team and confirm it disappears from subsequent lookups."""
+    create_response = client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Deletable Team"},
+    )
+    team_id = create_response.json()["id"]
+
     response = client.delete(
-        f"/api/v1/teams/{team.id}",
+        f"/api/v1/teams/{team_id}",
+        headers=auth_headers,
     )
 
     assert response.status_code == 204
 
-    service.delete_team.assert_called_once_with(
-        team.id,
+    follow_up = client.get(
+        f"/api/v1/teams/{team_id}",
+        headers=auth_headers,
     )
+    assert follow_up.status_code == 404
+
+    list_response = client.get(
+        "/api/v1/teams",
+        headers=auth_headers,
+    )
+    assert all(
+        item["id"] != team_id for item in list_response.json()["items"]
+    )
+
+
+def test_delete_team_not_found(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """Return 404 while deleting a missing team."""
+    response = client.delete(
+        f"/api/v1/teams/{uuid4()}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_deleted_team_name_is_reusable_and_creation_succeeds(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """A soft-deleted team's name should not block reuse.
+
+    The generated ``code`` is *not* reused (it carries a database-level
+    UNIQUE constraint independent of soft-delete), but a fresh, distinct
+    code must be generated rather than the create failing outright.
+    """
+    create_response = client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Reusable Name"},
+    )
+    team_id = create_response.json()["id"]
+    first_code = create_response.json()["code"]
+
+    client.delete(
+        f"/api/v1/teams/{team_id}",
+        headers=auth_headers,
+    )
+
+    second_response = client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Reusable Name"},
+    )
+
+    assert second_response.status_code == 201
+    assert second_response.json()["code"] != first_code
+
+
+def test_team_statistics(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    """Return aggregate team statistics."""
+    client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Statistics Team"},
+    )
+
+    response = client.get(
+        "/api/v1/teams/statistics",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["total"] >= 1
+    assert "active" in body
+    assert "inactive" in body
+    assert "archived" in body
+
+
+def test_list_teams_by_organization_legacy_route(
+    client: TestClient,
+    auth_headers: dict[str, str],
+    organization: Organization,
+) -> None:
+    """The legacy path-param list route still works."""
+    client.post(
+        "/api/v1/teams",
+        headers=auth_headers,
+        json={"name": "Legacy Route Team"},
+    )
+
+    response = client.get(
+        f"/api/v1/teams/organization/{organization.id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["total"] >= 1

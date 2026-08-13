@@ -2,7 +2,10 @@
  * Permission API endpoints.
  *
  * Provides HTTP endpoint definitions for
- * permission management and role-permission mapping.
+ * permission management. Permission groups and role-permission
+ * mapping endpoints (/permissions/groups, /roles/{id}/permissions)
+ * do not exist on the backend and are intentionally not called
+ * here — calling them would always 404.
  */
 
 import { apiClient } from "../../../api/axios/client";
@@ -10,13 +13,10 @@ import { apiClient } from "../../../api/axios/client";
 import type {
   CreatePermissionRequest,
   Permission,
-  PermissionGroupListResponse,
   PermissionListQuery,
   PermissionListResponse,
   PermissionStatistics,
-  RolePermissionMapping,
   UpdatePermissionRequest,
-  UpdateRolePermissionMappingRequest,
 } from "../types/permission.types";
 
 /**
@@ -36,7 +36,13 @@ export const PermissionApi = {
       await apiClient.get<PermissionListResponse>(
         "/permissions",
         {
-          params: query,
+          params: {
+            page: query?.page,
+            pageSize: query?.pageSize,
+            search: query?.filters?.search,
+            resource: query?.filters?.resource,
+            action: query?.filters?.action,
+          },
         },
       );
 
@@ -112,20 +118,6 @@ export const PermissionApi = {
   },
 
   /**
-   * Retrieves permission groups.
-   *
-   * @returns Permission groups.
-   */
-  async getPermissionGroups(): Promise<PermissionGroupListResponse> {
-    const response =
-      await apiClient.get<PermissionGroupListResponse>(
-        "/permissions/groups",
-      );
-
-    return response.data;
-  },
-
-  /**
    * Retrieves permission statistics.
    *
    * @returns Permission statistics.
@@ -134,43 +126,6 @@ export const PermissionApi = {
     const response =
       await apiClient.get<PermissionStatistics>(
         "/permissions/statistics",
-      );
-
-    return response.data;
-  },
-
-  /**
-   * Retrieves permissions assigned to a role.
-   *
-   * @param roleId - Role identifier.
-   * @returns Role permission mapping.
-   */
-  async getRolePermissions(
-    roleId: string,
-  ): Promise<RolePermissionMapping> {
-    const response =
-      await apiClient.get<RolePermissionMapping>(
-        `/roles/${roleId}/permissions`,
-      );
-
-    return response.data;
-  },
-
-  /**
-   * Updates permissions assigned to a role.
-   *
-   * @param roleId - Role identifier.
-   * @param payload - Permission mapping payload.
-   * @returns Updated role permission mapping.
-   */
-  async updateRolePermissions(
-    roleId: string,
-    payload: UpdateRolePermissionMappingRequest,
-  ): Promise<RolePermissionMapping> {
-    const response =
-      await apiClient.put<RolePermissionMapping>(
-        `/roles/${roleId}/permissions`,
-        payload,
       );
 
     return response.data;

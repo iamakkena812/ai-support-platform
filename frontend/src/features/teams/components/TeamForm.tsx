@@ -183,14 +183,14 @@ export function TeamForm({
             values.organizationId
           }
           options={organizations}
-          placeholder="Select organization"
+          placeholder="Your organization (auto-assigned)"
           onChange={(event) =>
             updateField(
               "organizationId",
               event.target.value,
             )
           }
-          required
+          disabled
         />
 
         <Input

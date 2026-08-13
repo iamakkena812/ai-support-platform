@@ -46,7 +46,7 @@ def test_create_customer(
 
     assert body["name"] == "John Doe"
     assert body["email"] == "john@example.com"
-    assert body["company_name"] == "OpenAI"
+    assert body["companyName"] == "OpenAI"
 
 
 def test_list_customers(
@@ -60,7 +60,14 @@ def test_list_customers(
     )
 
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+
+    body = response.json()
+
+    assert isinstance(body["items"], list)
+    assert "total" in body
+    assert "page" in body
+    assert "pageSize" in body
+    assert "totalPages" in body
 
 
 def test_get_missing_customer(
@@ -104,7 +111,7 @@ def test_update_customer(
 
     customer_id = create_response.json()["id"]
 
-    response = client.put(
+    response = client.patch(
         f"/api/v1/customers/{customer_id}",
         headers=auth_headers,
         json={

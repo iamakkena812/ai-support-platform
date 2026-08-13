@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from http import HTTPStatus
+
 from app.core.exceptions import (
+    AppException,
     ConflictException,
     ResourceNotFoundException,
     ValidationException,
@@ -98,3 +101,39 @@ class InvalidWorkflowConditionException(
     def __init__(self) -> None:
         """Initialize the exception."""
         super().__init__(INVALID_CONDITION)
+
+
+class WorkflowTicketNotFoundException(
+    WorkflowException,
+    ResourceNotFoundException,
+):
+    """Raised when a workflow is executed against a missing ticket.
+
+    Applies when the ticket does not exist in the caller's organization.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the exception."""
+        super().__init__("Ticket")
+
+
+class WorkflowExecutionNotConfiguredException(
+    WorkflowException,
+    AppException,
+):
+    """Raised when workflow action execution is requested.
+
+    The current architecture has no worker, queue, or integration layer
+    that can actually dispatch workflow actions (assign user, change
+    status, send email, etc.) against a ticket. Rather than reporting a
+    fabricated success, this is surfaced honestly as not implemented.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the exception."""
+        super().__init__(
+            "Workflow action execution is not available: no worker, "
+            "queue, or action-dispatch integration is configured in "
+            "this environment.",
+            HTTPStatus.NOT_IMPLEMENTED,
+        )

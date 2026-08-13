@@ -14,20 +14,34 @@ import {
 } from "@hookform/resolvers/zod";
 
 import {
-  createUserSchema,
+  userFormSchema,
 } from "../schemas/user.schema";
 
 import type {
   User,
-  CreateUserRequest,
 } from "../types/user.types";
 
 
 /**
  * User form values.
+ *
+ * Contains all fields used by create and update modes.
  */
-export type UserFormValues =
-  CreateUserRequest;
+export interface UserFormValues {
+  organizationId?: string;
+
+  username: string;
+
+  fullName: string;
+
+  email: string;
+
+  password?: string;
+
+  isActive?: boolean;
+
+  isSuperuser?: boolean;
+}
 
 
 /**
@@ -74,50 +88,58 @@ export function UserForm(
       errors,
     },
   } =
-    useForm<CreateUserRequest>({
+    useForm<UserFormValues>({
       resolver:
         zodResolver(
-          createUserSchema,
+          userFormSchema,
         ),
 
-      defaultValues:
-      {
+      defaultValues: {
         organizationId:
           initialValue
-            ?.organization
-            ?.id ?? "",
+            ?.organizationId ?? "",
 
-        firstName:
+        username:
           initialValue
-            ?.firstName ?? "",
+            ?.username ?? "",
 
-        lastName:
+        fullName:
           initialValue
-            ?.lastName ?? "",
+            ?.fullName ?? "",
 
         email:
           initialValue
             ?.email ?? "",
 
-        password:
-          "",
+        password: "",
 
-        roleIds:
+        isActive:
           initialValue
-            ?.roles
-            ?.map(
-              (role) =>
-                role.id,
-            ) ?? [],
+            ?.isActive ?? true,
+
+        isSuperuser:
+          initialValue
+            ?.isSuperuser ?? false,
       },
     });
+
+
+  /**
+   * Handles create and update submission.
+   */
+  const handleFormSubmit = async (
+    values: UserFormValues,
+  ): Promise<void> => {
+
+    await onSubmit(values);
+  };
 
 
   return (
     <form
       onSubmit={
         handleSubmit(
-          onSubmit,
+          handleFormSubmit,
         )
       }
       className="space-y-6"
@@ -125,22 +147,20 @@ export function UserForm(
 
       <div>
         <label className="block text-sm font-medium">
-          First Name
+          Full Name
         </label>
 
         <input
           {...register(
-            "firstName",
+            "fullName",
           )}
           className="mt-1 w-full rounded border px-3 py-2"
         />
 
         {
-          errors.firstName && (
+          errors.fullName && (
             <p className="text-sm text-red-600">
-              {
-                errors.firstName.message
-              }
+              {errors.fullName.message}
             </p>
           )
         }
@@ -149,22 +169,20 @@ export function UserForm(
 
       <div>
         <label className="block text-sm font-medium">
-          Last Name
+          Username
         </label>
 
         <input
           {...register(
-            "lastName",
+            "username",
           )}
           className="mt-1 w-full rounded border px-3 py-2"
         />
 
         {
-          errors.lastName && (
+          errors.username && (
             <p className="text-sm text-red-600">
-              {
-                errors.lastName.message
-              }
+              {errors.username.message}
             </p>
           )
         }
@@ -183,39 +201,86 @@ export function UserForm(
           )}
           className="mt-1 w-full rounded border px-3 py-2"
         />
+
+        {
+          errors.email && (
+            <p className="text-sm text-red-600">
+              {errors.email.message}
+            </p>
+          )
+        }
       </div>
 
 
       {
         !initialValue && (
-          <div>
-            <label className="block text-sm font-medium">
-              Password
-            </label>
+          <>
+            <div>
+              <label className="block text-sm font-medium">
+                Password
+              </label>
 
-            <input
-              type="password"
-              {...register(
-                "password",
-              )}
-              className="mt-1 w-full rounded border px-3 py-2"
-            />
-          </div>
+              <input
+                type="password"
+                {...register(
+                  "password",
+                )}
+                className="mt-1 w-full rounded border px-3 py-2"
+              />
+
+              {
+                errors.password && (
+                  <p className="text-sm text-red-600">
+                    {errors.password.message}
+                  </p>
+                )
+              }
+            </div>
+
+
+            <div>
+              <label className="block text-sm font-medium">
+                Organization Id
+              </label>
+
+              <input
+                {...register(
+                  "organizationId",
+                )}
+                className="mt-1 w-full rounded border px-3 py-2"
+              />
+
+              {
+                errors.organizationId && (
+                  <p className="text-sm text-red-600">
+                    {errors.organizationId.message}
+                  </p>
+                )
+              }
+            </div>
+          </>
         )
       }
 
 
-      <div>
-        <label className="block text-sm font-medium">
-          Organization Id
-        </label>
+      <div className="flex items-center gap-2">
 
         <input
+          type="checkbox"
+          id="isActive"
           {...register(
-            "organizationId",
+            "isActive",
           )}
-          className="mt-1 w-full rounded border px-3 py-2"
+          className="h-4 w-4 rounded border-slate-300"
         />
+
+        <label
+          htmlFor="isActive"
+          className="text-sm font-medium"
+        >
+          Active
+        </label>
+
       </div>
 
 

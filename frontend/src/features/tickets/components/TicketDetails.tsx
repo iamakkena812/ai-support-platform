@@ -6,10 +6,8 @@
  */
 
 import {
-  Building2,
   Calendar,
   User,
-  Ticket,
   Flag,
 } from "lucide-react";
 
@@ -33,9 +31,9 @@ import type {
 export interface TicketDetailsProps {
 
   /**
-   * Ticket number.
+   * Ticket identifier.
    */
-  readonly ticketNumber: string;
+  readonly id: string;
 
 
   /**
@@ -63,27 +61,9 @@ export interface TicketDetailsProps {
 
 
   /**
-   * Customer name.
+   * Assigned user identifier.
    */
-  readonly customerName?: string;
-
-
-  /**
-   * Organization name.
-   */
-  readonly organizationName?: string;
-
-
-  /**
-   * Project name.
-   */
-  readonly projectName?: string;
-
-
-  /**
-   * Assigned user.
-   */
-  readonly assignedUserName?: string;
+  readonly assignedTo?: string | null;
 
 
   /**
@@ -106,15 +86,12 @@ export interface TicketDetailsProps {
  * @returns Ticket details.
  */
 export function TicketDetails({
-  ticketNumber,
+  id,
   title,
   description,
   status,
   priority,
-  customerName,
-  organizationName,
-  projectName,
-  assignedUserName,
+  assignedTo,
   createdAt,
   updatedAt,
 }: TicketDetailsProps): React.JSX.Element {
@@ -140,7 +117,7 @@ export function TicketDetails({
 
         <div>
           <p className="text-sm text-slate-500">
-            {ticketNumber}
+            #{id.slice(0, 8)}
           </p>
 
           <h2 className="mt-2 text-2xl font-bold text-slate-900">
@@ -170,7 +147,7 @@ export function TicketDetails({
           Description
         </p>
 
-        <p className="mt-2 text-slate-900">
+        <p className="mt-2 whitespace-pre-wrap text-slate-900">
           {description}
         </p>
 
@@ -182,48 +159,6 @@ export function TicketDetails({
 
         <DetailItem
           icon={
-            <Building2
-              size={18}
-              className="text-blue-600"
-            />
-          }
-          label="Customer"
-          value={
-            customerName
-          }
-        />
-
-
-        <DetailItem
-          icon={
-            <Building2
-              size={18}
-              className="text-indigo-600"
-            />
-          }
-          label="Organization"
-          value={
-            organizationName
-          }
-        />
-
-
-        <DetailItem
-          icon={
-            <Ticket
-              size={18}
-              className="text-green-600"
-            />
-          }
-          label="Project"
-          value={
-            projectName
-          }
-        />
-
-
-        <DetailItem
-          icon={
             <User
               size={18}
               className="text-purple-600"
@@ -231,7 +166,9 @@ export function TicketDetails({
           }
           label="Assigned To"
           value={
-            assignedUserName
+            assignedTo
+              ? `#${assignedTo.slice(0, 8)}`
+              : undefined
           }
         />
 

@@ -5,10 +5,8 @@
  */
 
 import {
-  Building2,
   CheckCircle2,
-  FolderKanban,
-  Ticket,
+  PauseCircle,
   Users,
 } from "lucide-react";
 
@@ -32,19 +30,9 @@ export interface CustomerStatsProps {
   readonly activeCustomers: number;
 
   /**
-   * Total organizations.
+   * Suspended customers.
    */
-  readonly totalOrganizations: number;
-
-  /**
-   * Related projects.
-   */
-  readonly totalProjects: number;
-
-  /**
-   * Open tickets.
-   */
-  readonly openTickets: number;
+  readonly suspendedCustomers: number;
 }
 
 /**
@@ -56,9 +44,7 @@ export interface CustomerStatsProps {
 export function CustomerStats({
   totalCustomers,
   activeCustomers,
-  totalOrganizations,
-  totalProjects,
-  openTickets,
+  suspendedCustomers,
 }: CustomerStatsProps): React.JSX.Element {
   return (
     <DashboardGrid>
@@ -83,30 +69,10 @@ export function CustomerStats({
       />
 
       <StatCard
-        title="Organizations"
-        value={totalOrganizations}
+        title="Suspended Customers"
+        value={suspendedCustomers}
         icon={
-          <Building2
-            size={22}
-          />
-        }
-      />
-
-      <StatCard
-        title="Projects"
-        value={totalProjects}
-        icon={
-          <FolderKanban
-            size={22}
-          />
-        }
-      />
-
-      <StatCard
-        title="Open Tickets"
-        value={openTickets}
-        icon={
-          <Ticket
+          <PauseCircle
             size={22}
           />
         }

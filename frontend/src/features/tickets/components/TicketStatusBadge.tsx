@@ -64,7 +64,7 @@ function getStatusConfig(
 
   switch (status) {
 
-    case "OPEN":
+    case "open":
       return {
         label: "Open",
         className:
@@ -77,7 +77,7 @@ function getStatusConfig(
       };
 
 
-    case "IN_PROGRESS":
+    case "in_progress":
       return {
         label: "In Progress",
         className:
@@ -90,9 +90,9 @@ function getStatusConfig(
       };
 
 
-    case "WAITING":
+    case "pending":
       return {
-        label: "Waiting",
+        label: "Pending",
         className:
           "border-yellow-200 bg-yellow-100 text-yellow-700",
         icon: (
@@ -103,7 +103,7 @@ function getStatusConfig(
       };
 
 
-    case "RESOLVED":
+    case "resolved":
       return {
         label: "Resolved",
         className:
@@ -116,7 +116,7 @@ function getStatusConfig(
       };
 
 
-    case "CLOSED":
+    case "closed":
       return {
         label: "Closed",
         className:

@@ -49,6 +49,9 @@ class AuthenticationService:
         ):
             raise AuthenticationError("Invalid credentials.")
 
+        if not user.is_active:
+            raise AuthenticationError("Invalid credentials.")
+
         return create_access_token(
             subject=str(user.id),
         )
@@ -70,6 +73,8 @@ class AuthenticationService:
         full_name: str | None = None,
     ) -> User:
         """Register a new user."""
+        email = email.strip().lower()
+
         if self._repository.exists_by_email(email):
             raise EmailAlreadyExistsError(
                 "Email is already registered.",

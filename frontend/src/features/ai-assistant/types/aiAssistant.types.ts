@@ -18,7 +18,8 @@ export type AIMessageRole =
  */
 export type AIConversationStatus =
   | "active"
-  | "archived";
+  | "archived"
+  | "closed";
 
 /**
  * AI source reference.
@@ -111,9 +112,27 @@ export interface AIConversation {
   readonly status: AIConversationStatus;
 
   /**
+   * AI provider backing this conversation.
+   */
+  readonly provider: string;
+
+  /**
+   * AI model backing this conversation.
+   */
+  readonly model: string;
+
+  /**
    * Conversation messages.
+   *
+   * Populated when the conversation is fetched individually; list
+   * results only include `messageCount` to avoid an N+1 fetch.
    */
   readonly messages: readonly AIMessage[];
+
+  /**
+   * Total message count.
+   */
+  readonly messageCount: number;
 
   /**
    * Created timestamp.
@@ -131,7 +150,7 @@ export interface AIConversation {
  */
 export interface AIChatRequest {
   /**
-   * Conversation identifier.
+   * Conversation identifier. Omit to start a new conversation.
    */
   readonly conversationId?: string;
 
@@ -140,6 +159,18 @@ export interface AIChatRequest {
    */
   readonly prompt: string;
 }
+
+/**
+ * Default AI provider/model used when starting a new conversation.
+ *
+ * The UI has no provider picker, and the only fully implemented,
+ * always-available provider in this environment is "mock" (no
+ * external API key configured) — see `app/ai/providers/*` on the
+ * backend. Real providers (currently only OpenAI has a working
+ * implementation) require `OPENAI_API_KEY` to be configured.
+ */
+export const DEFAULT_AI_PROVIDER = "mock";
+export const DEFAULT_AI_MODEL = "gpt-4.1";
 
 /**
  * Chat response.

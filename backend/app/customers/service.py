@@ -79,6 +79,10 @@ class CustomerService:
             limit=limit,
         )
 
+    def count_customers(self) -> int:
+        """Return the total number of customers."""
+        return self._repository.count()
+
     def update_customer(
         self,
         customer_id: UUID,

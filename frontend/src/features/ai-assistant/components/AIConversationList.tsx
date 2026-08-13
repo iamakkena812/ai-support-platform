@@ -122,8 +122,7 @@ export const AIConversationList: FC<
 
                     <span>
                       {
-                        conversation.messages
-                          .length
+                        conversation.messageCount
                       }
                       {" "}
                       messages

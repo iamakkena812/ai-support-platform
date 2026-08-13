@@ -52,8 +52,7 @@ export function OrganizationCard({
             </h2>
 
             <p className="text-sm text-slate-500">
-              {organization.description ??
-                "No description"}
+              {organization.code}
             </p>
           </div>
         </div>

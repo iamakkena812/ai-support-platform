@@ -2,14 +2,15 @@
  * Permission form.
  *
  * Provides a reusable form for creating and updating
- * permissions.
+ * permissions. Matches backend/app/permissions/schemas.py exactly —
+ * resource and action are required fields on the backend, not
+ * optional extras.
  */
 
 import { useEffect, useState } from "react";
 
 import type {
   Permission,
-  PermissionGroup,
 } from "../types/permission.types";
 
 /**
@@ -20,11 +21,6 @@ export interface PermissionFormProps {
    * Existing permission for edit mode.
    */
   readonly permission?: Permission | null;
-
-  /**
-   * Available permission groups.
-   */
-  readonly groups?: readonly PermissionGroup[];
 
   /**
    * Indicates whether the form is submitting.
@@ -59,14 +55,19 @@ export interface PermissionFormValues {
   readonly name: string;
 
   /**
+   * Resource the permission applies to (e.g. "ticket").
+   */
+  readonly resource: string;
+
+  /**
+   * Action the permission grants (e.g. "create").
+   */
+  readonly action: string;
+
+  /**
    * Permission description.
    */
   readonly description: string;
-
-  /**
-   * Permission group identifier.
-   */
-  readonly groupId: string;
 }
 
 /**
@@ -77,7 +78,6 @@ export interface PermissionFormValues {
  */
 export function PermissionForm({
   permission = null,
-  groups = [],
   isSubmitting = false,
   disabled = false,
   onSubmit,
@@ -87,11 +87,17 @@ export function PermissionForm({
     permission?.name ?? "",
   );
 
+  const [resource, setResource] = useState(
+    permission?.resource ?? "",
+  );
+
+  const [action, setAction] = useState(
+    permission?.action ?? "",
+  );
+
   const [description, setDescription] = useState(
     permission?.description ?? "",
   );
-
-  const [groupId, setGroupId] = useState("");
 
   const [error, setError] = useState<string | null>(
     null,
@@ -101,6 +107,8 @@ export function PermissionForm({
 
   useEffect(() => {
     setName(permission?.name ?? "");
+    setResource(permission?.resource ?? "");
+    setAction(permission?.action ?? "");
     setDescription(permission?.description ?? "");
     setError(null);
   }, [permission]);
@@ -111,11 +119,23 @@ export function PermissionForm({
     event.preventDefault();
 
     const trimmedName = name.trim();
+    const trimmedResource = resource.trim();
+    const trimmedAction = action.trim();
     const trimmedDescription =
       description.trim();
 
     if (trimmedName.length === 0) {
       setError("Permission name is required.");
+      return;
+    }
+
+    if (trimmedResource.length === 0) {
+      setError("Resource is required.");
+      return;
+    }
+
+    if (trimmedAction.length === 0) {
+      setError("Action is required.");
       return;
     }
 
@@ -126,9 +146,9 @@ export function PermissionForm({
       return;
     }
 
-    if (trimmedDescription.length > 500) {
+    if (trimmedDescription.length > 255) {
       setError(
-        "Description must not exceed 500 characters.",
+        "Description must not exceed 255 characters.",
       );
       return;
     }
@@ -137,8 +157,9 @@ export function PermissionForm({
 
     await onSubmit({
       name: trimmedName,
+      resource: trimmedResource,
+      action: trimmedAction,
       description: trimmedDescription,
-      groupId,
     });
   };
 
@@ -173,6 +194,54 @@ export function PermissionForm({
         />
       </div>
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label
+            htmlFor="permission-resource"
+            className="mb-1.5 block text-sm font-medium text-gray-700"
+          >
+            Resource
+          </label>
+
+          <input
+            id="permission-resource"
+            type="text"
+            value={resource}
+            onChange={(event) => {
+              setResource(event.target.value);
+            }}
+            disabled={isDisabled}
+            maxLength={100}
+            required
+            placeholder="e.g. ticket"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200 disabled:cursor-not-allowed disabled:bg-gray-100"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="permission-action"
+            className="mb-1.5 block text-sm font-medium text-gray-700"
+          >
+            Action
+          </label>
+
+          <input
+            id="permission-action"
+            type="text"
+            value={action}
+            onChange={(event) => {
+              setAction(event.target.value);
+            }}
+            disabled={isDisabled}
+            maxLength={100}
+            required
+            placeholder="e.g. create"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200 disabled:cursor-not-allowed disabled:bg-gray-100"
+          />
+        </div>
+      </div>
+
       <div>
         <label
           htmlFor="permission-description"
@@ -188,46 +257,12 @@ export function PermissionForm({
             setDescription(event.target.value);
           }}
           disabled={isDisabled}
-          maxLength={500}
+          maxLength={255}
           rows={4}
           placeholder="Describe what this permission allows."
           className="w-full resize-y rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200 disabled:cursor-not-allowed disabled:bg-gray-100"
         />
       </div>
-
-      {groups.length > 0 && (
-        <div>
-          <label
-            htmlFor="permission-group"
-            className="mb-1.5 block text-sm font-medium text-gray-700"
-          >
-            Permission group
-          </label>
-
-          <select
-            id="permission-group"
-            value={groupId}
-            onChange={(event) => {
-              setGroupId(event.target.value);
-            }}
-            disabled={isDisabled}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200 disabled:cursor-not-allowed disabled:bg-gray-100"
-          >
-            <option value="">
-              No group
-            </option>
-
-            {groups.map((group) => (
-              <option
-                key={group.id}
-                value={group.id}
-              >
-                {group.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {error !== null && (
         <div

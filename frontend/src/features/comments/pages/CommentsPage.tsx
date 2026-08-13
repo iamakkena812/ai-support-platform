@@ -6,10 +6,12 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { CommentList } from "../components/CommentList";
 import { CommentFilters } from "../components/CommentFilters";
-import { useComments } from "../hooks/useComments";
+import { DeleteCommentDialog } from "../components/DeleteCommentDialog";
+import { useComments, useDeleteComment } from "../hooks/useComments";
 
 import type {
   Comment,
@@ -20,8 +22,13 @@ import type {
  * Comments page.
  */
 export function CommentsPage(): React.JSX.Element {
+  const navigate = useNavigate();
+
   const [filters, setFilters] =
     useState<CommentFilterValues>({});
+
+  const [commentToDelete, setCommentToDelete] =
+    useState<Comment | null>(null);
 
   const query = useMemo(
     () => ({
@@ -39,6 +46,8 @@ export function CommentsPage(): React.JSX.Element {
     error,
   } = useComments(query);
 
+  const deleteCommentMutation = useDeleteComment();
+
   /**
    * Handles viewing a comment.
    *
@@ -47,10 +56,7 @@ export function CommentsPage(): React.JSX.Element {
   const handleView = (
     comment: Comment,
   ): void => {
-    console.info(
-      "View comment",
-      comment.id,
-    );
+    navigate(`/comments/${comment.id}`);
   };
 
   /**
@@ -61,10 +67,7 @@ export function CommentsPage(): React.JSX.Element {
   const handleEdit = (
     comment: Comment,
   ): void => {
-    console.info(
-      "Edit comment",
-      comment.id,
-    );
+    navigate(`/comments/${comment.id}/edit`);
   };
 
   /**
@@ -75,10 +78,19 @@ export function CommentsPage(): React.JSX.Element {
   const handleDelete = (
     comment: Comment,
   ): void => {
-    console.info(
-      "Delete comment",
-      comment.id,
-    );
+    setCommentToDelete(comment);
+  };
+
+  /**
+   * Confirms deletion of the selected comment.
+   *
+   * @param comment - Comment to delete.
+   */
+  const handleConfirmDelete = async (
+    comment: Comment,
+  ): Promise<void> => {
+    await deleteCommentMutation.mutateAsync(comment.id);
+    setCommentToDelete(null);
   };
 
   return (
@@ -97,6 +109,7 @@ export function CommentsPage(): React.JSX.Element {
 
         <button
           type="button"
+          onClick={() => navigate("/comments/create")}
           className="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
         >
           Create Comment
@@ -132,6 +145,16 @@ export function CommentsPage(): React.JSX.Element {
           onDelete={
             handleDelete
           }
+        />
+      ) : null}
+
+      {commentToDelete ? (
+        <DeleteCommentDialog
+          comment={commentToDelete}
+          isOpen
+          isDeleting={deleteCommentMutation.isPending}
+          onClose={() => setCommentToDelete(null)}
+          onConfirm={handleConfirmDelete}
         />
       ) : null}
     </div>

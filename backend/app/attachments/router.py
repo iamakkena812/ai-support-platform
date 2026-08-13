@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from uuid import UUID
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, File, Form, Query, Response, UploadFile, status
 
 from app.attachments.dependencies import AttachmentServiceDependency
-from app.attachments.models import Attachment
 from app.attachments.schemas import (
-    AttachmentCreate,
-    AttachmentList,
+    AttachmentListResponse,
     AttachmentRead,
     AttachmentUpdate,
 )
@@ -23,42 +20,32 @@ router = APIRouter(
 )
 
 
-def _to_attachment(
-    attachment: Attachment,
-) -> AttachmentRead:
-    """Convert an attachment model to a response schema."""
-    return AttachmentRead.model_validate(attachment)
-
-
-def _to_attachment_list(
-    attachments: Sequence[Attachment],
-) -> AttachmentList:
-    """Convert attachment models to a list response."""
-    return AttachmentList(
-        items=[_to_attachment(attachment) for attachment in attachments],
-        total=len(attachments),
-    )
-
-
 @router.post(
     "/tickets/{ticket_id}",
     response_model=AttachmentRead,
     status_code=status.HTTP_201_CREATED,
 )
-def create_ticket_attachment(
+async def create_ticket_attachment(
     ticket_id: UUID,
-    request: AttachmentCreate,
     service: AttachmentServiceDependency,
     current_user: CurrentActiveUserDependency,
+    file: UploadFile = File(...),
+    description: str | None = Form(default=None),
 ) -> AttachmentRead:
-    """Create an attachment for a ticket."""
-    attachment = service.create_attachment(
+    """Upload an attachment for a ticket."""
+    content = await file.read()
+
+    attachment = service.create_ticket_attachment(
         organization_id=current_user.organization_id,
         uploaded_by_id=current_user.id,
-        request=request,
+        ticket_id=ticket_id,
+        original_filename=file.filename or "file",
+        content_type=file.content_type,
+        content=content,
+        description=description,
     )
 
-    return _to_attachment(attachment)
+    return AttachmentRead.from_attachment(attachment)
 
 
 @router.post(
@@ -66,37 +53,75 @@ def create_ticket_attachment(
     response_model=AttachmentRead,
     status_code=status.HTTP_201_CREATED,
 )
-def create_comment_attachment(
+async def create_comment_attachment(
     comment_id: UUID,
-    request: AttachmentCreate,
     service: AttachmentServiceDependency,
     current_user: CurrentActiveUserDependency,
+    file: UploadFile = File(...),
+    description: str | None = Form(default=None),
 ) -> AttachmentRead:
-    """Create an attachment for a comment."""
-    attachment = service.create_attachment(
+    """Upload an attachment for a comment."""
+    content = await file.read()
+
+    attachment = service.create_comment_attachment(
         organization_id=current_user.organization_id,
         uploaded_by_id=current_user.id,
-        request=request.model_copy(
-            update={
-                "comment_id": comment_id,
-            },
-        ),
+        comment_id=comment_id,
+        original_filename=file.filename or "file",
+        content_type=file.content_type,
+        content=content,
+        description=description,
     )
 
-    return _to_attachment(attachment)
+    return AttachmentRead.from_attachment(attachment)
 
 
 @router.get(
     "",
-    response_model=AttachmentList,
+    response_model=AttachmentListResponse,
 )
 def list_attachments(
     service: AttachmentServiceDependency,
-    _: CurrentActiveUserDependency,
-) -> AttachmentList:
-    """Return all active attachments."""
-    return _to_attachment_list(
-        service.list_attachments(),
+    current_user: CurrentActiveUserDependency,
+    ticket_id: UUID | None = Query(default=None, alias="ticketId"),
+    comment_id: UUID | None = Query(default=None, alias="commentId"),
+    content_type: str | None = Query(default=None, alias="contentType"),
+    uploaded_by: UUID | None = Query(default=None, alias="uploadedBy"),
+    search: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100, alias="pageSize"),
+) -> AttachmentListResponse:
+    """Return a paginated list of attachments, scoped to the caller's organization."""
+    offset = (page - 1) * page_size
+
+    attachments = service.list_attachments(
+        organization_id=current_user.organization_id,
+        ticket_id=ticket_id,
+        comment_id=comment_id,
+        content_type=content_type,
+        uploaded_by=uploaded_by,
+        search=search,
+        offset=offset,
+        limit=page_size,
+    )
+    total = service.count_attachments(
+        organization_id=current_user.organization_id,
+        ticket_id=ticket_id,
+        comment_id=comment_id,
+        content_type=content_type,
+        uploaded_by=uploaded_by,
+        search=search,
+    )
+
+    return AttachmentListResponse(
+        items=[
+            AttachmentRead.from_attachment(attachment)
+            for attachment in attachments
+        ],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=-(-total // page_size) if total else 0,
     )
 
 
@@ -107,47 +132,39 @@ def list_attachments(
 def get_attachment(
     attachment_id: UUID,
     service: AttachmentServiceDependency,
-    _: CurrentActiveUserDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> AttachmentRead:
-    """Return an attachment by identifier."""
-    return _to_attachment(
-        service.get_attachment(
-            attachment_id,
-        ),
+    """Return an attachment by identifier, scoped to the caller's organization."""
+    attachment = service.get_attachment(
+        attachment_id,
+        current_user.organization_id,
     )
+
+    return AttachmentRead.from_attachment(attachment)
 
 
 @router.get(
-    "/tickets/{ticket_id}",
-    response_model=AttachmentList,
+    "/{attachment_id}/download",
 )
-def list_ticket_attachments(
-    ticket_id: UUID,
+def download_attachment(
+    attachment_id: UUID,
     service: AttachmentServiceDependency,
-    _: CurrentActiveUserDependency,
-) -> AttachmentList:
-    """Return attachments for a ticket."""
-    return _to_attachment_list(
-        service.list_ticket_attachments(
-            ticket_id,
-        ),
+    current_user: CurrentActiveUserDependency,
+) -> Response:
+    """Download an attachment's stored file."""
+    attachment, content = service.download_attachment(
+        attachment_id,
+        current_user.organization_id,
     )
 
-
-@router.get(
-    "/comments/{comment_id}",
-    response_model=AttachmentList,
-)
-def list_comment_attachments(
-    comment_id: UUID,
-    service: AttachmentServiceDependency,
-    _: CurrentActiveUserDependency,
-) -> AttachmentList:
-    """Return attachments for a comment."""
-    return _to_attachment_list(
-        service.list_comment_attachments(
-            comment_id,
-        ),
+    return Response(
+        content=content,
+        media_type=attachment.content_type,
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{attachment.original_filename}"'
+            ),
+        },
     )
 
 
@@ -159,15 +176,17 @@ def update_attachment(
     attachment_id: UUID,
     request: AttachmentUpdate,
     service: AttachmentServiceDependency,
-    _: CurrentActiveUserDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> AttachmentRead:
-    """Update an attachment."""
+    """Update an attachment. Only the uploader may update it."""
     attachment = service.update_attachment(
         attachment_id,
+        current_user.organization_id,
+        current_user.id,
         request,
     )
 
-    return _to_attachment(attachment)
+    return AttachmentRead.from_attachment(attachment)
 
 
 @router.delete(
@@ -177,9 +196,11 @@ def update_attachment(
 def delete_attachment(
     attachment_id: UUID,
     service: AttachmentServiceDependency,
-    _: CurrentActiveUserDependency,
+    current_user: CurrentActiveUserDependency,
 ) -> None:
-    """Delete an attachment."""
+    """Delete an attachment. Only the uploader may delete it."""
     service.delete_attachment(
         attachment_id,
+        current_user.organization_id,
+        current_user.id,
     )

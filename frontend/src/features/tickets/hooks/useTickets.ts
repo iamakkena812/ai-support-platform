@@ -121,3 +121,28 @@ export function useUpdateTicket() {
     },
   });
 }
+
+/**
+ * Delete ticket mutation hook.
+ */
+export function useDeleteTicket() {
+
+  const queryClient =
+    useQueryClient();
+
+  return useMutation({
+    mutationFn:
+      (id: string) =>
+        ticketService.deleteTicket(
+          id,
+        ),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: [
+          "tickets",
+        ],
+      });
+    },
+  });
+}

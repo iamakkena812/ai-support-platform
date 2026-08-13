@@ -54,9 +54,16 @@ export function OrganizationForm({
 
     defaultValues: {
       name: initialValues?.name ?? "",
-
-      description:
-        initialValues?.description ?? "",
+      code: initialValues?.code ?? "",
+      email: initialValues?.email ?? "",
+      phone: initialValues?.phone ?? "",
+      website: initialValues?.website ?? "",
+      address: initialValues?.address ?? "",
+      city: initialValues?.city ?? "",
+      state: initialValues?.state ?? "",
+      country: initialValues?.country ?? "",
+      postalCode: initialValues?.postalCode ?? "",
+      timezone: initialValues?.timezone ?? "UTC",
     },
   });
 
@@ -65,39 +72,155 @@ export function OrganizationForm({
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
     >
-      <div>
-        <label className="mb-2 block text-sm font-medium">
-          Organization Name
-        </label>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Organization Name
+          </label>
 
-        <input
-          {...register("name")}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-        />
+          <input
+            {...register("name")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
 
-        {errors.name && (
-          <p className="mt-2 text-sm text-red-600">
-            {errors.name.message}
-          </p>
-        )}
+          {errors.name && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.name.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Organization Code
+          </label>
+
+          <input
+            {...register("code")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+
+          {errors.code && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.code.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Email
+          </label>
+
+          <input
+            type="email"
+            {...register("email")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+
+          {errors.email && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.email.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Phone
+          </label>
+
+          <input
+            {...register("phone")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Website
+          </label>
+
+          <input
+            {...register("website")}
+            placeholder="https://example.com"
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+
+          {errors.website && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.website.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Timezone
+          </label>
+
+          <input
+            {...register("timezone")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+        </div>
       </div>
 
       <div>
         <label className="mb-2 block text-sm font-medium">
-          Description
+          Address
         </label>
 
-        <textarea
-          {...register("description")}
-          rows={4}
+        <input
+          {...register("address")}
           className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
         />
+      </div>
 
-        {errors.description && (
-          <p className="mt-2 text-sm text-red-600">
-            {errors.description.message}
-          </p>
-        )}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            City
+          </label>
+
+          <input
+            {...register("city")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            State
+          </label>
+
+          <input
+            {...register("state")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Postal Code
+          </label>
+
+          <input
+            {...register("postalCode")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Country
+          </label>
+
+          <input
+            {...register("country")}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          />
+        </div>
       </div>
 
       <button

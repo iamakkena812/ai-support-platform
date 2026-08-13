@@ -33,7 +33,14 @@ export const getAttachments = async (
     await apiClient.get<AttachmentListResponse>(
       BASE_PATH,
       {
-        params: query,
+        params: {
+          page: query?.page,
+          pageSize: query?.pageSize,
+          ticketId: query?.filters?.ticketId,
+          contentType: query?.filters?.contentType,
+          uploadedBy: query?.filters?.uploadedBy,
+          search: query?.filters?.search,
+        },
       },
     );
 
@@ -69,18 +76,13 @@ export const createAttachment = async (
   const formData = new FormData();
 
   formData.append(
-    "ticketId",
-    payload.ticketId,
-  );
-
-  formData.append(
     "file",
     payload.file,
   );
 
   const { data } =
     await apiClient.post<Attachment>(
-      BASE_PATH,
+      `${BASE_PATH}/tickets/${payload.ticketId}`,
       formData,
       {
         headers: {

@@ -2,11 +2,11 @@
  * Create organization page.
  */
 
-import { useState } from "react";
+import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
 import { OrganizationForm } from "../components/OrganizationForm";
-import { OrganizationService } from "../services/organization.service";
+import { useCreateOrganization } from "../hooks/useOrganizations";
 
 import type {
   CreateOrganizationRequest,
@@ -18,8 +18,7 @@ import type {
 export function CreateOrganizationPage(): React.JSX.Element {
   const navigate = useNavigate();
 
-  const [isLoading, setIsLoading] =
-    useState(false);
+  const createOrganization = useCreateOrganization();
 
   /**
    * Handles form submission.
@@ -27,18 +26,18 @@ export function CreateOrganizationPage(): React.JSX.Element {
   async function handleSubmit(
     values: CreateOrganizationRequest,
   ): Promise<void> {
-    try {
-      setIsLoading(true);
+    await createOrganization.mutateAsync(values);
 
-      await OrganizationService.createOrganization(
-        values,
-      );
-
-      navigate("/organizations");
-    } finally {
-      setIsLoading(false);
-    }
+    navigate("/organizations");
   }
+
+  const errorMessage =
+    createOrganization.isError
+      ? isAxiosError(createOrganization.error) &&
+        typeof createOrganization.error.response?.data?.detail === "string"
+        ? createOrganization.error.response.data.detail
+        : "Failed to create organization. Please try again."
+      : null;
 
   return (
     <div className="space-y-6 p-8">
@@ -52,9 +51,15 @@ export function CreateOrganizationPage(): React.JSX.Element {
         </p>
       </div>
 
+      {errorMessage && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      )}
+
       <OrganizationForm
         onSubmit={handleSubmit}
-        isLoading={isLoading}
+        isLoading={createOrganization.isPending}
       />
     </div>
   );

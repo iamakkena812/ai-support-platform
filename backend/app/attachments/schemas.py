@@ -5,143 +5,95 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+
+from app.attachments.models import Attachment
+from app.core.schemas import CamelModel
 
 
-class AttachmentBase(BaseModel):
-    """Base schema for attachments."""
-
-    description: str | None = Field(
-        default=None,
-        max_length=1000,
-    )
-
-
-class AttachmentCreate(AttachmentBase):
-    """Schema for creating an attachment."""
-
-    filename: str = Field(
-        ...,
-        min_length=1,
-        max_length=255,
-    )
-
-    original_filename: str = Field(
-        ...,
-        min_length=1,
-        max_length=255,
-    )
-
-    content_type: str = Field(
-        ...,
-        min_length=1,
-        max_length=255,
-    )
-
-    extension: str = Field(
-        ...,
-        min_length=1,
-        max_length=20,
-    )
-
-    file_size: int = Field(
-        ...,
-        gt=0,
-    )
-
-    storage_provider: str = Field(
-        default="local",
-        max_length=50,
-    )
-
-    storage_key: str = Field(
-        ...,
-        min_length=1,
-        max_length=512,
-    )
-
-    storage_path: str = Field(
-        ...,
-        min_length=1,
-        max_length=1024,
-    )
-
-    checksum: str = Field(
-        ...,
-        min_length=1,
-        max_length=128,
-    )
-
-    ticket_id: UUID | None = None
-    comment_id: UUID | None = None
-
-
-class AttachmentUpdate(BaseModel):
+class AttachmentUpdate(CamelModel):
     """Schema for updating an attachment."""
 
+    file_name: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255,
+    )
+
     description: str | None = Field(
         default=None,
         max_length=1000,
     )
 
 
-class AttachmentRead(AttachmentBase):
-    """Schema returned by the API."""
-
-    model_config = ConfigDict(from_attributes=True)
+class AttachmentUploaderRef(CamelModel):
+    """Uploader reference."""
 
     id: UUID
+    name: str
+    email: str
 
-    organization_id: UUID
 
+class AttachmentTicketRef(CamelModel):
+    """Parent ticket reference."""
+
+    id: UUID
+    title: str
+
+
+class AttachmentRead(CamelModel):
+    """Schema returned by the API."""
+
+    id: UUID
     ticket_id: UUID | None
-
-    comment_id: UUID | None
-
-    uploaded_by_id: UUID
-
-    filename: str
-
-    original_filename: str
-
+    file_name: str
+    original_file_name: str
     content_type: str
-
-    extension: str
-
     file_size: int
-
-    storage_provider: str
-
-    storage_key: str
-
-    storage_path: str
-
     checksum: str
-
-    is_deleted: bool
-
+    description: str | None
+    download_url: str
+    uploaded_by: AttachmentUploaderRef
+    ticket: AttachmentTicketRef | None
     created_at: datetime
-
     updated_at: datetime
 
+    @classmethod
+    def from_attachment(cls, attachment: Attachment) -> AttachmentRead:
+        """Build a response from an attachment, resolving related refs."""
+        return cls(
+            id=attachment.id,
+            ticket_id=attachment.ticket_id,
+            file_name=attachment.filename,
+            original_file_name=attachment.original_filename,
+            content_type=attachment.content_type,
+            file_size=attachment.file_size,
+            checksum=attachment.checksum,
+            description=attachment.description,
+            download_url=f"/api/v1/attachments/{attachment.id}/download",
+            uploaded_by=AttachmentUploaderRef(
+                id=attachment.uploader.id,
+                name=attachment.uploader.full_name,
+                email=attachment.uploader.email,
+            ),
+            ticket=(
+                AttachmentTicketRef(
+                    id=attachment.ticket.id,
+                    title=attachment.ticket.title,
+                )
+                if attachment.ticket is not None
+                else None
+            ),
+            created_at=attachment.created_at,
+            updated_at=attachment.updated_at,
+        )
 
-class AttachmentList(BaseModel):
-    """List response for attachments."""
+
+class AttachmentListResponse(CamelModel):
+    """Paginated attachment list response."""
 
     items: list[AttachmentRead]
-
     total: int
-
-
-class AttachmentUploadResponse(BaseModel):
-    """Response returned after a successful upload."""
-
-    attachment: AttachmentRead
-
-    message: str = "Attachment uploaded successfully."
-
-
-class AttachmentDeleteResponse(BaseModel):
-    """Response returned after deleting an attachment."""
-
-    message: str = "Attachment deleted successfully."
+    page: int
+    page_size: int
+    total_pages: int

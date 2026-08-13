@@ -15,7 +15,6 @@ import {
  */
 export const ticketStatusSchema =
   z.enum([
-    "new",
     "open",
     "in_progress",
     "pending",
@@ -32,22 +31,40 @@ export const ticketPrioritySchema =
     "low",
     "medium",
     "high",
-    "urgent",
+    "critical",
   ]);
 
 
 /**
- * Ticket type schema.
+ * Ticket entity schema.
  */
-export const ticketTypeSchema =
-  z.enum([
-    "incident",
-    "service_request",
-    "bug",
-    "task",
-    "question",
-    "feature_request",
-  ]);
+export const ticketSchema =
+  z.object({
+    id: z.string(),
+    organizationId: z.string(),
+    createdBy: z.string(),
+    title: z.string(),
+    description: z.string(),
+    status: ticketStatusSchema,
+    priority: ticketPrioritySchema,
+    assignedTo: z.string().nullish(),
+    isActive: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  });
+
+
+/**
+ * Ticket list response schema.
+ */
+export const ticketListResponseSchema =
+  z.object({
+    items: z.array(ticketSchema),
+    total: z.number(),
+    page: z.number(),
+    pageSize: z.number(),
+    totalPages: z.number(),
+  });
 
 
 /**
@@ -61,8 +78,12 @@ export const createTicketSchema =
     title: z
       .string()
       .min(
-        3,
-        "Title must contain at least 3 characters",
+        5,
+        "Title must contain at least 5 characters",
+      )
+      .max(
+        255,
+        "Title cannot exceed 255 characters",
       ),
 
 
@@ -74,13 +95,11 @@ export const createTicketSchema =
       .min(
         10,
         "Description must contain at least 10 characters",
+      )
+      .max(
+        10000,
+        "Description cannot exceed 10000 characters",
       ),
-
-
-    /**
-     * Ticket type.
-     */
-    type: ticketTypeSchema,
 
 
     /**
@@ -90,43 +109,9 @@ export const createTicketSchema =
 
 
     /**
-     * Customer identifier.
-     */
-    customerId: z
-      .string()
-      .uuid(
-        "Invalid customer identifier",
-      ),
-
-
-    /**
-     * Project identifier.
-     */
-    projectId: z
-      .string()
-      .uuid(
-        "Invalid project identifier",
-      )
-      .nullable()
-      .optional(),
-
-
-    /**
-     * Organization identifier.
-     */
-    organizationId: z
-      .string()
-      .uuid(
-        "Invalid organization identifier",
-      )
-      .nullable()
-      .optional(),
-
-
-    /**
      * Assignee identifier.
      */
-    assigneeId: z
+    assignedTo: z
       .string()
       .uuid(
         "Invalid assignee identifier",
@@ -148,8 +133,12 @@ export const updateTicketSchema =
     title: z
       .string()
       .min(
-        3,
-        "Title must contain at least 3 characters",
+        5,
+        "Title must contain at least 5 characters",
+      )
+      .max(
+        255,
+        "Title cannot exceed 255 characters",
       )
       .optional(),
 
@@ -162,6 +151,10 @@ export const updateTicketSchema =
       .min(
         10,
         "Description must contain at least 10 characters",
+      )
+      .max(
+        10000,
+        "Description cannot exceed 10000 characters",
       )
       .optional(),
 
@@ -181,28 +174,9 @@ export const updateTicketSchema =
 
 
     /**
-     * Ticket type.
-     */
-    type:
-      ticketTypeSchema.optional(),
-
-
-    /**
-     * Project identifier.
-     */
-    projectId: z
-      .string()
-      .uuid(
-        "Invalid project identifier",
-      )
-      .nullable()
-      .optional(),
-
-
-    /**
      * Assignee identifier.
      */
-    assigneeId: z
+    assignedTo: z
       .string()
       .uuid(
         "Invalid assignee identifier",
@@ -238,39 +212,5 @@ export const ticketFilterSchema =
      */
     priority:
       ticketPrioritySchema.optional(),
-
-
-    /**
-     * Type filter.
-     */
-    type:
-      ticketTypeSchema.optional(),
-
-
-    /**
-     * Customer identifier.
-     */
-    customerId:
-      z.string()
-        .uuid()
-        .optional(),
-
-
-    /**
-     * Project identifier.
-     */
-    projectId:
-      z.string()
-        .uuid()
-        .optional(),
-
-
-    /**
-     * Assignee identifier.
-     */
-    assigneeId:
-      z.string()
-        .uuid()
-        .optional(),
 
   });

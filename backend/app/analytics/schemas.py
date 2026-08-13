@@ -4,81 +4,96 @@ from __future__ import annotations
 
 from datetime import date
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class DashboardSummary(BaseModel):
-    """Dashboard summary."""
-
-    organizations: int
-    users: int
-    projects: int
-    tickets: int
-    open_tickets: int
-    closed_tickets: int
-    sla_breaches: int
-    workflows: int
+def to_camel(string: str) -> str:
+    """Convert snake_case to camelCase."""
+    first, *rest = string.split("_")
+    return first + "".join(word.capitalize() for word in rest)
 
 
-class TicketMetrics(BaseModel):
-    """Ticket metrics."""
+class CamelModel(BaseModel):
+    """Base model using camelCase JSON aliases."""
 
-    total: int
-    open: int
-    pending: int
-    resolved: int
-    closed: int
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
 
 
-class UserMetrics(BaseModel):
-    """User metrics."""
+class TicketMetrics(CamelModel):
+    """Ticket metrics for an organization."""
 
     total: int
+
+    by_status: dict[str, int]
+
+    by_priority: dict[str, int]
+
+
+class UserMetrics(CamelModel):
+    """User metrics for an organization."""
+
+    total: int
+
     active: int
+
     inactive: int
 
 
-class OrganizationMetrics(BaseModel):
-    """Organization metrics."""
+class OrganizationMetrics(CamelModel):
+    """Platform-wide organization metrics."""
 
     total: int
+
     active: int
 
 
-class WorkflowMetrics(BaseModel):
-    """Workflow metrics."""
+class WorkflowMetrics(CamelModel):
+    """Workflow metrics for an organization."""
 
     total: int
+
     active: int
+
     inactive: int
 
 
-class SLAMetrics(BaseModel):
-    """SLA metrics."""
+class SLAMetrics(CamelModel):
+    """SLA metrics for an organization."""
 
     policies: int
+
     breaches: int
+
     compliance_percentage: float
 
 
-class ReportFilter(BaseModel):
-    """Analytics report filter."""
+class DashboardSummary(CamelModel):
+    """Organization-scoped analytics dashboard summary."""
 
-    organization_id: str | None = None
+    users: int
+
+    active_users: int
+
+    projects: int
+
+    tickets: TicketMetrics
+
+    workflows: WorkflowMetrics
+
+    sla: SLAMetrics
 
     start_date: date | None = None
 
     end_date: date | None = None
 
-    include_deleted: bool = False
 
-
-class AnalyticsHealth(BaseModel):
-    """Analytics health."""
+class AnalyticsHealth(CamelModel):
+    """Analytics module health."""
 
     database: bool = True
-
-    reports: bool = True
 
     dashboard: bool = True
 

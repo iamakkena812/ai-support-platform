@@ -63,7 +63,7 @@ function getPriorityConfig(
 
   switch (priority) {
 
-    case "LOW":
+    case "low":
       return {
         label: "Low",
         className:
@@ -76,7 +76,7 @@ function getPriorityConfig(
       };
 
 
-    case "MEDIUM":
+    case "medium":
       return {
         label: "Medium",
         className:
@@ -89,7 +89,7 @@ function getPriorityConfig(
       };
 
 
-    case "HIGH":
+    case "high":
       return {
         label: "High",
         className:
@@ -102,9 +102,9 @@ function getPriorityConfig(
       };
 
 
-    case "URGENT":
+    case "critical":
       return {
-        label: "Urgent",
+        label: "Critical",
         className:
           "border-red-200 bg-red-100 text-red-700",
         icon: (

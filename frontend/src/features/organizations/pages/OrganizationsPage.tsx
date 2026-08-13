@@ -2,13 +2,17 @@
  * Organizations page.
  */
 
+import { isAxiosError } from "axios";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { DeleteOrganizationDialog } from "../components/DeleteOrganizationDialog";
 import { OrganizationFilters } from "../components/OrganizationFilters";
 import { OrganizationTable } from "../components/OrganizationTable";
-import { useOrganizations } from "../hooks/useOrganizations";
+import {
+  useDeleteOrganization,
+  useOrganizations,
+} from "../hooks/useOrganizations";
 
 import type {
   Organization,
@@ -36,12 +40,14 @@ export function OrganizationsPage(): React.JSX.Element {
     error,
   } = useOrganizations();
 
+  const deleteOrganization = useDeleteOrganization();
+
   const organizations = useMemo(() => {
     if (!data) {
       return [];
     }
 
-    return data.items.filter((organization) => {
+    return data.organizations.filter((organization) => {
       const matchesSearch =
         organization.name
           .toLowerCase()
@@ -65,13 +71,17 @@ export function OrganizationsPage(): React.JSX.Element {
     setDeleteDialogOpen(true);
   }
 
-  function confirmDelete(): void {
-    console.log(
-      "Delete organization:",
-      selectedOrganization?.id,
+  async function confirmDelete(): Promise<void> {
+    if (!selectedOrganization) {
+      return;
+    }
+
+    await deleteOrganization.mutateAsync(
+      selectedOrganization.id,
     );
 
     setDeleteDialogOpen(false);
+    setSelectedOrganization(undefined);
   }
 
   if (isLoading) {
@@ -83,9 +93,25 @@ export function OrganizationsPage(): React.JSX.Element {
   }
 
   if (error) {
+    const isForbidden =
+      isAxiosError(error) &&
+      error.response?.status === 403;
+
     return (
-      <div className="p-8 text-red-600">
-        Failed to load organizations.
+      <div className="p-8">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-red-700">
+          <p className="font-semibold">
+            {isForbidden
+              ? "Superuser access required"
+              : "Failed to load organizations."}
+          </p>
+
+          <p className="mt-2 text-sm">
+            {isForbidden
+              ? "Organization management is restricted to platform superusers. Contact an administrator if you believe you should have access."
+              : "An unexpected error occurred while loading organizations. Please try again."}
+          </p>
+        </div>
       </div>
     );
   }
@@ -130,13 +156,22 @@ export function OrganizationsPage(): React.JSX.Element {
         onDelete={handleDelete}
       />
 
+      {deleteOrganization.isError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Failed to delete organization. Please try again.
+        </div>
+      )}
+
       <DeleteOrganizationDialog
         open={deleteDialogOpen}
         organization={selectedOrganization}
+        isLoading={deleteOrganization.isPending}
         onCancel={() =>
           setDeleteDialogOpen(false)
         }
-        onConfirm={confirmDelete}
+        onConfirm={() => {
+          void confirmDelete();
+        }}
       />
     </div>
   );

@@ -7,7 +7,6 @@
 
 import {
   User,
-  Building2,
   Calendar,
 } from "lucide-react";
 
@@ -41,12 +40,6 @@ export interface TicketCardProps {
 
 
   /**
-   * Ticket number.
-   */
-  readonly ticketNumber: string;
-
-
-  /**
    * Ticket title.
    */
   readonly title: string;
@@ -71,15 +64,9 @@ export interface TicketCardProps {
 
 
   /**
-   * Customer name.
+   * Assigned user identifier.
    */
-  readonly customerName?: string;
-
-
-  /**
-   * Assignee name.
-   */
-  readonly assignedUserName?: string;
+  readonly assignedTo?: string | null;
 
 
   /**
@@ -121,13 +108,11 @@ export interface TicketCardProps {
  */
 export function TicketCard({
   id,
-  ticketNumber,
   title,
   description,
   status,
   priority,
-  customerName,
-  assignedUserName,
+  assignedTo,
   createdAt,
   onView,
   onEdit,
@@ -147,7 +132,7 @@ export function TicketCard({
 
         <div>
           <p className="text-sm text-slate-500">
-            {ticketNumber}
+            #{id.slice(0, 8)}
           </p>
 
           <h3 className="mt-1 text-lg font-semibold text-slate-900">
@@ -197,34 +182,19 @@ export function TicketCard({
 
       <div className="mt-6 space-y-3 text-sm text-slate-600">
 
-        {customerName ? (
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
 
-            <Building2
-              size={16}
-            />
+          <User
+            size={16}
+          />
 
-            <span>
-              {customerName}
-            </span>
+          <span>
+            {assignedTo
+              ? `#${assignedTo.slice(0, 8)}`
+              : "Unassigned"}
+          </span>
 
-          </div>
-        ) : null}
-
-
-        {assignedUserName ? (
-          <div className="flex items-center gap-2">
-
-            <User
-              size={16}
-            />
-
-            <span>
-              {assignedUserName}
-            </span>
-
-          </div>
-        ) : null}
+        </div>
 
 
         <div className="flex items-center gap-2">

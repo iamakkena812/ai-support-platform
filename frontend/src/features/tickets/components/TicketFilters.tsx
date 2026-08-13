@@ -72,23 +72,23 @@ const STATUS_OPTIONS: readonly TicketFilterOption[] = [
   },
   {
     label: "Open",
-    value: "OPEN",
+    value: "open",
   },
   {
     label: "In Progress",
-    value: "IN_PROGRESS",
+    value: "in_progress",
   },
   {
-    label: "Waiting",
-    value: "WAITING",
+    label: "Pending",
+    value: "pending",
   },
   {
     label: "Resolved",
-    value: "RESOLVED",
+    value: "resolved",
   },
   {
     label: "Closed",
-    value: "CLOSED",
+    value: "closed",
   },
 ];
 
@@ -103,54 +103,19 @@ const PRIORITY_OPTIONS: readonly TicketFilterOption[] = [
   },
   {
     label: "Low",
-    value: "LOW",
+    value: "low",
   },
   {
     label: "Medium",
-    value: "MEDIUM",
+    value: "medium",
   },
   {
     label: "High",
-    value: "HIGH",
+    value: "high",
   },
   {
-    label: "Urgent",
-    value: "URGENT",
-  },
-];
-
-
-/**
- * Type options.
- */
-const TYPE_OPTIONS: readonly TicketFilterOption[] = [
-  {
-    label: "All Types",
-    value: "",
-  },
-  {
-    label: "Incident",
-    value: "incident",
-  },
-  {
-    label: "Service Request",
-    value: "service_request",
-  },
-  {
-    label: "Bug",
-    value: "bug",
-  },
-  {
-    label: "Task",
-    value: "task",
-  },
-  {
-    label: "Question",
-    value: "question",
-  },
-  {
-    label: "Feature Request",
-    value: "feature_request",
+    label: "Critical",
+    value: "critical",
   },
 ];
 
@@ -208,7 +173,7 @@ export function TicketFilters({
       </div>
 
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
 
 
         <div className="relative">
@@ -267,25 +232,6 @@ export function TicketFilters({
               priority:
                 event.target.value
                   ? event.target.value as TicketQueryFilters["priority"]
-                  : undefined,
-            })
-          }
-        />
-
-
-        <Select
-          value={
-            filters.type ?? ""
-          }
-          options={
-            TYPE_OPTIONS
-          }
-          placeholder="All Types"
-          onChange={(event) =>
-            updateFilters({
-              type:
-                event.target.value
-                  ? event.target.value as TicketQueryFilters["type"]
                   : undefined,
             })
           }

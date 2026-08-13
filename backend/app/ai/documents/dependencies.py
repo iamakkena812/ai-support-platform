@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 
 from app.ai.documents.repository import DocumentRepository
 from app.ai.documents.service import DocumentService
+from app.ai.knowledge.dependencies import get_ai_knowledge_repository
+from app.ai.knowledge.repository import AIKnowledgeRepository
 from app.database.dependencies import get_db
 
 DatabaseSessionDep = Annotated[
@@ -36,19 +38,26 @@ DocumentRepositoryDep = Annotated[
     Depends(get_document_repository),
 ]
 
+KnowledgeRepositoryDep = Annotated[
+    AIKnowledgeRepository,
+    Depends(get_ai_knowledge_repository),
+]
+
 
 def get_document_service(
     repository: DocumentRepositoryDep,
+    knowledge_repository: KnowledgeRepositoryDep,
 ) -> DocumentService:
     """Create a document service.
 
     Args:
         repository: Document repository.
+        knowledge_repository: Knowledge base repository.
 
     Returns:
         Document service.
     """
-    return DocumentService(repository)
+    return DocumentService(repository, knowledge_repository)
 
 
 DocumentServiceDep = Annotated[

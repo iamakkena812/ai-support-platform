@@ -7,67 +7,7 @@
 
 import {
   Calendar,
-  KeyRound,
-  ShieldCheck,
-  Users,
 } from "lucide-react";
-
-import {
-  RoleStatusBadge,
-} from "./RoleStatusBadge";
-
-
-/**
- * Permission item.
- */
-export interface RolePermission {
-
-
-  /**
-   * Permission identifier.
-   */
-  readonly id: string;
-
-
-  /**
-   * Permission name.
-   */
-  readonly name: string;
-
-
-  /**
-   * Description.
-   */
-  readonly description?: string | null;
-
-}
-
-
-
-/**
- * User item.
- */
-export interface RoleAssignedUser {
-
-
-  /**
-   * User identifier.
-   */
-  readonly id: string;
-
-
-  /**
-   * User name.
-   */
-  readonly name: string;
-
-
-  /**
-   * User email.
-   */
-  readonly email: string;
-
-}
 
 
 
@@ -92,30 +32,9 @@ export interface RoleDetailsProps {
 
 
   /**
-   * Status.
-   */
-  readonly status: string;
-
-
-
-  /**
    * System role.
    */
   readonly isSystem: boolean;
-
-
-
-  /**
-   * Permissions.
-   */
-  readonly permissions: readonly RolePermission[];
-
-
-
-  /**
-   * Users.
-   */
-  readonly users: readonly RoleAssignedUser[];
 
 
 
@@ -144,10 +63,7 @@ export interface RoleDetailsProps {
 export function RoleDetails({
   name,
   description,
-  status,
   isSystem,
-  permissions,
-  users,
   createdAt,
   updatedAt,
 }: RoleDetailsProps): React.JSX.Element {
@@ -214,11 +130,6 @@ export function RoleDetails({
             </h2>
 
 
-            <RoleStatusBadge
-              status={status}
-            />
-
-
             {
               isSystem ? (
 
@@ -259,42 +170,6 @@ export function RoleDetails({
         <DetailItem
 
           icon={
-            <ShieldCheck
-              size={18}
-            />
-          }
-
-          label="Permissions"
-
-          value={
-            permissions.length.toString()
-          }
-
-        />
-
-
-
-        <DetailItem
-
-          icon={
-            <Users
-              size={18}
-            />
-          }
-
-          label="Assigned Users"
-
-          value={
-            users.length.toString()
-          }
-
-        />
-
-
-
-        <DetailItem
-
-          icon={
             <Calendar
               size={18}
             />
@@ -327,88 +202,6 @@ export function RoleDetails({
           }
 
         />
-
-      </div>
-
-
-
-      <div>
-
-        <h3
-          className="mb-4 text-lg font-semibold text-slate-900"
-        >
-          Permissions
-        </h3>
-
-
-        {
-          permissions.length === 0 ? (
-
-            <p
-              className="text-sm text-slate-500"
-            >
-              No permissions assigned.
-            </p>
-
-          ) : (
-
-            <div
-              className="space-y-3"
-            >
-
-              {
-                permissions.map(
-                  (
-                    permission,
-                  ) => (
-
-                    <div
-
-                      key={
-                        permission.id
-                      }
-
-                      className="flex items-center gap-3 rounded-lg border border-slate-200 p-4"
-
-                    >
-
-                      <KeyRound
-                        size={18}
-                        className="text-blue-600"
-                      />
-
-
-                      <div>
-
-                        <p
-                          className="font-medium text-slate-900"
-                        >
-                          {permission.name}
-                        </p>
-
-
-                        <p
-                          className="text-sm text-slate-500"
-                        >
-                          {
-                            permission.description ??
-                            "No description"
-                          }
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                  ),
-                )
-              }
-
-            </div>
-
-          )
-
-        }
 
       </div>
 

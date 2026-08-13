@@ -9,6 +9,11 @@ import {
   customerApi,
 } from "../api/customer.api";
 
+import {
+  customerListResponseSchema,
+  customerSchema,
+} from "../schemas/customer.schema";
+
 import type {
   CreateCustomerPayload,
   Customer,
@@ -30,8 +35,13 @@ export class CustomerService {
   async getCustomers(
     filters?: CustomerQueryFilters,
   ): Promise<CustomerListResponse> {
-    return customerApi.getCustomers(
-      filters,
+    const response =
+      await customerApi.getCustomers(
+        filters,
+      );
+
+    return customerListResponseSchema.parse(
+      response,
     );
   }
 
@@ -44,8 +54,13 @@ export class CustomerService {
   async getCustomer(
     id: string,
   ): Promise<Customer> {
-    return customerApi.getCustomer(
-      id,
+    const response =
+      await customerApi.getCustomer(
+        id,
+      );
+
+    return customerSchema.parse(
+      response,
     );
   }
 
@@ -58,8 +73,13 @@ export class CustomerService {
   async createCustomer(
     payload: CreateCustomerPayload,
   ): Promise<Customer> {
-    return customerApi.createCustomer(
-      payload,
+    const response =
+      await customerApi.createCustomer(
+        payload,
+      );
+
+    return customerSchema.parse(
+      response,
     );
   }
 
@@ -74,9 +94,14 @@ export class CustomerService {
     id: string,
     payload: UpdateCustomerPayload,
   ): Promise<Customer> {
-    return customerApi.updateCustomer(
-      id,
-      payload,
+    const response =
+      await customerApi.updateCustomer(
+        id,
+        payload,
+      );
+
+    return customerSchema.parse(
+      response,
     );
   }
 

@@ -13,7 +13,6 @@ import {
 
 import {
   useCreatePermission,
-  usePermissionGroups,
 } from "../hooks/usePermissions";
 
 import type {
@@ -39,23 +38,16 @@ export function CreatePermissionPage() {
     error,
   } = useCreatePermission();
 
-  const {
-    data: groupData,
-    isLoading: isGroupsLoading,
-  } = usePermissionGroups();
-
   const handleSubmit = async (
     values: PermissionFormValues,
   ): Promise<void> => {
     const payload: CreatePermissionRequest = {
       name: values.name,
+      resource: values.resource,
+      action: values.action,
       description:
         values.description.length > 0
           ? values.description
-          : null,
-      groupId:
-        values.groupId.length > 0
-          ? values.groupId
           : null,
     };
 
@@ -89,9 +81,7 @@ export function CreatePermissionPage() {
       )}
 
       <PermissionForm
-        groups={groupData?.items ?? []}
         isSubmitting={isPending}
-        disabled={isGroupsLoading}
         onSubmit={handleSubmit}
         onCancel={() => {
           navigate("/permissions");

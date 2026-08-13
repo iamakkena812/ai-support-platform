@@ -1,5 +1,9 @@
 /**
  * Organization validation schemas.
+ *
+ * Mirrors backend/app/organizations/schemas.py exactly — field
+ * names, optionality, and the list-response shape must match what
+ * the API actually returns.
  */
 
 import { z } from "zod";
@@ -9,7 +13,27 @@ export const organizationSchema = z.object({
 
   name: z.string(),
 
-  description: z.string().nullable(),
+  code: z.string(),
+
+  email: z.string().nullable().optional(),
+
+  phone: z.string().nullable().optional(),
+
+  website: z.string().nullable().optional(),
+
+  logoUrl: z.string().nullable().optional(),
+
+  address: z.string().nullable().optional(),
+
+  city: z.string().nullable().optional(),
+
+  state: z.string().nullable().optional(),
+
+  country: z.string().nullable().optional(),
+
+  postalCode: z.string().nullable().optional(),
+
+  timezone: z.string(),
 
   isActive: z.boolean(),
 
@@ -22,47 +46,62 @@ export const createOrganizationSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(3, "Organization name is required.")
+    .min(2, "Organization name is required.")
     .max(255),
 
-  description: z
+  code: z
     .string()
     .trim()
-    .max(1000)
+    .min(2, "Organization code is required.")
+    .max(50),
+
+  email: z
+    .string()
+    .trim()
+    .email("Enter a valid email address.")
     .nullable()
-    .optional(),
-});
+    .optional()
+    .or(z.literal("")),
 
-export const updateOrganizationSchema = z.object({
-  name: z
+  phone: z.string().trim().max(25).nullable().optional().or(z.literal("")),
+
+  website: z
     .string()
     .trim()
-    .min(3)
-    .max(255)
-    .optional(),
-
-  description: z
-    .string()
-    .trim()
-    .max(1000)
+    .url("Enter a valid URL.")
     .nullable()
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
-  isActive: z.boolean().optional(),
+  address: z.string().trim().max(500).nullable().optional(),
+
+  city: z.string().trim().max(100).nullable().optional(),
+
+  state: z.string().trim().max(100).nullable().optional(),
+
+  country: z.string().trim().max(100).nullable().optional(),
+
+  postalCode: z.string().trim().max(20).nullable().optional(),
+
+  timezone: z.string().trim().max(100).optional(),
 });
 
-export const organizationResponseSchema = z.object({
-  organization: organizationSchema,
-});
+export const updateOrganizationSchema = createOrganizationSchema
+  .partial()
+  .extend({
+    isActive: z.boolean().optional(),
+  });
 
 export const organizationListResponseSchema = z.object({
-  items: z.array(organizationSchema),
+  organizations: z.array(organizationSchema),
 
   total: z.number().nonnegative(),
 
   page: z.number().nonnegative(),
 
-  size: z.number().positive(),
+  pageSize: z.number().positive(),
+
+  totalPages: z.number().nonnegative(),
 });
 
 export type Organization = z.infer<typeof organizationSchema>;
@@ -73,10 +112,6 @@ export type CreateOrganizationRequest = z.infer<
 
 export type UpdateOrganizationRequest = z.infer<
   typeof updateOrganizationSchema
->;
-
-export type OrganizationResponse = z.infer<
-  typeof organizationResponseSchema
 >;
 
 export type OrganizationListResponse = z.infer<

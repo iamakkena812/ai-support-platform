@@ -34,25 +34,29 @@ class ConversationRepository:
     def get_conversation(
         self,
         conversation_id: UUID,
+        organization_id: UUID,
     ) -> Conversation | None:
-        """Retrieve a conversation by ID."""
+        """Retrieve a conversation by ID, scoped to the organization."""
         statement = select(Conversation).where(
             Conversation.id == conversation_id,
+            Conversation.organization_id == organization_id,
         )
         return self._db.scalar(statement)
 
     def list_conversations(
         self,
         organization_id: UUID,
+        created_by: UUID,
         *,
         offset: int = 0,
         limit: int = 20,
     ) -> list[Conversation]:
-        """List conversations for an organization."""
+        """List a user's conversations within an organization."""
         statement = (
             select(Conversation)
             .where(
                 Conversation.organization_id == organization_id,
+                Conversation.created_by == created_by,
             )
             .order_by(Conversation.created_at.desc())
             .offset(offset)
@@ -63,17 +67,35 @@ class ConversationRepository:
     def count_conversations(
         self,
         organization_id: UUID,
+        created_by: UUID,
     ) -> int:
-        """Count conversations."""
+        """Count a user's conversations within an organization."""
         statement = (
             select(func.count())
             .select_from(Conversation)
             .where(
                 Conversation.organization_id == organization_id,
+                Conversation.created_by == created_by,
             )
         )
         result = self._db.scalar(statement)
         return int(result or 0)
+
+    def count_messages_by_conversation(
+        self,
+        conversation_ids: list[UUID],
+    ) -> dict[UUID, int]:
+        """Return message counts grouped by conversation ID."""
+        if not conversation_ids:
+            return {}
+
+        statement = (
+            select(ConversationMessage.conversation_id, func.count())
+            .where(ConversationMessage.conversation_id.in_(conversation_ids))
+            .group_by(ConversationMessage.conversation_id)
+        )
+        rows = self._db.execute(statement).all()
+        return {row[0]: row[1] for row in rows}
 
     def update_conversation(
         self,

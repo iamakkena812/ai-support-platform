@@ -33,20 +33,13 @@ export function CreateTicketPage(): React.JSX.Element {
     values: TicketFormValues,
   ): Promise<void> => {
     await createTicketMutation.mutateAsync({
-      organizationId:
-        values.organizationId,
-      customerId:
-        values.customerId,
-      projectId:
-        values.projectId,
-     assignedTo:
-        values.assigneeId,
       title: values.title,
       description:
         values.description,
-      type: values.type,
       priority:
         values.priority,
+      assignedTo:
+        values.assignedTo,
     });
 
     navigate("/tickets");

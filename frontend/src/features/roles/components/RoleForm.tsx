@@ -3,6 +3,11 @@
  *
  * Displays reusable form UI for
  * creating and updating roles.
+ *
+ * Permission assignment is a separate concern handled via the
+ * dedicated role-permission mapping endpoint (see the Permissions
+ * feature), not part of role create/update — the backend's
+ * RoleCreate/RoleUpdate schemas do not accept permission ids.
  */
 
 import {
@@ -14,35 +19,21 @@ import {
   Input,
 } from "../../../components/ui";
 
-import type {
-  Permission,
-} from "../types/role.types";
-
 
 /**
  * Role form values.
  */
 export interface RoleFormValues {
 
-
   /**
    * Role name.
    */
   readonly name: string;
 
-
-
   /**
    * Description.
    */
   readonly description: string;
-
-
-
-  /**
-   * Permission identifiers.
-   */
-  readonly permissionIds: readonly string[];
 
 }
 
@@ -58,13 +49,6 @@ export interface RoleFormProps {
    * Initial values.
    */
   readonly initialValues?: Partial<RoleFormValues>;
-
-
-
-  /**
-   * Available permissions.
-   */
-  readonly permissions: readonly Permission[];
 
 
 
@@ -101,7 +85,6 @@ export interface RoleFormProps {
  */
 export function RoleForm({
   initialValues,
-  permissions,
   onSubmit,
   isSubmitting = false,
   submitLabel = "Save Role",
@@ -124,11 +107,6 @@ export function RoleForm({
           initialValues?.description ??
           "",
 
-
-        permissionIds:
-          initialValues?.permissionIds ??
-          [],
-
       },
     );
 
@@ -150,38 +128,6 @@ export function RoleForm({
           value,
 
       }),
-    );
-
-  }
-
-
-
-  function togglePermission(
-    id: string,
-  ): void {
-
-    const exists =
-      values.permissionIds.includes(
-        id,
-      );
-
-
-    updateField(
-      "permissionIds",
-
-      exists
-
-        ? values.permissionIds.filter(
-            (
-              permissionId,
-            ) =>
-              permissionId !== id,
-          )
-
-        : [
-            ...values.permissionIds,
-            id,
-          ],
     );
 
   }
@@ -259,104 +205,6 @@ export function RoleForm({
         }
 
       />
-
-
-
-      <div>
-
-        <h3
-
-          className="mb-3 font-semibold text-slate-900"
-
-        >
-
-          Permissions
-
-        </h3>
-
-
-
-        <div
-
-          className="grid gap-3 md:grid-cols-2"
-
-        >
-
-          {
-            permissions.map(
-              (
-                permission,
-              ) => (
-
-                <label
-
-                  key={
-                    permission.id
-                  }
-
-                  className="flex items-start gap-3 rounded-lg border border-slate-200 p-3"
-
-                >
-
-                  <input
-
-                    type="checkbox"
-
-                    checked={
-                      values.permissionIds.includes(
-                        permission.id,
-                      )
-                    }
-
-                    onChange={() =>
-                      togglePermission(
-                        permission.id,
-                      )
-                    }
-
-                  />
-
-
-                  <div>
-
-                    <p
-
-                      className="font-medium text-slate-900"
-
-                    >
-
-                      {permission.name}
-
-                    </p>
-
-
-                    <p
-
-                      className="text-sm text-slate-500"
-
-                    >
-
-                      {
-                        permission.description ??
-                        "No description available."
-                      }
-
-                    </p>
-
-
-                  </div>
-
-
-                </label>
-
-              ),
-            )
-          }
-
-        </div>
-
-
-      </div>
 
 
 

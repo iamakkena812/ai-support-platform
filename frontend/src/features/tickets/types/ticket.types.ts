@@ -10,111 +10,21 @@
  * Ticket status.
  */
 export type TicketStatus =
-  | "OPEN"
-  | "IN_PROGRESS"
-  | "WAITING"
-  | "RESOLVED"
-  | "CLOSED";
+  | "open"
+  | "in_progress"
+  | "pending"
+  | "resolved"
+  | "closed";
 
 
 /**
  * Ticket priority.
  */
 export type TicketPriority =
-  | "LOW"
-  | "MEDIUM"
-  | "HIGH"
-  | "URGENT";
-
-
-/**
- * Ticket type.
- */
-export type TicketType =
-  | "incident"
-  | "service_request"
-  | "bug"
-  | "task"
-  | "question"
-  | "feature_request";
-
-
-/**
- * User reference.
- */
-export interface UserReference {
-
-  /**
-   * User identifier.
-   */
-  readonly id: string;
-
-
-  /**
-   * User name.
-   */
-  readonly name: string;
-
-
-  /**
-   * User email.
-   */
-  readonly email?: string;
-}
-
-
-/**
- * Customer reference.
- */
-export interface CustomerReference {
-
-  /**
-   * Customer identifier.
-   */
-  readonly id: string;
-
-
-  /**
-   * Customer name.
-   */
-  readonly name: string;
-}
-
-
-/**
- * Organization reference.
- */
-export interface OrganizationReference {
-
-  /**
-   * Organization identifier.
-   */
-  readonly id: string;
-
-
-  /**
-   * Organization name.
-   */
-  readonly name: string;
-}
-
-
-/**
- * Project reference.
- */
-export interface ProjectReference {
-
-  /**
-   * Project identifier.
-   */
-  readonly id: string;
-
-
-  /**
-   * Project name.
-   */
-  readonly name: string;
-}
+  | "low"
+  | "medium"
+  | "high"
+  | "critical";
 
 
 /**
@@ -129,9 +39,15 @@ export interface Ticket {
 
 
   /**
-   * Ticket number.
+   * Organization identifier.
    */
-  readonly ticketNumber: string;
+  readonly organizationId: string;
+
+
+  /**
+   * Identifier of the user who created the ticket.
+   */
+  readonly createdBy: string;
 
 
   /**
@@ -159,93 +75,27 @@ export interface Ticket {
 
 
   /**
-   * Ticket type.
-   */
-  readonly type: TicketType;
-
-
-  /**
-   * Customer.
-   */
-  readonly customer?: CustomerReference | null;
-
-
-  /**
-   * Customer identifier.
-   */
-  readonly customerId: string;
-
-
-  /**
-   * Organization.
-   */
-  readonly organization?: OrganizationReference | null;
-
-
-  /**
-   * Organization identifier.
-   */
-  readonly organizationId?: string | null;
-
-
-  /**
-   * Project.
-   */
-  readonly project?: ProjectReference | null;
-
-
-  /**
-   * Project identifier.
-   */
-  readonly projectId?: string | null;
-
-
-  /**
-   * Assigned user.
-   */
-  readonly assignee?: UserReference | null;
-
-
-  /**
    * Assigned user identifier.
    */
   readonly assignedTo?: string | null;
 
 
   /**
-   * Assigned user name.
+   * Whether the ticket is active.
    */
-  readonly assignedUserName?: string;
-
-
-  /**
-   * Created user.
-   */
-  readonly createdBy?: UserReference | null;
+  readonly isActive: boolean;
 
 
   /**
    * Created date.
    */
-  readonly createdAt: string | Date;
+  readonly createdAt: string;
 
 
   /**
    * Updated date.
    */
-  readonly updatedAt: string | Date;
-
-
-  /**
-   * Resolved date.
-   */
-  readonly resolvedAt?: string | Date | null;
-
-
-  /**
-   * Closed date.
-   */
-  readonly closedAt?: string | Date | null;
+  readonly updatedAt: string;
 }
 
 
@@ -273,39 +123,15 @@ export interface TicketFilterValues {
 
 
   /**
-   * Type.
-   */
-  readonly type?: TicketType;
-
-
-  /**
-   * Customer identifier.
-   */
-  readonly customerId?: string;
-
-
-  /**
-   * Project identifier.
-   */
-  readonly projectId?: string;
-
-
-  /**
-   * Assigned user.
-   */
-  readonly assignedTo?: string;
-
-
-  /**
    * Page.
    */
   readonly page?: number;
 
 
   /**
-   * Limit.
+   * Page size.
    */
-  readonly limit?: number;
+  readonly pageSize?: number;
 }
 
 
@@ -342,7 +168,13 @@ export interface TicketListResponse {
   /**
    * Page size.
    */
-  readonly limit: number;
+  readonly pageSize: number;
+
+
+  /**
+   * Total pages.
+   */
+  readonly totalPages: number;
 }
 
 
@@ -364,33 +196,15 @@ export interface CreateTicketPayload {
 
 
   /**
-   * Ticket type.
-   */
-  readonly type: TicketType;
-
-
-  /**
-   * Customer identifier.
-   */
-  readonly customerId: string;
-
-
-  /**
    * Priority.
    */
   readonly priority: TicketPriority;
 
 
   /**
-   * Project identifier.
+   * Status.
    */
-  readonly projectId?: string | null;
-
-
-  /**
-   * Organization identifier.
-   */
-  readonly organizationId?: string | null;
+  readonly status?: TicketStatus;
 
 
   /**
@@ -430,19 +244,13 @@ export interface UpdateTicketPayload {
 
 
   /**
-   * Ticket type.
-   */
-  readonly type?: TicketType;
-
-
-  /**
-   * Project identifier.
-   */
-  readonly projectId?: string | null;
-
-
-  /**
    * Assigned user.
    */
   readonly assignedTo?: string | null;
+
+
+  /**
+   * Whether the ticket is active.
+   */
+  readonly isActive?: boolean;
 }

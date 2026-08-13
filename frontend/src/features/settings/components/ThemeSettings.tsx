@@ -1,38 +1,32 @@
 /**
  * Theme settings component.
+ *
+ * Wired to the application's real theme system
+ * (`app/providers/theme`), which already applies light/dark mode
+ * app-wide -- not a fake, unpersisted preference. "System" is not an
+ * option because the underlying `ThemeContext` only supports
+ * `"light" | "dark"`.
  */
 
-import type {
-  ChangeEvent,
-} from "react";
+import type { ChangeEvent } from "react";
 
-import type {
-  ThemeMode,
-  ThemeSettings as ThemeSettingsModel,
-} from "../types/settings.types";
+import type { Theme } from "../../../app/providers/theme/ThemeContext";
 
 /**
  * Component properties.
  */
 export interface ThemeSettingsProps {
   /**
-   * Theme settings.
+   * Current theme.
    */
-  readonly settings: ThemeSettingsModel;
-
-  /**
-   * Indicates whether editing is disabled.
-   */
-  readonly disabled?: boolean;
+  readonly theme: Theme;
 
   /**
    * Invoked when the theme changes.
    *
-   * @param settings - Updated theme settings.
+   * @param theme - Selected theme.
    */
-  readonly onChange: (
-    settings: ThemeSettingsModel,
-  ) => void;
+  readonly onChange: (theme: Theme) => void;
 }
 
 /**
@@ -42,8 +36,7 @@ export interface ThemeSettingsProps {
  * @returns Theme settings component.
  */
 export function ThemeSettings({
-  settings,
-  disabled = false,
+  theme,
   onChange,
 }: ThemeSettingsProps): React.JSX.Element {
   /**
@@ -51,14 +44,8 @@ export function ThemeSettings({
    *
    * @param event - Change event.
    */
-  const handleChange = (
-    event: ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    onChange({
-      mode:
-        event.target
-          .value as ThemeMode,
-    });
+  const handleChange = (event: ChangeEvent<HTMLSelectElement>): void => {
+    onChange(event.target.value as Theme);
   };
 
   return (
@@ -73,34 +60,16 @@ export function ThemeSettings({
         </label>
 
         <select
-          value={
-            settings.mode
-          }
-          onChange={
-            handleChange
-          }
-          disabled={
-            disabled
-          }
-          className="w-full rounded border border-gray-300 px-3 py-2 disabled:bg-gray-100"
+          value={theme}
+          onChange={handleChange}
+          className="w-full rounded border border-gray-300 px-3 py-2"
         >
-          <option value="system">
-            System Default
-          </option>
-
-          <option value="light">
-            Light
-          </option>
-
-          <option value="dark">
-            Dark
-          </option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
         </select>
 
         <p className="mt-3 text-sm text-gray-500">
-          Choose how the application
-          appearance should be
-          displayed.
+          Applied immediately across the application.
         </p>
       </div>
     </section>

@@ -189,21 +189,7 @@ export function EditRolePage(): React.JSX.Element {
               role.description ??
               "",
 
-
-            permissionIds:
-              role.permissions?.map(
-                (
-                  permission,
-                ) =>
-                  permission.id,
-              ) ?? [],
-
           }}
-
-
-          permissions={
-            role.permissions  ?? []
-          }
 
 
           onSubmit={

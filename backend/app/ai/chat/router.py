@@ -22,11 +22,17 @@ from app.ai.chat.schemas import (
     MessageResponse,
 )
 from app.ai.chat.service import ConversationService
+from app.auth.dependencies import CurrentActiveUserDependency
 
 router = APIRouter(
     prefix="/ai/chat",
     tags=["AI Chat"],
 )
+
+ConversationServiceDependency = Annotated[
+    ConversationService,
+    Depends(get_conversation_service),
+]
 
 
 @router.post(
@@ -36,17 +42,19 @@ router = APIRouter(
 )
 def create_conversation(
     conversation: ConversationCreate,
-    service: Annotated[
-        ConversationService,
-        Depends(get_conversation_service),
-    ],
-) -> Conversation:
-    """Create a conversation."""
+    current_user: CurrentActiveUserDependency,
+    service: ConversationServiceDependency,
+) -> ConversationResponse:
+    """Create a conversation owned by the caller."""
     entity = Conversation(
         **conversation.model_dump(),
+        organization_id=current_user.organization_id,
+        created_by=current_user.id,
     )
 
-    return service.create_conversation(entity)
+    created = service.create_conversation(entity)
+
+    return ChatMapper.conversation_response(created)
 
 
 @router.get(
@@ -55,15 +63,17 @@ def create_conversation(
 )
 def get_conversation(
     conversation_id: UUID,
-    service: Annotated[
-        ConversationService,
-        Depends(get_conversation_service),
-    ],
-) -> Conversation:
-    """Retrieve a conversation."""
-    return service.get_conversation(
+    current_user: CurrentActiveUserDependency,
+    service: ConversationServiceDependency,
+) -> ConversationResponse:
+    """Retrieve a conversation owned by the caller."""
+    conversation = service.get_conversation(
         conversation_id,
+        current_user.organization_id,
+        current_user.id,
     )
+
+    return ChatMapper.conversation_response(conversation)
 
 
 @router.get(
@@ -71,11 +81,8 @@ def get_conversation(
     response_model=ConversationListResponse,
 )
 def list_conversations(
-    organization_id: UUID,
-    service: Annotated[
-        ConversationService,
-        Depends(get_conversation_service),
-    ],
+    current_user: CurrentActiveUserDependency,
+    service: ConversationServiceDependency,
     offset: Annotated[
         int,
         Query(ge=0),
@@ -85,9 +92,10 @@ def list_conversations(
         Query(ge=1, le=100),
     ] = 20,
 ) -> ConversationListResponse:
-    """List conversations."""
-    conversations, total = service.list_conversations(
-        organization_id,
+    """List the caller's conversations."""
+    conversations, total, message_counts = service.list_conversations(
+        current_user.organization_id,
+        current_user.id,
         offset=offset,
         limit=limit,
     )
@@ -96,6 +104,7 @@ def list_conversations(
         items=[
             ChatMapper.conversation_response(
                 conversation,
+                message_counts.get(conversation.id, 0),
             )
             for conversation in conversations
         ],
@@ -112,16 +121,18 @@ def list_conversations(
 def update_conversation(
     conversation_id: UUID,
     update: ConversationUpdate,
-    service: Annotated[
-        ConversationService,
-        Depends(get_conversation_service),
-    ],
-) -> Conversation:
-    """Update a conversation."""
-    return service.update_conversation(
+    current_user: CurrentActiveUserDependency,
+    service: ConversationServiceDependency,
+) -> ConversationResponse:
+    """Update a conversation owned by the caller."""
+    conversation = service.update_conversation(
         conversation_id,
+        current_user.organization_id,
+        current_user.id,
         update,
     )
+
+    return ChatMapper.conversation_response(conversation)
 
 
 @router.delete(
@@ -130,14 +141,14 @@ def update_conversation(
 )
 def delete_conversation(
     conversation_id: UUID,
-    service: Annotated[
-        ConversationService,
-        Depends(get_conversation_service),
-    ],
+    current_user: CurrentActiveUserDependency,
+    service: ConversationServiceDependency,
 ) -> Response:
-    """Delete a conversation."""
+    """Delete a conversation owned by the caller."""
     service.delete_conversation(
         conversation_id,
+        current_user.organization_id,
+        current_user.id,
     )
 
     return Response(
@@ -153,18 +164,18 @@ def delete_conversation(
 def add_message(
     conversation_id: UUID,
     request: MessageCreate,
-    service: Annotated[
-        ConversationService,
-        Depends(get_conversation_service),
-    ],
+    current_user: CurrentActiveUserDependency,
+    service: ConversationServiceDependency,
 ) -> ConversationMessage:
-    """Add a message to a conversation."""
+    """Add a message to a conversation owned by the caller."""
     message = ConversationMessage(
         **request.model_dump(),
     )
 
     return service.add_message(
         conversation_id,
+        current_user.organization_id,
+        current_user.id,
         message,
     )
 
@@ -175,23 +186,26 @@ def add_message(
 )
 def get_history(
     conversation_id: UUID,
-    service: Annotated[
-        ConversationService,
-        Depends(get_conversation_service),
-    ],
+    current_user: CurrentActiveUserDependency,
+    service: ConversationServiceDependency,
 ) -> ConversationHistoryResponse:
     """Retrieve conversation history."""
     conversation = service.get_conversation(
         conversation_id,
+        current_user.organization_id,
+        current_user.id,
     )
 
     messages = service.get_history(
         conversation_id,
+        current_user.organization_id,
+        current_user.id,
     )
 
     return ConversationHistoryResponse(
         conversation=ChatMapper.conversation_response(
             conversation,
+            len(messages),
         ),
         messages=[ChatMapper.message_response(m) for m in messages],
     )
@@ -205,10 +219,8 @@ def get_history(
 def send_message(
     conversation_id: UUID,
     request: ChatRequest,
-    service: Annotated[
-        ConversationService,
-        Depends(get_conversation_service),
-    ],
+    current_user: CurrentActiveUserDependency,
+    service: ConversationServiceDependency,
 ) -> ChatResponse:
     """Send a message to an AI conversation."""
     if request.conversation_id != conversation_id:
@@ -219,4 +231,6 @@ def send_message(
 
     return service.send_message(
         request,
+        current_user.organization_id,
+        current_user.id,
     )

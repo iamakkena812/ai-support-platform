@@ -103,8 +103,6 @@ export function CreateRolePage(): React.JSX.Element {
 
         <RoleForm
 
-          permissions={[]}
-
           onSubmit={
             handleSubmit
           }

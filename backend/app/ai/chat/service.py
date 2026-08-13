@@ -7,9 +7,11 @@ from uuid import UUID
 
 from app.ai.chat.constants import ConversationStatus, MessageStatus, MessageType
 from app.ai.chat.exceptions import (
+    ChatGenerationError,
     ConversationArchivedError,
     ConversationClosedError,
     ConversationNotFoundError,
+    ConversationPermissionDeniedError,
 )
 from app.ai.chat.mappers.chat import ChatMapper
 from app.ai.chat.models import Conversation, ConversationMessage
@@ -21,6 +23,7 @@ from app.ai.chat.schemas import (
     ConversationUpdate,
 )
 from app.ai.constants import AIModel, AIProvider
+from app.ai.exceptions import AIError
 from app.ai.providers.registry import get_provider
 from app.ai.schemas import AIRequest
 
@@ -51,14 +54,22 @@ class ConversationService:
     def get_conversation(
         self,
         conversation_id: UUID,
+        organization_id: UUID,
+        user_id: UUID,
     ) -> Conversation:
-        """Retrieve a conversation."""
+        """Retrieve a conversation owned by the caller."""
         conversation = self._repository.get_conversation(
             conversation_id,
+            organization_id,
         )
 
         if conversation is None:
             raise ConversationNotFoundError(
+                str(conversation_id),
+            )
+
+        if conversation.created_by != user_id:
+            raise ConversationPermissionDeniedError(
                 str(conversation_id),
             )
 
@@ -67,31 +78,42 @@ class ConversationService:
     def list_conversations(
         self,
         organization_id: UUID,
+        user_id: UUID,
         *,
         offset: int = 0,
         limit: int = 20,
-    ) -> tuple[list[Conversation], int]:
-        """List conversations."""
+    ) -> tuple[list[Conversation], int, dict[UUID, int]]:
+        """List the caller's conversations, with per-conversation message counts."""
         conversations = self._repository.list_conversations(
             organization_id,
+            user_id,
             offset=offset,
             limit=limit,
         )
 
         total = self._repository.count_conversations(
             organization_id,
+            user_id,
         )
 
-        return conversations, total
+        message_counts = self._repository.count_messages_by_conversation(
+            [conversation.id for conversation in conversations],
+        )
+
+        return conversations, total, message_counts
 
     def update_conversation(
         self,
         conversation_id: UUID,
+        organization_id: UUID,
+        user_id: UUID,
         update: ConversationUpdate,
     ) -> Conversation:
-        """Update a conversation."""
+        """Update a conversation owned by the caller."""
         conversation = self.get_conversation(
             conversation_id,
+            organization_id,
+            user_id,
         )
 
         if update.title is not None:
@@ -104,43 +126,17 @@ class ConversationService:
             conversation,
         )
 
-    def archive_conversation(
-        self,
-        conversation_id: UUID,
-    ) -> Conversation:
-        """Archive a conversation."""
-        conversation = self.get_conversation(
-            conversation_id,
-        )
-
-        conversation.status = ConversationStatus.ARCHIVED
-
-        return self._repository.update_conversation(
-            conversation,
-        )
-
-    def close_conversation(
-        self,
-        conversation_id: UUID,
-    ) -> Conversation:
-        """Close a conversation."""
-        conversation = self.get_conversation(
-            conversation_id,
-        )
-
-        conversation.status = ConversationStatus.CLOSED
-
-        return self._repository.update_conversation(
-            conversation,
-        )
-
     def delete_conversation(
         self,
         conversation_id: UUID,
+        organization_id: UUID,
+        user_id: UUID,
     ) -> None:
-        """Delete a conversation."""
+        """Delete a conversation owned by the caller."""
         conversation = self.get_conversation(
             conversation_id,
+            organization_id,
+            user_id,
         )
 
         self._repository.delete_conversation(
@@ -150,11 +146,15 @@ class ConversationService:
     def add_message(
         self,
         conversation_id: UUID,
+        organization_id: UUID,
+        user_id: UUID,
         message: ConversationMessage,
     ) -> ConversationMessage:
-        """Add a message to a conversation."""
+        """Add a message to a conversation owned by the caller."""
         conversation = self.get_conversation(
             conversation_id,
+            organization_id,
+            user_id,
         )
 
         if conversation.status == ConversationStatus.CLOSED:
@@ -176,10 +176,14 @@ class ConversationService:
     def get_history(
         self,
         conversation_id: UUID,
+        organization_id: UUID,
+        user_id: UUID,
     ) -> list[ConversationMessage]:
-        """Return conversation history."""
+        """Return conversation history for a conversation owned by the caller."""
         self.get_conversation(
             conversation_id,
+            organization_id,
+            user_id,
         )
 
         return self._repository.list_messages(
@@ -189,20 +193,36 @@ class ConversationService:
     def send_message(
         self,
         request: ChatRequest,
+        organization_id: UUID,
+        user_id: UUID,
     ) -> ChatResponse:
         """Send a message to the configured AI provider.
 
         Args:
             request: Chat request.
+            organization_id: Caller's organization ID.
+            user_id: Caller's user ID.
 
         Returns:
             AI chat response.
         """
         conversation = self.get_conversation(
             request.conversation_id,
+            organization_id,
+            user_id,
         )
 
-        history = self.get_history(
+        if conversation.status == ConversationStatus.CLOSED:
+            raise ConversationClosedError(
+                str(conversation.id),
+            )
+
+        if conversation.status == ConversationStatus.ARCHIVED:
+            raise ConversationArchivedError(
+                str(conversation.id),
+            )
+
+        history = self._repository.list_messages(
             conversation.id,
         )
 
@@ -211,31 +231,33 @@ class ConversationService:
             message=request.message,
         )
 
-        provider = get_provider(
-            AIProvider(conversation.provider),
-        )
+        try:
+            provider = get_provider(
+                AIProvider(conversation.provider),
+            )
 
-        ai_request = AIRequest(
-            provider=AIProvider(conversation.provider),
-            model=AIModel(conversation.model),
-            messages=prompt,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens,
-            stream=request.stream,
-        )
+            ai_request = AIRequest(
+                provider=AIProvider(conversation.provider),
+                model=AIModel(conversation.model),
+                messages=prompt,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens,
+                stream=request.stream,
+            )
 
-        start = time.perf_counter()
+            start = time.perf_counter()
 
-        ai_response = provider.generate(
-            ai_request,
-        )
+            ai_response = provider.generate(
+                ai_request,
+            )
 
-        latency_ms = int(
-            (time.perf_counter() - start) * 1000,
-        )
+            latency_ms = int(
+                (time.perf_counter() - start) * 1000,
+            )
+        except (AIError, NotImplementedError, ValueError) as exc:
+            raise ChatGenerationError(str(exc)) from exc
 
-        user_message = self.add_message(
-            conversation.id,
+        user_message = self._repository.add_message(
             ConversationMessage(
                 conversation_id=conversation.id,
                 role=MessageType.USER,
@@ -246,8 +268,7 @@ class ConversationService:
             ),
         )
 
-        assistant_message = self.add_message(
-            conversation.id,
+        assistant_message = self._repository.add_message(
             ConversationMessage(
                 conversation_id=conversation.id,
                 role=MessageType.ASSISTANT,

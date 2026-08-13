@@ -2,30 +2,29 @@
 
 from __future__ import annotations
 
+from http import HTTPStatus
 
-class AnalyticsError(Exception):
+from app.core.exceptions import AppException
+
+
+class AnalyticsError(AppException):
     """Base exception for analytics."""
 
-
-class AnalyticsNotFoundError(AnalyticsError):
-    """Raised when analytics data cannot be found."""
-
-
-class DashboardGenerationError(AnalyticsError):
-    """Raised when dashboard generation fails."""
-
-
-class MetricsCalculationError(AnalyticsError):
-    """Raised when metric calculation fails."""
-
-
-class ReportGenerationError(AnalyticsError):
-    """Raised when report generation fails."""
+    def __init__(
+        self,
+        message: str = "Analytics error.",
+        status_code: HTTPStatus = HTTPStatus.INTERNAL_SERVER_ERROR,
+    ) -> None:
+        """Initialize the analytics exception."""
+        super().__init__(message=message, status_code=status_code)
 
 
 class InvalidDateRangeError(AnalyticsError):
     """Raised when an invalid date range is supplied."""
 
-
-class UnsupportedReportError(AnalyticsError):
-    """Raised when an unsupported report is requested."""
+    def __init__(
+        self,
+        message: str = "start_date must not be after end_date.",
+    ) -> None:
+        """Initialize the invalid date range exception."""
+        super().__init__(message=message, status_code=HTTPStatus.BAD_REQUEST)

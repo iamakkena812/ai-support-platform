@@ -1,8 +1,7 @@
 /**
  * Customer details page.
  *
- * Displays complete customer information,
- * organizations, and projects.
+ * Displays complete customer information.
  */
 
 import {
@@ -22,8 +21,6 @@ import {
 import {
   CustomerDetails,
   CustomerError,
-  CustomerOrganizations,
-  CustomerProjects,
   CustomerSkeleton,
 } from "../components";
 
@@ -121,8 +118,8 @@ export function CustomerDetailsPage(): React.JSX.Element {
         name={
           customer.name
         }
-        company={
-          customer.company
+        companyName={
+          customer.companyName
         }
         email={
           customer.email
@@ -130,50 +127,35 @@ export function CustomerDetailsPage(): React.JSX.Element {
         phone={
           customer.phone
         }
-        contactPerson={
-          customer.contactPerson
+        website={
+          customer.website
         }
         status={
           customer.status
         }
-        industry={
-          customer.industry
+        customerType={
+          customer.customerType
         }
         address={
           customer.address
         }
-        organizationCount={
-          customer.organizationCount
+        city={
+          customer.city
         }
-        projectCount={
-          customer.projectCount
+        state={
+          customer.state
         }
-        ticketCount={
-          customer.ticketCount
+        country={
+          customer.country
+        }
+        postalCode={
+          customer.postalCode
         }
         createdAt={
           customer.createdAt
         }
         updatedAt={
           customer.updatedAt
-        }
-      />
-
-      <CustomerOrganizations
-        organizations={[]}
-        onViewOrganization={(organizationId) =>
-          navigate(
-            `/organizations/${organizationId}`,
-          )
-        }
-      />
-
-      <CustomerProjects
-        projects={[]}
-        onViewProject={(projectId) =>
-          navigate(
-            `/projects/${projectId}`,
-          )
         }
       />
     </div>

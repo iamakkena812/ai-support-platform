@@ -8,6 +8,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.ai.chat.constants import ConversationStatus, MessageStatus, MessageType
+from app.ai.constants import AIModel, AIProvider
 
 
 class ConversationCreate(BaseModel):
@@ -18,15 +19,9 @@ class ConversationCreate(BaseModel):
         max_length=255,
     )
 
-    provider: str = Field(
-        min_length=1,
-        max_length=50,
-    )
+    provider: AIProvider
 
-    model: str = Field(
-        min_length=1,
-        max_length=100,
-    )
+    model: AIModel
 
     customer_id: UUID | None = None
 
@@ -69,6 +64,8 @@ class ConversationResponse(BaseModel):
     model: str
 
     status: ConversationStatus
+
+    message_count: int = 0
 
     created_at: datetime
 

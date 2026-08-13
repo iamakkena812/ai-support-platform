@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.models.user import User
 from app.permissions.dependencies import PermissionServiceDependency
 from app.permissions.exceptions import (
     PermissionAlreadyExistsError,
@@ -20,6 +22,7 @@ from app.permissions.schemas import (
     PermissionStatistics,
     PermissionUpdate,
 )
+from app.rbac.dependencies import require_permission
 
 router = APIRouter(
     prefix="/permissions",
@@ -27,14 +30,36 @@ router = APIRouter(
 )
 
 
+CreatePermissionPermission = Annotated[
+    User,
+    Depends(require_permission("permission", "create")),
+]
+
+ReadPermissionPermission = Annotated[
+    User,
+    Depends(require_permission("permission", "read")),
+]
+
+UpdatePermissionPermission = Annotated[
+    User,
+    Depends(require_permission("permission", "update")),
+]
+
+DeletePermissionPermission = Annotated[
+    User,
+    Depends(require_permission("permission", "delete")),
+]
+
+
 @router.get(
     "",
     response_model=PermissionListResponse,
 )
 def list_permissions(
+    _: ReadPermissionPermission,
     service: PermissionServiceDependency,
     page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
+    page_size: int = Query(default=20, ge=1, le=100, alias="pageSize"),
     search: str | None = Query(default=None),
     resource: str | None = Query(default=None),
     action: str | None = Query(default=None),
@@ -56,6 +81,7 @@ def list_permissions(
     response_model=PermissionStatistics,
 )
 def get_permission_statistics(
+    _: ReadPermissionPermission,
     service: PermissionServiceDependency,
 ) -> PermissionStatistics:
     """Return permission statistics."""
@@ -68,6 +94,7 @@ def get_permission_statistics(
 )
 def get_permission(
     permission_id: UUID,
+    _: ReadPermissionPermission,
     service: PermissionServiceDependency,
 ) -> PermissionResponse:
     """Return a permission by identifier."""
@@ -87,6 +114,7 @@ def get_permission(
 )
 def create_permission(
     request: PermissionCreate,
+    _: CreatePermissionPermission,
     service: PermissionServiceDependency,
 ) -> PermissionResponse:
     """Create a permission."""
@@ -106,6 +134,7 @@ def create_permission(
 def update_permission(
     permission_id: UUID,
     request: PermissionUpdate,
+    _: UpdatePermissionPermission,
     service: PermissionServiceDependency,
 ) -> PermissionResponse:
     """Update a permission."""
@@ -132,6 +161,7 @@ def update_permission(
 )
 def delete_permission(
     permission_id: UUID,
+    _: DeletePermissionPermission,
     service: PermissionServiceDependency,
 ) -> None:
     """Delete a permission."""

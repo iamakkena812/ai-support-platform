@@ -6,8 +6,17 @@
  */
 
 import {
+  useMemo,
   useState,
 } from "react";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  isAxiosError,
+} from "axios";
 
 import {
   CustomerCard,
@@ -18,11 +27,20 @@ import {
   CustomerSkeleton,
   CustomerStats,
   CustomerTable,
+  DeleteCustomerDialog,
 } from "../components";
 
 import {
   useCustomers,
 } from "../hooks/useCustomers";
+
+import {
+  customerService,
+} from "../services/customer.service";
+
+import type {
+  Customer,
+} from "../types/customer.types";
 
 /**
  * Customers page component.
@@ -30,6 +48,9 @@ import {
  * @returns Customers page.
  */
 export function CustomersPage(): React.JSX.Element {
+  const navigate =
+    useNavigate();
+
   const [
     search,
     setSearch,
@@ -41,9 +62,19 @@ export function CustomersPage(): React.JSX.Element {
   ] = useState("");
 
   const [
-    industry,
-    setIndustry,
-  ] = useState("");
+    pendingDelete,
+    setPendingDelete,
+  ] = useState<Customer | null>(null);
+
+  const [
+    isDeleting,
+    setIsDeleting,
+  ] = useState(false);
+
+  const [
+    deleteError,
+    setDeleteError,
+  ] = useState<string | null>(null);
 
   const {
     data,
@@ -53,18 +84,76 @@ export function CustomersPage(): React.JSX.Element {
     refetch,
   } = useCustomers({
     filters: {
-      search:
-        search || undefined,
-
-      status:
-        status
-          ? status as never
-          : undefined,
-
-      industry:
-        industry || undefined,
+      page: 1,
+      pageSize: 100,
     },
   });
+
+  const customers =
+    useMemo(
+      () => {
+        const items =
+          data?.items ?? [];
+
+        return items.filter(
+          (customer) => {
+            const matchesSearch =
+              !search ||
+              customer.name
+                .toLowerCase()
+                .includes(
+                  search.toLowerCase(),
+                ) ||
+              customer.email
+                .toLowerCase()
+                .includes(
+                  search.toLowerCase(),
+                );
+
+            const matchesStatus =
+              !status ||
+              customer.status === status;
+
+            return (
+              matchesSearch &&
+              matchesStatus
+            );
+          },
+        );
+      },
+      [
+        data,
+        search,
+        status,
+      ],
+    );
+
+  async function handleConfirmDelete(): Promise<void> {
+    if (!pendingDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await customerService.deleteCustomer(
+        pendingDelete.id,
+      );
+
+      setPendingDelete(null);
+      await refetch();
+    } catch (deleteErr) {
+      setDeleteError(
+        isAxiosError(deleteErr) &&
+          deleteErr.response?.status === 404
+          ? "Customer was already deleted."
+          : "Failed to delete customer. Please try again.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -73,12 +162,20 @@ export function CustomersPage(): React.JSX.Element {
   }
 
   if (isError) {
+    const is403 =
+      isAxiosError(error) &&
+      error.response?.status === 403;
+
     return (
       <CustomerError
         error={
-          error instanceof Error
-            ? error
-            : undefined
+          is403
+            ? new Error(
+                "You do not have permission to view customers.",
+              )
+            : error instanceof Error
+              ? error
+              : undefined
         }
         onRetry={() => {
           void refetch();
@@ -87,73 +184,44 @@ export function CustomersPage(): React.JSX.Element {
     );
   }
 
-  const customers =
-    data?.items ?? [];
-
   return (
     <div className="space-y-6">
       <CustomerHeader />
 
       <CustomerStats
-            totalCustomers={
-                data?.total ?? 0
-            }
-            activeCustomers={
-                customers.filter(
-                (customer) =>
-                    customer.status === "ACTIVE",
-                ).length
-            }
-            totalOrganizations={
-                customers.reduce(
-                (
-                    total,
-                    customer,
-                ) =>
-                    total +
-                    customer.organizationCount,
-                0,
-                )
-            }
-            totalProjects={
-                customers.reduce(
-                (
-                    total,
-                    customer,
-                ) =>
-                    total +
-                    customer.projectCount,
-                0,
-                )
-            }
-            openTickets={
-                customers.reduce(
-                (
-                    total,
-                    customer,
-                ) =>
-                    total +
-                    customer.ticketCount,
-                0,
-                )
-            }
-            />
+        totalCustomers={
+          data?.total ?? 0
+        }
+        activeCustomers={
+          customers.filter(
+            (customer) =>
+              customer.status === "active",
+          ).length
+        }
+        suspendedCustomers={
+          customers.filter(
+            (customer) =>
+              customer.status === "suspended",
+          ).length
+        }
+      />
 
       <CustomerFilters
         search={search}
         status={status}
-        industry={industry}
-        industries={[]}
         onSearchChange={
           setSearch
         }
         onStatusChange={
           setStatus
         }
-        onIndustryChange={
-          setIndustry
-        }
       />
+
+      {deleteError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {deleteError}
+        </div>
+      ) : null}
 
       {customers.length === 0 ? (
         <CustomerEmpty />
@@ -166,23 +234,41 @@ export function CustomersPage(): React.JSX.Element {
                   (customer) => ({
                     id: customer.id,
                     name: customer.name,
-                    company:
-                      customer.company,
+                    companyName:
+                      customer.companyName,
                     email:
                       customer.email,
                     phone:
                       customer.phone,
                     status:
                       customer.status,
-                    organizationCount:
-                      customer.organizationCount,
-                    projectCount:
-                      customer.projectCount,
-                    ticketCount:
-                      customer.ticketCount,
                   }),
                 )
               }
+              onView={(id) =>
+                navigate(
+                  `/customers/${id}`,
+                )
+              }
+              onEdit={(id) =>
+                navigate(
+                  `/customers/${id}/edit`,
+                )
+              }
+              onDelete={(id) => {
+                const customer =
+                  customers.find(
+                    (item) =>
+                      item.id === id,
+                  );
+
+                if (customer) {
+                  setDeleteError(null);
+                  setPendingDelete(
+                    customer,
+                  );
+                }
+              }}
             />
           </div>
 
@@ -199,8 +285,8 @@ export function CustomersPage(): React.JSX.Element {
                   name={
                     customer.name
                   }
-                  company={
-                    customer.company
+                  companyName={
+                    customer.companyName
                   }
                   email={
                     customer.email
@@ -211,21 +297,44 @@ export function CustomersPage(): React.JSX.Element {
                   status={
                     customer.status
                   }
-                  organizationCount={
-                    customer.organizationCount
+                  onView={(id) =>
+                    navigate(
+                      `/customers/${id}`,
+                    )
                   }
-                  projectCount={
-                    customer.projectCount
+                  onEdit={(id) =>
+                    navigate(
+                      `/customers/${id}/edit`,
+                    )
                   }
-                  ticketCount={
-                    customer.ticketCount
-                  }
+                  onDelete={() => {
+                    setDeleteError(null);
+                    setPendingDelete(
+                      customer,
+                    );
+                  }}
                 />
               ),
             )}
           </div>
         </>
       )}
+
+      <DeleteCustomerDialog
+        open={
+          pendingDelete !== null
+        }
+        customerName={
+          pendingDelete?.name
+        }
+        isDeleting={isDeleting}
+        onClose={() => {
+          setPendingDelete(null);
+        }}
+        onConfirm={
+          handleConfirmDelete
+        }
+      />
     </div>
   );
 }

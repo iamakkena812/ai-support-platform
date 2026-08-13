@@ -9,10 +9,6 @@ import {
   RoleActions,
 } from "./RoleActions";
 
-import {
-  RoleStatusBadge,
-} from "./RoleStatusBadge";
-
 
 
 /**
@@ -39,27 +35,6 @@ export interface RoleTableRow {
    * Description.
    */
   readonly description?: string;
-
-
-
-  /**
-   * Permission count.
-   */
-  readonly permissionCount: number;
-
-
-
-  /**
-   * User count.
-   */
-  readonly userCount: number;
-
-
-
-  /**
-   * Status.
-   */
-  readonly status: string;
 
 
 
@@ -154,21 +129,14 @@ export function RoleTable({
             <th
               className="px-6 py-4 text-left text-sm font-semibold text-slate-700"
             >
-              Permissions
+              Description
             </th>
 
 
             <th
               className="px-6 py-4 text-center text-sm font-semibold text-slate-700"
             >
-              Users
-            </th>
-
-
-            <th
-              className="px-6 py-4 text-center text-sm font-semibold text-slate-700"
-            >
-              Status
+              Type
             </th>
 
 
@@ -226,37 +194,15 @@ export function RoleTable({
 
 
 
-                      <div>
+                      <p
 
-                        <p
+                        className="font-medium text-slate-900"
 
-                          className="font-medium text-slate-900"
+                      >
 
-                        >
+                        {role.name}
 
-                          {role.name}
-
-                        </p>
-
-
-
-                        {
-                          role.isSystem ? (
-
-                            <span
-
-                              className="text-xs font-medium text-purple-600"
-
-                            >
-
-                              System Role
-
-                            </span>
-
-                          ) : null
-                        }
-
-                      </div>
+                      </p>
 
                     </div>
 
@@ -268,19 +214,7 @@ export function RoleTable({
                     className="px-6 py-4 text-sm text-slate-700"
                   >
 
-                    {role.permissionCount}
-
-                  </td>
-
-
-
-                  <td
-
-                    className="px-6 py-4 text-center text-sm text-slate-700"
-
-                  >
-
-                    {role.userCount}
+                    {role.description ?? "-"}
 
                   </td>
 
@@ -292,13 +226,15 @@ export function RoleTable({
 
                   >
 
-                    <RoleStatusBadge
-
-                      status={
-                        role.status
-                      }
-
-                    />
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        role.isSystem
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {role.isSystem ? "System" : "Custom"}
+                    </span>
 
                   </td>
 

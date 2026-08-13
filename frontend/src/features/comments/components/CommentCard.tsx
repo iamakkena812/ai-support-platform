@@ -83,15 +83,12 @@ export const CommentCard: FC<CommentCardProps> = ({
       </p>
     </div>
 
-    {comment.ticket ? (
-      <div className="mt-5 border-t pt-3 text-xs text-gray-500">
-        <span className="font-medium">
-          Ticket:
-        </span>{" "}
-        {comment.ticket.ticketNumber} —{" "}
-        {comment.ticket.title}
-      </div>
-    ) : null}
+    <div className="mt-5 border-t pt-3 text-xs text-gray-500">
+      <span className="font-medium">
+        Ticket:
+      </span>{" "}
+      {comment.ticket.title}
+    </div>
 
     <div className="mt-2 text-xs text-gray-500">
       Updated{" "}

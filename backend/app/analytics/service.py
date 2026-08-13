@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import date
+from uuid import UUID
+
+from app.analytics.exceptions import InvalidDateRangeError
 from app.analytics.repository import AnalyticsRepository
 from app.analytics.schemas import (
     AnalyticsHealth,
@@ -15,7 +19,7 @@ from app.analytics.schemas import (
 
 
 class AnalyticsService:
-    """Service providing analytics."""
+    """Service providing organization-scoped analytics."""
 
     def __init__(
         self,
@@ -28,33 +32,50 @@ class AnalyticsService:
         """
         self._repository = repository
 
-    def get_dashboard(self) -> DashboardSummary:
-        """Return dashboard summary."""
-        return DashboardSummary(
-            organizations=self._repository.count_organizations(),
-            users=self._repository.count_users(),
-            projects=self._repository.count_projects(),
-            tickets=self._repository.count_tickets(),
-            open_tickets=self._repository.count_open_tickets(),
-            closed_tickets=self._repository.count_closed_tickets(),
-            sla_breaches=self._repository.count_sla_breaches(),
-            workflows=self._repository.count_workflows(),
-        )
+    @staticmethod
+    def _validate_date_range(
+        start_date: date | None,
+        end_date: date | None,
+    ) -> None:
+        """Raise if the supplied date range is invalid."""
+        if start_date is not None and end_date is not None and start_date > end_date:
+            raise InvalidDateRangeError()
 
-    def get_ticket_metrics(self) -> TicketMetrics:
-        """Return ticket metrics."""
+    def get_ticket_metrics(
+        self,
+        organization_id: UUID,
+        *,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> TicketMetrics:
+        """Return ticket metrics for an organization."""
+        self._validate_date_range(start_date, end_date)
+
         return TicketMetrics(
-            total=self._repository.count_tickets(),
-            open=self._repository.count_open_tickets(),
-            pending=self._repository.count_pending_tickets(),
-            resolved=self._repository.count_resolved_tickets(),
-            closed=self._repository.count_closed_tickets(),
+            total=self._repository.count_tickets(
+                organization_id,
+                start_date=start_date,
+                end_date=end_date,
+            ),
+            by_status=self._repository.tickets_by_status(
+                organization_id,
+                start_date=start_date,
+                end_date=end_date,
+            ),
+            by_priority=self._repository.tickets_by_priority(
+                organization_id,
+                start_date=start_date,
+                end_date=end_date,
+            ),
         )
 
-    def get_user_metrics(self) -> UserMetrics:
-        """Return user metrics."""
-        total = self._repository.count_users()
-        active = self._repository.count_active_users()
+    def get_user_metrics(
+        self,
+        organization_id: UUID,
+    ) -> UserMetrics:
+        """Return user metrics for an organization."""
+        total = self._repository.count_users(organization_id)
+        active = self._repository.count_active_users(organization_id)
 
         return UserMetrics(
             total=total,
@@ -65,7 +86,7 @@ class AnalyticsService:
     def get_organization_metrics(
         self,
     ) -> OrganizationMetrics:
-        """Return organization metrics."""
+        """Return platform-wide organization metrics."""
         total = self._repository.count_organizations()
         active = self._repository.count_active_organizations()
 
@@ -74,10 +95,13 @@ class AnalyticsService:
             active=active,
         )
 
-    def get_workflow_metrics(self) -> WorkflowMetrics:
-        """Return workflow metrics."""
-        total = self._repository.count_workflows()
-        active = self._repository.count_active_workflows()
+    def get_workflow_metrics(
+        self,
+        organization_id: UUID,
+    ) -> WorkflowMetrics:
+        """Return workflow metrics for an organization."""
+        total = self._repository.count_workflows(organization_id)
+        active = self._repository.count_active_workflows(organization_id)
 
         return WorkflowMetrics(
             total=total,
@@ -85,10 +109,22 @@ class AnalyticsService:
             inactive=total - active,
         )
 
-    def get_sla_metrics(self) -> SLAMetrics:
-        """Return SLA metrics."""
-        policies = self._repository.count_sla_policies()
-        breaches = self._repository.count_sla_breaches()
+    def get_sla_metrics(
+        self,
+        organization_id: UUID,
+        *,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> SLAMetrics:
+        """Return SLA metrics for an organization."""
+        self._validate_date_range(start_date, end_date)
+
+        policies = self._repository.count_sla_policies(organization_id)
+        breaches = self._repository.count_sla_breaches(
+            organization_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
         compliance = (
             100.0
@@ -100,6 +136,35 @@ class AnalyticsService:
             policies=policies,
             breaches=breaches,
             compliance_percentage=round(compliance, 2),
+        )
+
+    def get_dashboard(
+        self,
+        organization_id: UUID,
+        *,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> DashboardSummary:
+        """Return organization-scoped dashboard summary."""
+        self._validate_date_range(start_date, end_date)
+
+        return DashboardSummary(
+            users=self._repository.count_users(organization_id),
+            active_users=self._repository.count_active_users(organization_id),
+            projects=self._repository.count_projects(organization_id),
+            tickets=self.get_ticket_metrics(
+                organization_id,
+                start_date=start_date,
+                end_date=end_date,
+            ),
+            workflows=self.get_workflow_metrics(organization_id),
+            sla=self.get_sla_metrics(
+                organization_id,
+                start_date=start_date,
+                end_date=end_date,
+            ),
+            start_date=start_date,
+            end_date=end_date,
         )
 
     def get_health(self) -> AnalyticsHealth:

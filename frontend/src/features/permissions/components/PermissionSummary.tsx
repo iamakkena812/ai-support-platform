@@ -75,8 +75,8 @@ export function PermissionSummary({
           </p>
         </div>
 
-        <span className="inline-flex w-fit shrink-0 items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-          Permission
+        <span className="inline-flex w-fit shrink-0 items-center rounded-full bg-gray-100 px-3 py-1 font-mono text-xs font-medium text-gray-700">
+          {permission.resource}:{permission.action}
         </span>
       </div>
 

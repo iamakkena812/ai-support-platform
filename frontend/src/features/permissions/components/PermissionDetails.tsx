@@ -96,6 +96,26 @@ export function PermissionDetails({
           </dd>
         </div>
 
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Resource
+          </dt>
+
+          <dd className="mt-1 font-mono text-sm text-gray-900">
+            {permission.resource}
+          </dd>
+        </div>
+
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Action
+          </dt>
+
+          <dd className="mt-1 font-mono text-sm text-gray-900">
+            {permission.action}
+          </dd>
+        </div>
+
         <div className="sm:col-span-2">
           <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
             Description

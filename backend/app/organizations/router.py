@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from math import ceil
 from uuid import UUID
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Query, Response, status
 
 from app.auth.dependencies import CurrentSuperuserDependency
 from app.organizations.dependencies import OrganizationServiceDependency
@@ -48,14 +49,27 @@ async def create_organization(
 async def list_organizations(
     _: CurrentSuperuserDependency,
     service: OrganizationServiceDependency,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100, alias="pageSize"),
 ) -> OrganizationListResponse:
-    """Return all organizations."""
-    organizations = service.list_organizations()
+    """Return a paginated list of organizations."""
+    offset = (page - 1) * page_size
+
+    organizations = service.list_organizations(
+        offset=offset,
+        limit=page_size,
+    )
+
+    total = service.count_organizations()
 
     return OrganizationListResponse(
         organizations=[
             OrganizationResponse.model_validate(org) for org in organizations
         ],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=ceil(total / page_size) if total else 0,
     )
 
 

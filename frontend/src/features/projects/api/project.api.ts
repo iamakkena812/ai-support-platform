@@ -36,7 +36,13 @@ export class ProjectApi {
       await apiClient.get(
         "/projects",
         {
-          params: query,
+          params: {
+            page: query?.page,
+            pageSize: query?.pageSize,
+            search: query?.filters?.search,
+            status: query?.filters?.status,
+            priority: query?.filters?.priority,
+          },
         },
       );
 

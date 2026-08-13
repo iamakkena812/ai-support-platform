@@ -12,10 +12,20 @@ import {
 } from "react-router-dom";
 
 import {
+  AIAssistantPage,
+  AIConversationPage,
+  AIDocumentDetailsPage,
+  AIDocumentsPage,
+  AIKnowledgeDetailsPage,
+  AIKnowledgePage,
+  AIRetrievalPage,
+  AnalyticsPage,
   AttachmentDetailsPage,
   AttachmentsPage,
   CommentDetailsPage,
   CommentsPage,
+  CreateAIDocumentPage,
+  CreateAIKnowledgePage,
   CreateAttachmentPage,
   CreateCommentPage,
   CreateCustomerPage,
@@ -24,12 +34,15 @@ import {
   CreatePermissionPage,
   CreateProjectPage,
   CreateRolePage,
+  CreateSLAPolicyPage,
   CreateTeamPage,
   CreateTicketPage,
   CreateUserPage,
+  CreateWorkflowPage,
   CustomerDetailsPage,
   CustomersPage,
   DashboardPage,
+  EditAIKnowledgePage,
   EditAttachmentPage,
   EditCommentPage,
   EditCustomerPage,
@@ -55,12 +68,16 @@ import {
   RoleDetailsPage,
   RolesPage,
   SettingsPage,
+  SLAPoliciesPage,
+  SLAPolicyDetailsPage,
   TeamDetailsPage,
   TeamsPage,
   TicketDetailsPage,
   TicketsPage,
   UserDetailsPage,
   UsersPage,
+  WorkflowDetailsPage,
+  WorkflowsPage,
 } from "./lazy-routes";
 
 import { DashboardLayout } from "../../layouts/app/DashboardLayout";
@@ -178,7 +195,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.ORGANIZATIONS}/:id`}
+          path={`${PROTECTED_ROUTES.ORGANIZATIONS}/:organizationId`}
           element={
             <ProtectedLayout>
               <OrganizationDetailsPage />
@@ -187,7 +204,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.ORGANIZATIONS}/:id/edit`}
+          path={`${PROTECTED_ROUTES.ORGANIZATIONS}/:organizationId/edit`}
           element={
             <ProtectedLayout>
               <EditOrganizationPage />
@@ -258,7 +275,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.TICKETS}/:id`}
+          path={`${PROTECTED_ROUTES.TICKETS}/:ticketId`}
           element={
             <ProtectedLayout>
               <TicketDetailsPage />
@@ -267,7 +284,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.TICKETS}/:id/edit`}
+          path={`${PROTECTED_ROUTES.TICKETS}/:ticketId/edit`}
           element={
             <ProtectedLayout>
               <EditTicketPage />
@@ -298,7 +315,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.COMMENTS}/:id`}
+          path={`${PROTECTED_ROUTES.COMMENTS}/:commentId`}
           element={
             <ProtectedLayout>
               <CommentDetailsPage />
@@ -307,7 +324,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.COMMENTS}/:id/edit`}
+          path={`${PROTECTED_ROUTES.COMMENTS}/:commentId/edit`}
           element={
             <ProtectedLayout>
               <EditCommentPage />
@@ -338,7 +355,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.NOTIFICATIONS}/:id`}
+          path={`${PROTECTED_ROUTES.NOTIFICATIONS}/:notificationId`}
           element={
             <ProtectedLayout>
               <NotificationDetailsPage />
@@ -347,7 +364,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.NOTIFICATIONS}/:id/edit`}
+          path={`${PROTECTED_ROUTES.NOTIFICATIONS}/:notificationId/edit`}
           element={
             <ProtectedLayout>
               <EditNotificationPage />
@@ -378,7 +395,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.ATTACHMENTS}/:id`}
+          path={`${PROTECTED_ROUTES.ATTACHMENTS}/:attachmentId`}
           element={
             <ProtectedLayout>
               <AttachmentDetailsPage />
@@ -387,7 +404,7 @@ export function AppRouter(): React.JSX.Element {
         />
 
         <Route
-          path={`${PROTECTED_ROUTES.ATTACHMENTS}/:id/edit`}
+          path={`${PROTECTED_ROUTES.ATTACHMENTS}/:attachmentId/edit`}
           element={
             <ProtectedLayout>
               <EditAttachmentPage />
@@ -591,6 +608,187 @@ export function AppRouter(): React.JSX.Element {
           element={
             <ProtectedLayout>
               <EditPermissionPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            AI Chat
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.AI_CHAT}
+          element={
+            <ProtectedLayout>
+              <AIAssistantPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.AI_CHAT}/:conversationId`}
+          element={
+            <ProtectedLayout>
+              <AIConversationPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            AI Documents
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.AI_DOCUMENTS}
+          element={
+            <ProtectedLayout>
+              <AIDocumentsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.AI_DOCUMENTS}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateAIDocumentPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.AI_DOCUMENTS}/:documentId`}
+          element={
+            <ProtectedLayout>
+              <AIDocumentDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            AI Knowledge
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.AI_KNOWLEDGE}
+          element={
+            <ProtectedLayout>
+              <AIKnowledgePage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.AI_KNOWLEDGE}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateAIKnowledgePage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.AI_KNOWLEDGE}/:knowledgeId`}
+          element={
+            <ProtectedLayout>
+              <AIKnowledgeDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.AI_KNOWLEDGE}/:knowledgeId/edit`}
+          element={
+            <ProtectedLayout>
+              <EditAIKnowledgePage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            AI Retrieval
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.AI_RETRIEVAL}
+          element={
+            <ProtectedLayout>
+              <AIRetrievalPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Workflows
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.WORKFLOWS}
+          element={
+            <ProtectedLayout>
+              <WorkflowsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.WORKFLOWS}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateWorkflowPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.WORKFLOWS}/:workflowId`}
+          element={
+            <ProtectedLayout>
+              <WorkflowDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            SLA
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.SLA}
+          element={
+            <ProtectedLayout>
+              <SLAPoliciesPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.SLA}/create`}
+          element={
+            <ProtectedLayout>
+              <CreateSLAPolicyPage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path={`${PROTECTED_ROUTES.SLA}/:policyId`}
+          element={
+            <ProtectedLayout>
+              <SLAPolicyDetailsPage />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* =====================================================
+            Analytics
+            ===================================================== */}
+
+        <Route
+          path={PROTECTED_ROUTES.ANALYTICS}
+          element={
+            <ProtectedLayout>
+              <AnalyticsPage />
             </ProtectedLayout>
           }
         />

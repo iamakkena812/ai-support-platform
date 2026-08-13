@@ -8,12 +8,24 @@ import {
 } from "react";
 
 import {
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  isAxiosError,
+} from "axios";
+
+import {
+  DeleteTicketDialog,
+} from "../components/DeleteTicketDialog";
+import {
   TicketFilters,
 } from "../components/TicketFilters";
 import {
   TicketTable,
 } from "../components/TicketTable";
 import {
+  useDeleteTicket,
   useTickets,
 } from "../hooks/useTickets";
 
@@ -26,16 +38,24 @@ import type {
  * Tickets page.
  */
 export function TicketsPage(): React.JSX.Element {
+  const navigate =
+    useNavigate();
+
   const [filters, setFilters] =
     useState<TicketFilterValues>({});
+
+  const [pendingDelete, setPendingDelete] =
+    useState<Ticket | null>(null);
+
+  const [deleteError, setDeleteError] =
+    useState<string | null>(null);
 
   const query = useMemo(
     () => ({
       page: 1,
-      pageSize: 10,
-      filters,
+      pageSize: 20,
     }),
-    [filters],
+    [],
   );
 
   const {
@@ -43,33 +63,82 @@ export function TicketsPage(): React.JSX.Element {
     isLoading,
     isError,
     error,
-  } = useTickets(query);
+    refetch,
+  } = useTickets({ filters: query });
+
+  const deleteTicketMutation =
+    useDeleteTicket();
+
+  const tickets = useMemo(
+    () => {
+      const items =
+        data?.items ?? [];
+
+      return items.filter((ticket) => {
+        const matchesSearch =
+          !filters.search ||
+          ticket.title
+            .toLowerCase()
+            .includes(
+              filters.search.toLowerCase(),
+            );
+
+        const matchesStatus =
+          !filters.status ||
+          ticket.status === filters.status;
+
+        const matchesPriority =
+          !filters.priority ||
+          ticket.priority === filters.priority;
+
+        return (
+          matchesSearch &&
+          matchesStatus &&
+          matchesPriority
+        );
+      });
+    },
+    [data, filters],
+  );
 
   const handleView = (
     ticket: Ticket,
   ): void => {
-    console.info(
-      "View ticket",
-      ticket.id,
-    );
+    navigate(`/tickets/${ticket.id}`);
   };
 
   const handleEdit = (
     ticket: Ticket,
   ): void => {
-    console.info(
-      "Edit ticket",
-      ticket.id,
-    );
+    navigate(`/tickets/${ticket.id}/edit`);
   };
 
   const handleDelete = (
     ticket: Ticket,
   ): void => {
-    console.info(
-      "Delete ticket",
-      ticket.id,
-    );
+    setDeleteError(null);
+    setPendingDelete(ticket);
+  };
+
+  const handleConfirmDelete = async (
+    ticket: Ticket,
+  ): Promise<void> => {
+    try {
+      await deleteTicketMutation.mutateAsync(
+        ticket.id,
+      );
+
+      setPendingDelete(null);
+    } catch (deleteErr) {
+      setDeleteError(
+        isAxiosError(deleteErr) &&
+          deleteErr.response?.status === 404
+          ? "Ticket was already deleted."
+          : "Failed to delete ticket. Please try again.",
+      );
+
+      throw deleteErr;
+    }
   };
 
   return (
@@ -88,6 +157,9 @@ export function TicketsPage(): React.JSX.Element {
 
         <button
           type="button"
+          onClick={() =>
+            navigate("/tickets/create")
+          }
           className="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
         >
           Create Ticket
@@ -106,18 +178,37 @@ export function TicketsPage(): React.JSX.Element {
       ) : null}
 
       {isError ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-          {error instanceof Error
-            ? error.message
-            : "Failed to load tickets."}
+        <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+          <span>
+            {isAxiosError(error) &&
+            error.response?.status === 403
+              ? "You do not have permission to view tickets."
+              : error instanceof Error
+                ? error.message
+                : "Failed to load tickets."}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => {
+              void refetch();
+            }}
+            className="rounded border border-red-300 px-3 py-1 text-sm hover:bg-red-100"
+          >
+            Retry
+          </button>
+        </div>
+      ) : null}
+
+      {deleteError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {deleteError}
         </div>
       ) : null}
 
       {!isLoading && !isError ? (
         <TicketTable
-          tickets={
-            data?.items ?? []
-          }
+          tickets={tickets}
           onView={
             handleView
           }
@@ -126,6 +217,22 @@ export function TicketsPage(): React.JSX.Element {
           }
           onDelete={
             handleDelete
+          }
+        />
+      ) : null}
+
+      {pendingDelete ? (
+        <DeleteTicketDialog
+          ticket={pendingDelete}
+          isOpen={pendingDelete !== null}
+          isDeleting={
+            deleteTicketMutation.isPending
+          }
+          onClose={() => {
+            setPendingDelete(null);
+          }}
+          onConfirm={
+            handleConfirmDelete
           }
         />
       ) : null}

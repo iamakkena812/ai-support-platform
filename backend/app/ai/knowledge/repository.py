@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
+from app.ai.knowledge.constants import KnowledgeVisibility
 from app.ai.knowledge.models import KnowledgeBase
 
 
@@ -63,15 +64,25 @@ class AIKnowledgeRepository:
     def list(
         self,
         organization_id: UUID,
+        user_id: UUID,
         *,
         offset: int = 0,
         limit: int = 20,
     ) -> list[KnowledgeBase]:
-        """Return knowledge bases for an organization."""
+        """Return knowledge bases visible to a user in an organization.
+
+        A knowledge base is visible if it is organization-wide, or if
+        the caller is its creator (private knowledge bases are not
+        visible to other users in the same organization).
+        """
         statement = (
             select(KnowledgeBase)
             .where(
                 KnowledgeBase.organization_id == organization_id,
+                or_(
+                    KnowledgeBase.visibility == KnowledgeVisibility.ORGANIZATION,
+                    KnowledgeBase.created_by == user_id,
+                ),
             )
             .order_by(KnowledgeBase.created_at.desc())
             .offset(offset)
@@ -83,13 +94,18 @@ class AIKnowledgeRepository:
     def count(
         self,
         organization_id: UUID,
+        user_id: UUID,
     ) -> int:
-        """Return the number of knowledge bases."""
+        """Return the number of knowledge bases visible to a user."""
         statement = (
             select(func.count())
             .select_from(KnowledgeBase)
             .where(
                 KnowledgeBase.organization_id == organization_id,
+                or_(
+                    KnowledgeBase.visibility == KnowledgeVisibility.ORGANIZATION,
+                    KnowledgeBase.created_by == user_id,
+                ),
             )
         )
 

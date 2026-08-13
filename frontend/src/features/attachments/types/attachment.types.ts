@@ -40,11 +40,6 @@ export interface AttachmentTicket {
   readonly id: string;
 
   /**
-   * Ticket number.
-   */
-  readonly ticketNumber: string;
-
-  /**
    * Ticket title.
    */
   readonly title: string;

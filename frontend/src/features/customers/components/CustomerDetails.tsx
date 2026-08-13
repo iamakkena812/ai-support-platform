@@ -6,12 +6,13 @@
  */
 
 import {
+  Briefcase,
   Building2,
   Calendar,
+  Globe,
   Mail,
+  MapPin,
   Phone,
-  Ticket,
-  User,
 } from "lucide-react";
 
 import {
@@ -20,6 +21,7 @@ import {
 
 import type {
   CustomerStatus,
+  CustomerType,
 } from "../types/customer.types";
 
 /**
@@ -34,7 +36,7 @@ export interface CustomerDetailsProps {
   /**
    * Company name.
    */
-  readonly company?: string;
+  readonly companyName?: string | null;
 
   /**
    * Email address.
@@ -44,12 +46,12 @@ export interface CustomerDetailsProps {
   /**
    * Phone number.
    */
-  readonly phone?: string;
+  readonly phone?: string | null;
 
   /**
-   * Contact person.
+   * Website.
    */
-  readonly contactPerson?: string;
+  readonly website?: string | null;
 
   /**
    * Status.
@@ -57,29 +59,34 @@ export interface CustomerDetailsProps {
   readonly status: CustomerStatus;
 
   /**
-   * Industry.
+   * Customer type.
    */
-  readonly industry?: string;
+  readonly customerType: CustomerType;
 
   /**
    * Address.
    */
-  readonly address?: string;
+  readonly address?: string | null;
 
   /**
-   * Organization count.
+   * City.
    */
-  readonly organizationCount: number;
+  readonly city?: string | null;
 
   /**
-   * Project count.
+   * State.
    */
-  readonly projectCount: number;
+  readonly state?: string | null;
 
   /**
-   * Ticket count.
+   * Country.
    */
-  readonly ticketCount: number;
+  readonly country?: string | null;
+
+  /**
+   * Postal code.
+   */
+  readonly postalCode?: string | null;
 
   /**
    * Created date.
@@ -100,16 +107,17 @@ export interface CustomerDetailsProps {
  */
 export function CustomerDetails({
   name,
-  company,
+  companyName,
   email,
   phone,
-  contactPerson,
+  website,
   status,
-  industry,
+  customerType,
   address,
-  organizationCount,
-  projectCount,
-  ticketCount,
+  city,
+  state,
+  country,
+  postalCode,
   createdAt,
   updatedAt,
 }: CustomerDetailsProps): React.JSX.Element {
@@ -124,6 +132,17 @@ export function CustomerDetails({
       : updatedAt
         ? new Date(updatedAt)
         : null;
+
+  const fullAddress =
+    [
+      address,
+      city,
+      state,
+      postalCode,
+      country,
+    ]
+      .filter(Boolean)
+      .join(", ") || undefined;
 
   return (
     <section className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
@@ -147,7 +166,7 @@ export function CustomerDetails({
           </div>
 
           <p className="mt-2 text-slate-600">
-            {company ??
+            {companyName ??
               "Customer details"}
           </p>
         </div>
@@ -164,7 +183,7 @@ export function CustomerDetails({
             />
           }
           label="Company"
-          value={company}
+          value={companyName}
         />
 
 
@@ -194,79 +213,41 @@ export function CustomerDetails({
 
         <DetailItem
           icon={
-            <User
+            <Globe
               size={18}
               className="text-indigo-600"
             />
           }
-          label="Contact Person"
-          value={contactPerson}
+          label="Website"
+          value={website}
         />
 
 
         <DetailItem
           icon={
-            <Building2
+            <Briefcase
               size={18}
               className="text-orange-600"
             />
           }
-          label="Industry"
-          value={industry}
-        />
-
-
-        <DetailItem
-          icon={
-            <Ticket
-              size={18}
-              className="text-red-600"
-            />
-          }
-          label="Tickets"
+          label="Customer Type"
           value={
-            ticketCount.toString()
+            customerType === "business"
+              ? "Business"
+              : "Individual"
           }
         />
 
 
         <DetailItem
           icon={
-            <Building2
-              size={18}
-              className="text-blue-600"
-            />
-          }
-          label="Organizations"
-          value={
-            organizationCount.toString()
-          }
-        />
-
-
-        <DetailItem
-          icon={
-            <Building2
-              size={18}
-              className="text-green-600"
-            />
-          }
-          label="Projects"
-          value={
-            projectCount.toString()
-          }
-        />
-
-
-        <DetailItem
-          icon={
-            <User
+            <MapPin
               size={18}
               className="text-slate-600"
             />
           }
           label="Address"
-          value={address}
+          value={fullAddress}
         />
 
 
@@ -312,7 +293,7 @@ export function CustomerDetails({
 interface DetailItemProps {
   readonly icon: React.JSX.Element;
   readonly label: string;
-  readonly value?: string;
+  readonly value?: string | null;
 }
 
 

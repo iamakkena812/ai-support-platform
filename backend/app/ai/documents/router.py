@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 
 from app.ai.documents.dependencies import DocumentServiceDep
-from app.ai.documents.exceptions import DocumentNotFoundError
 from app.ai.documents.schemas import (
     DocumentCreateRequest,
     DocumentListResponse,
@@ -47,6 +46,7 @@ def create_document(
     return service.create_document(
         request,
         organization_id=current_user.organization_id,
+        user_id=current_user.id,
     )
 
 
@@ -68,7 +68,7 @@ def list_documents(
         le=100,
     ),
 ) -> DocumentListResponse:
-    """List documents.
+    """List documents belonging to the caller's organization.
 
     Args:
         service: Document service.
@@ -79,9 +79,8 @@ def list_documents(
     Returns:
         Paginated documents.
     """
-    _ = current_user
-
     return service.list_documents(
+        organization_id=current_user.organization_id,
         page=page,
         page_size=page_size,
     )
@@ -96,7 +95,7 @@ def statistics(
     service: DocumentServiceDep,
     current_user: CurrentActiveUserDependency,
 ) -> DocumentStatisticsResponse:
-    """Return document statistics.
+    """Return document statistics for the caller's organization.
 
     Args:
         service: Document service.
@@ -105,8 +104,9 @@ def statistics(
     Returns:
         Document statistics.
     """
-    _ = current_user
-    return service.statistics()
+    return service.statistics(
+        organization_id=current_user.organization_id,
+    )
 
 
 @router.get(
@@ -119,7 +119,7 @@ def get_document(
     service: DocumentServiceDep,
     current_user: CurrentActiveUserDependency,
 ) -> DocumentResponse:
-    """Return a document.
+    """Return a document belonging to the caller's organization.
 
     Args:
         document_id: Document identifier.
@@ -130,17 +130,13 @@ def get_document(
         Document.
 
     Raises:
-        HTTPException: If the document does not exist.
+        DocumentNotFoundError: If the document does not exist in the
+            caller's organization.
     """
-    _ = current_user
-
-    try:
-        return service.get_document(document_id)
-    except DocumentNotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
+    return service.get_document(
+        document_id,
+        organization_id=current_user.organization_id,
+    )
 
 
 @router.patch(
@@ -154,7 +150,7 @@ def update_document(
     service: DocumentServiceDep,
     current_user: CurrentActiveUserDependency,
 ) -> DocumentResponse:
-    """Update a document.
+    """Update a document belonging to the caller's organization.
 
     Args:
         document_id: Document identifier.
@@ -166,20 +162,15 @@ def update_document(
         Updated document.
 
     Raises:
-        HTTPException: If the document does not exist.
+        DocumentNotFoundError: If the document does not exist in the
+            caller's organization.
     """
-    _ = current_user
-
-    try:
-        return service.update_document(
-            document_id,
-            request,
-        )
-    except DocumentNotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
+    return service.update_document(
+        document_id,
+        request,
+        organization_id=current_user.organization_id,
+        user_id=current_user.id,
+    )
 
 
 @router.delete(
@@ -192,7 +183,7 @@ def delete_document(
     service: DocumentServiceDep,
     current_user: CurrentActiveUserDependency,
 ) -> None:
-    """Delete a document.
+    """Delete a document belonging to the caller's organization.
 
     Args:
         document_id: Document identifier.
@@ -200,14 +191,10 @@ def delete_document(
         current_user: Authenticated active user.
 
     Raises:
-        HTTPException: If the document does not exist.
+        DocumentNotFoundError: If the document does not exist in the
+            caller's organization.
     """
-    _ = current_user
-
-    try:
-        service.delete_document(document_id)
-    except DocumentNotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
+    service.delete_document(
+        document_id,
+        organization_id=current_user.organization_id,
+    )

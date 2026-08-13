@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import cast
 from unittest.mock import MagicMock, create_autospec
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 
 from app.models.project import Project
+from app.projects.constants import ProjectPriority, ProjectStatus
 from app.projects.exceptions import (
-    ProjectKeyAlreadyExistsError,
     ProjectNameAlreadyExistsError,
     ProjectNotFoundError,
 )
@@ -48,31 +48,45 @@ def service(
 
 
 @pytest.fixture
+def organization_id() -> UUID:
+    """Return an organization identifier."""
+    return uuid4()
+
+
+@pytest.fixture
+def owner_id() -> UUID:
+    """Return an owner identifier."""
+    return uuid4()
+
+
+@pytest.fixture
 def create_request() -> ProjectCreateRequest:
     """Return a valid project creation request."""
     return ProjectCreateRequest(
         name="Support Platform",
-        key="SUP",
         description="AI Customer Support Platform",
-        organization_id=uuid4(),
-        owner_id=uuid4(),
     )
 
 
 @pytest.fixture
 def project(
     create_request: ProjectCreateRequest,
+    organization_id: UUID,
+    owner_id: UUID,
 ) -> Project:
     """Return a mocked project."""
     project = MagicMock(spec=Project)
 
     project.id = uuid4()
     project.name = create_request.name
-    project.key = create_request.key
+    project.key = "SUPPORTPLA"
     project.description = create_request.description
-    project.organization_id = create_request.organization_id
-    project.owner_id = create_request.owner_id
-    project.is_active = True
+    project.organization_id = organization_id
+    project.owner_id = owner_id
+    project.status = ProjectStatus.ACTIVE
+    project.priority = ProjectPriority.MEDIUM
+    project.start_date = None
+    project.end_date = None
 
     return project
 
@@ -82,50 +96,72 @@ def test_create_project_success(
     project_repository: MagicMock,
     create_request: ProjectCreateRequest,
     project: Project,
+    organization_id: UUID,
+    owner_id: UUID,
 ) -> None:
     """Create project successfully."""
     project_repository.exists_by_name.return_value = False
     project_repository.exists_by_key.return_value = False
     project_repository.create.return_value = project
 
-    result = service.create_project(create_request)
+    result = service.create_project(
+        create_request,
+        organization_id=organization_id,
+        owner_id=owner_id,
+    )
 
     assert result is project
 
     project_repository.exists_by_name.assert_called_once_with(
         create_request.name,
     )
-    project_repository.exists_by_key.assert_called_once_with(
-        create_request.key,
-    )
     project_repository.create.assert_called_once()
+
+    created_project = project_repository.create.call_args.args[0]
+    assert created_project.organization_id == organization_id
+    assert created_project.owner_id == owner_id
+    assert created_project.key
+
+
+def test_create_project_generates_unique_key(
+    service: ProjectService,
+    project_repository: MagicMock,
+    create_request: ProjectCreateRequest,
+    project: Project,
+    organization_id: UUID,
+    owner_id: UUID,
+) -> None:
+    """Generate a fresh key when the derived key already exists."""
+    project_repository.exists_by_name.return_value = False
+    project_repository.exists_by_key.side_effect = [True, False]
+    project_repository.create.return_value = project
+
+    service.create_project(
+        create_request,
+        organization_id=organization_id,
+        owner_id=owner_id,
+    )
+
+    created_project = project_repository.create.call_args.args[0]
+    assert created_project.key.endswith("2")
 
 
 def test_create_project_duplicate_name(
     service: ProjectService,
     project_repository: MagicMock,
     create_request: ProjectCreateRequest,
+    organization_id: UUID,
+    owner_id: UUID,
 ) -> None:
     """Raise if project name already exists."""
     project_repository.exists_by_name.return_value = True
 
     with pytest.raises(ProjectNameAlreadyExistsError):
-        service.create_project(create_request)
-
-    project_repository.create.assert_not_called()
-
-
-def test_create_project_duplicate_key(
-    service: ProjectService,
-    project_repository: MagicMock,
-    create_request: ProjectCreateRequest,
-) -> None:
-    """Raise if project key already exists."""
-    project_repository.exists_by_name.return_value = False
-    project_repository.exists_by_key.return_value = True
-
-    with pytest.raises(ProjectKeyAlreadyExistsError):
-        service.create_project(create_request)
+        service.create_project(
+            create_request,
+            organization_id=organization_id,
+            owner_id=owner_id,
+        )
 
     project_repository.create.assert_not_called()
 
@@ -171,6 +207,9 @@ def test_list_projects(
     project_repository.list.assert_called_once_with(
         offset=0,
         limit=100,
+        search=None,
+        status=None,
+        priority=None,
     )
 
 
@@ -183,11 +222,12 @@ def test_update_project_success(
     request = ProjectUpdateRequest(
         name="Updated Project",
         description="Updated description",
-        owner_id=uuid4(),
-        is_active=False,
+        status=ProjectStatus.ARCHIVED,
+        priority=ProjectPriority.HIGH,
     )
 
     project_repository.get.return_value = project
+    project_repository.exists_by_name.return_value = False
     project_repository.update.return_value = project
 
     result = service.update_project(
@@ -198,8 +238,8 @@ def test_update_project_success(
     assert result is project
     assert project.name == request.name
     assert project.description == request.description
-    assert project.owner_id == request.owner_id
-    assert project.is_active is request.is_active
+    assert project.status == request.status
+    assert project.priority == request.priority
 
     project_repository.update.assert_called_once_with(project)
 
@@ -244,4 +284,24 @@ def test_count_projects(
 
     assert result == 7
 
-    project_repository.count.assert_called_once_with()
+    project_repository.count.assert_called_once_with(
+        search=None,
+        status=None,
+        priority=None,
+    )
+
+
+def test_get_statistics(
+    service: ProjectService,
+    project_repository: MagicMock,
+) -> None:
+    """Return aggregate project statistics."""
+    project_repository.count.return_value = 10
+    project_repository.count_by_status.side_effect = [4, 3, 2]
+
+    result = service.get_statistics()
+
+    assert result.total == 10
+    assert result.active == 4
+    assert result.completed == 3
+    assert result.archived == 2

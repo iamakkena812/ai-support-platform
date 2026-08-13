@@ -29,9 +29,16 @@ class SLARepository:
     # Policy methods
     # ------------------------------------------------------------------
 
-    def create_policy(self, data: SLAPolicyCreate) -> SLAPolicy:
+    def create_policy(
+        self,
+        data: SLAPolicyCreate,
+        organization_id: UUID,
+    ) -> SLAPolicy:
         """Create an SLA policy."""
-        policy = SLAPolicy(**data.model_dump())
+        policy = SLAPolicy(
+            **data.model_dump(),
+            organization_id=organization_id,
+        )
 
         self._db.add(policy)
         self._db.commit()
@@ -39,9 +46,18 @@ class SLARepository:
 
         return policy
 
-    def get_policy(self, policy_id: UUID) -> SLAPolicy:
-        """Return a policy by ID."""
-        policy = self._db.get(SLAPolicy, policy_id)
+    def get_policy(
+        self,
+        policy_id: UUID,
+        organization_id: UUID,
+    ) -> SLAPolicy:
+        """Return a policy by ID, scoped to an organization."""
+        stmt = select(SLAPolicy).where(
+            SLAPolicy.id == policy_id,
+            SLAPolicy.organization_id == organization_id,
+        )
+
+        policy = self._db.scalar(stmt)
 
         if policy is None:
             raise SLAPolicyNotFoundException()
@@ -50,16 +66,13 @@ class SLARepository:
 
     def list_policies(
         self,
-        organization_id: UUID | None = None,
+        organization_id: UUID,
         active_only: bool = False,
     ) -> list[SLAPolicy]:
-        """Return SLA policies."""
-        stmt = select(SLAPolicy)
-
-        if organization_id is not None:
-            stmt = stmt.where(
-                SLAPolicy.organization_id == organization_id,
-            )
+        """Return SLA policies belonging to an organization."""
+        stmt = select(SLAPolicy).where(
+            SLAPolicy.organization_id == organization_id,
+        )
 
         if active_only:
             stmt = stmt.where(
@@ -134,13 +147,17 @@ class SLARepository:
 
         return event
 
-    def list_breached(self) -> list[SLAEvent]:
-        """Return breached SLA events."""
+    def list_breached(self, organization_id: UUID) -> list[SLAEvent]:
+        """Return breached SLA events for an organization."""
         stmt = (
             select(SLAEvent)
+            .join(SLAPolicy, SLAEvent.policy_id == SLAPolicy.id)
             .where(
-                (SLAEvent.first_response_breached.is_(True))
-                | (SLAEvent.resolution_breached.is_(True))
+                SLAPolicy.organization_id == organization_id,
+                (
+                    (SLAEvent.first_response_breached.is_(True))
+                    | (SLAEvent.resolution_breached.is_(True))
+                ),
             )
             .order_by(SLAEvent.resolution_due)
         )

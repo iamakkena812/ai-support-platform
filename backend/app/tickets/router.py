@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
 
@@ -12,7 +13,9 @@ from app.rbac.dependencies import require_permission
 from app.tickets.repository import TicketRepository
 from app.tickets.schemas import (
     CreateTicketRequest,
+    TicketListResponse,
     TicketResponse,
+    UpdateTicketRequest,
 )
 from app.tickets.service import TicketService
 
@@ -50,26 +53,49 @@ TicketCreatePermission = Depends(
     ),
 )
 
+TicketUpdatePermission = Depends(
+    require_permission(
+        "ticket",
+        "update",
+    ),
+)
+
+TicketDeletePermission = Depends(
+    require_permission(
+        "ticket",
+        "delete",
+    ),
+)
+
 
 @router.get(
     "",
-    response_model=list[TicketResponse],
+    response_model=TicketListResponse,
     status_code=status.HTTP_200_OK,
     summary="List tickets",
 )
 async def list_tickets(
     service: TicketServiceDependency,
     current_user: User = TicketReadPermission,
-    offset: Annotated[int, Query(ge=0)] = 0,
-    limit: Annotated[int, Query(ge=1, le=100)] = 100,
-) -> list[TicketResponse]:
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100, alias="pageSize")] = 20,
+) -> TicketListResponse:
     """Return a paginated list of tickets."""
+    offset = (page - 1) * page_size
+
     tickets = service.list_tickets(
         offset=offset,
-        limit=limit,
+        limit=page_size,
     )
+    total = service.count_tickets()
 
-    return [TicketResponse.model_validate(ticket) for ticket in tickets]
+    return TicketListResponse(
+        items=[TicketResponse.model_validate(ticket) for ticket in tickets],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=-(-total // page_size) if total else 0,
+    )
 
 
 @router.post(
@@ -91,3 +117,55 @@ async def create_ticket(
     )
 
     return TicketResponse.model_validate(ticket)
+
+
+@router.get(
+    "/{ticket_id}",
+    response_model=TicketResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get ticket",
+)
+async def get_ticket(
+    ticket_id: UUID,
+    service: TicketServiceDependency,
+    current_user: User = TicketReadPermission,
+) -> TicketResponse:
+    """Return a ticket by its identifier."""
+    ticket = service.get_ticket(ticket_id)
+
+    return TicketResponse.model_validate(ticket)
+
+
+@router.patch(
+    "/{ticket_id}",
+    response_model=TicketResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update ticket",
+)
+async def update_ticket(
+    ticket_id: UUID,
+    request: UpdateTicketRequest,
+    service: TicketServiceDependency,
+    current_user: User = TicketUpdatePermission,
+) -> TicketResponse:
+    """Update an existing ticket."""
+    ticket = service.update_ticket(
+        ticket_id,
+        request,
+    )
+
+    return TicketResponse.model_validate(ticket)
+
+
+@router.delete(
+    "/{ticket_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete ticket",
+)
+async def delete_ticket(
+    ticket_id: UUID,
+    service: TicketServiceDependency,
+    current_user: User = TicketDeletePermission,
+) -> None:
+    """Delete a ticket."""
+    service.delete_ticket(ticket_id)

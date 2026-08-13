@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { OrganizationService } from "../services/organization.service";
 
 import type {
-  OrganizationResponse,
+  Organization,
 } from "../types/organization.types";
 
 /**
@@ -28,7 +28,7 @@ export const organizationQueryKeys = {
 export function useOrganization(
   organizationId: string,
 ) {
-  return useQuery<OrganizationResponse>({
+  return useQuery<Organization>({
     queryKey: organizationQueryKeys.detail(
       organizationId,
     ),

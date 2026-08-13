@@ -12,14 +12,6 @@ import {
   UserAvatar,
 } from "./UserAvatar";
 
-import {
-  UserRoles,
-} from "./UserRoles";
-
-import {
-  UserStatusBadge,
-} from "./UserStatusBadge";
-
 import type {
   User,
 } from "../types/user.types";
@@ -101,14 +93,7 @@ export function UserTable(
             <th
               className="px-6 py-4 text-left text-sm font-semibold text-slate-700"
             >
-              Organization
-            </th>
-
-
-            <th
-              className="px-6 py-4 text-left text-sm font-semibold text-slate-700"
-            >
-              Roles
+              Username
             </th>
 
 
@@ -156,9 +141,6 @@ export function UserTable(
                         name={
                           user.fullName
                         }
-                        imageUrl={
-                          user.avatarUrl ?? undefined
-                        }
                         size="sm"
                       />
 
@@ -182,19 +164,6 @@ export function UserTable(
                           }
                         </div>
 
-
-                        {
-                          user.phone ? (
-                            <div
-                              className="text-xs text-slate-400"
-                            >
-                              {
-                                user.phone
-                              }
-                            </div>
-                          ) : null
-                        }
-
                       </div>
 
                     </div>
@@ -206,7 +175,7 @@ export function UserTable(
                     className="px-6 py-4 text-sm text-slate-700"
                   >
                     {
-                      user.organization?.name ?? "-"
+                      user.username
                     }
                   </td>
 
@@ -215,27 +184,19 @@ export function UserTable(
                     className="px-6 py-4"
                   >
 
-                    <UserRoles
-                      roles={
-                        user.roles.map(
-                          (role) =>
-                            role.name,
-                        )
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        user.isActive
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {
+                        user.isActive
+                          ? "Active"
+                          : "Inactive"
                       }
-                    />
-
-                  </td>
-
-
-                  <td
-                    className="px-6 py-4"
-                  >
-
-                    <UserStatusBadge
-                      status={
-                        user.status
-                      }
-                    />
+                    </span>
 
                   </td>
 

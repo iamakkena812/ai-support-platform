@@ -3,23 +3,26 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
+from app.core.schemas import CamelModel
 from app.notifications.constants import (
     MESSAGE_MAX_LENGTH,
     MESSAGE_MIN_LENGTH,
     TITLE_MAX_LENGTH,
     TITLE_MIN_LENGTH,
-    NotificationChannel,
-    NotificationPriority,
     NotificationType,
 )
+from app.notifications.models import Notification
+
+NotificationStatus = Literal["unread", "read"]
 
 
-class CreateNotificationRequest(BaseModel):
-    """Request model for creating a notification."""
+class CreateNotificationRequest(CamelModel):
+    """Request schema for creating a notification."""
 
     recipient_id: UUID
 
@@ -33,15 +36,11 @@ class CreateNotificationRequest(BaseModel):
         max_length=MESSAGE_MAX_LENGTH,
     )
 
-    notification_type: NotificationType
-
-    priority: NotificationPriority = NotificationPriority.NORMAL
-
-    channel: NotificationChannel = NotificationChannel.IN_APP
+    notification_type: NotificationType = Field(alias="type")
 
 
-class UpdateNotificationRequest(BaseModel):
-    """Request model for updating a notification."""
+class UpdateNotificationRequest(CamelModel):
+    """Request schema for updating a notification."""
 
     title: str | None = Field(
         default=None,
@@ -55,56 +54,58 @@ class UpdateNotificationRequest(BaseModel):
         max_length=MESSAGE_MAX_LENGTH,
     )
 
-    priority: NotificationPriority | None = None
-
-    channel: NotificationChannel | None = None
-
-    is_read: bool | None = None
-
-    is_active: bool | None = None
-
-
-class MarkNotificationReadRequest(BaseModel):
-    """Request model for marking a notification as read."""
-
-    is_read: bool = True
-
-
-class NotificationResponse(BaseModel):
-    """Notification response."""
-
-    model_config = ConfigDict(
-        from_attributes=True,
+    notification_type: NotificationType | None = Field(
+        default=None,
+        alias="type",
     )
 
+    status: NotificationStatus | None = None
+
+
+class NotificationRecipientRef(CamelModel):
+    """Notification recipient reference."""
+
     id: UUID
+    name: str
+    email: str
 
-    organization_id: UUID
 
-    recipient_id: UUID
+class NotificationRead(CamelModel):
+    """Notification response schema."""
 
+    id: UUID
     title: str
-
     message: str
-
-    notification_type: NotificationType
-
-    priority: NotificationPriority
-
-    channel: NotificationChannel
-
-    is_read: bool
-
-    is_active: bool
-
+    notification_type: NotificationType = Field(alias="type")
+    status: NotificationStatus
+    recipient: NotificationRecipientRef
     created_at: datetime
-
     updated_at: datetime
 
+    @classmethod
+    def from_notification(cls, notification: Notification) -> NotificationRead:
+        """Build a response from a notification, resolving the recipient ref."""
+        return cls(
+            id=notification.id,
+            title=notification.title,
+            message=notification.message,
+            type=notification.notification_type,
+            status="read" if notification.is_read else "unread",
+            recipient=NotificationRecipientRef(
+                id=notification.recipient.id,
+                name=notification.recipient.full_name,
+                email=notification.recipient.email,
+            ),
+            created_at=notification.created_at,
+            updated_at=notification.updated_at,
+        )
 
-class NotificationListResponse(BaseModel):
-    """Paginated notification response."""
 
+class NotificationListResponse(CamelModel):
+    """Paginated notification list response."""
+
+    items: list[NotificationRead]
     total: int
-
-    notifications: list[NotificationResponse]
+    page: int
+    page_size: int
+    total_pages: int

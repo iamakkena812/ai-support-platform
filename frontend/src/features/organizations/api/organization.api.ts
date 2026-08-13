@@ -6,8 +6,8 @@ import { apiClient } from "../../../api/axios/client";
 
 import type {
   CreateOrganizationRequest,
+  Organization,
   OrganizationListResponse,
-  OrganizationResponse,
   UpdateOrganizationRequest,
 } from "../types/organization.types";
 
@@ -20,7 +20,7 @@ export class OrganizationApi {
    */
   public static async getOrganizations(
     page = 1,
-    size = 10,
+    pageSize = 10,
   ): Promise<OrganizationListResponse> {
     const response =
       await apiClient.get<OrganizationListResponse>(
@@ -28,7 +28,7 @@ export class OrganizationApi {
         {
           params: {
             page,
-            size,
+            pageSize,
           },
         },
       );
@@ -41,9 +41,9 @@ export class OrganizationApi {
    */
   public static async getOrganization(
     organizationId: string,
-  ): Promise<OrganizationResponse> {
+  ): Promise<Organization> {
     const response =
-      await apiClient.get<OrganizationResponse>(
+      await apiClient.get<Organization>(
         `/organizations/${organizationId}`,
       );
 
@@ -55,9 +55,9 @@ export class OrganizationApi {
    */
   public static async createOrganization(
     payload: CreateOrganizationRequest,
-  ): Promise<OrganizationResponse> {
+  ): Promise<Organization> {
     const response =
-      await apiClient.post<OrganizationResponse>(
+      await apiClient.post<Organization>(
         "/organizations",
         payload,
       );
@@ -71,9 +71,9 @@ export class OrganizationApi {
   public static async updateOrganization(
     organizationId: string,
     payload: UpdateOrganizationRequest,
-  ): Promise<OrganizationResponse> {
+  ): Promise<Organization> {
     const response =
-      await apiClient.put<OrganizationResponse>(
+      await apiClient.patch<Organization>(
         `/organizations/${organizationId}`,
         payload,
       );

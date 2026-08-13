@@ -45,16 +45,6 @@ export interface CustomerFiltersProps {
   readonly status: string;
 
   /**
-   * Industry filter.
-   */
-  readonly industry: string;
-
-  /**
-   * Industry options.
-   */
-  readonly industries: readonly CustomerFilterOption[];
-
-  /**
    * Search callback.
    */
   readonly onSearchChange: (
@@ -65,13 +55,6 @@ export interface CustomerFiltersProps {
    * Status callback.
    */
   readonly onStatusChange: (
-    value: string,
-  ) => void;
-
-  /**
-   * Industry callback.
-   */
-  readonly onIndustryChange: (
     value: string,
   ) => void;
 }
@@ -86,27 +69,15 @@ const STATUS_OPTIONS: readonly CustomerFilterOption[] = [
   },
   {
     label: "Active",
-    value: "ACTIVE",
+    value: "active",
   },
   {
     label: "Inactive",
-    value: "INACTIVE",
-  },
-  {
-    label: "Prospect",
-    value: "PROSPECT",
-  },
-  {
-    label: "Pending",
-    value: "PENDING",
+    value: "inactive",
   },
   {
     label: "Suspended",
-    value: "SUSPENDED",
-  },
-  {
-    label: "Blocked",
-    value: "BLOCKED",
+    value: "suspended",
   },
 ];
 
@@ -119,11 +90,8 @@ const STATUS_OPTIONS: readonly CustomerFilterOption[] = [
 export function CustomerFilters({
   search,
   status,
-  industry,
-  industries,
   onSearchChange,
   onStatusChange,
-  onIndustryChange,
 }: CustomerFiltersProps): React.JSX.Element {
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -138,7 +106,7 @@ export function CustomerFilters({
         </h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="relative">
           <Search
             size={18}
@@ -163,17 +131,6 @@ export function CustomerFilters({
           placeholder="All Statuses"
           onChange={(event) =>
             onStatusChange(
-              event.target.value,
-            )
-          }
-        />
-
-        <Select
-          value={industry}
-          options={industries}
-          placeholder="All Industries"
-          onChange={(event) =>
-            onIndustryChange(
               event.target.value,
             )
           }

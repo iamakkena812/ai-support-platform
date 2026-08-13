@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
@@ -14,10 +15,15 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
+from app.database.types import GUID
+
+if TYPE_CHECKING:
+    from app.comments.models import Comment
+    from app.models.ticket import Ticket
+    from app.models.user import User
 
 
 class Attachment(Base):
@@ -26,34 +32,34 @@ class Attachment(Base):
     __tablename__ = "attachments"
 
     id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
+        GUID(),
         primary_key=True,
         default=uuid4,
     )
 
     organization_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
+        GUID(),
         ForeignKey("organizations.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
     ticket_id: Mapped[UUID | None] = mapped_column(
-        PGUUID(as_uuid=True),
+        GUID(),
         ForeignKey("tickets.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
     )
 
     comment_id: Mapped[UUID | None] = mapped_column(
-        PGUUID(as_uuid=True),
+        GUID(),
         ForeignKey("comments.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
     )
 
     uploaded_by_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
+        GUID(),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -130,3 +136,22 @@ class Attachment(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+    uploader: Mapped[User] = relationship(
+        "User",
+        lazy="select",
+    )
+
+    ticket: Mapped[Ticket | None] = relationship(
+        "Ticket",
+        lazy="select",
+    )
+
+    comment: Mapped[Comment | None] = relationship(
+        "Comment",
+        lazy="select",
+    )
+
+    def soft_delete(self) -> None:
+        """Mark the attachment as deleted."""
+        self.is_deleted = True

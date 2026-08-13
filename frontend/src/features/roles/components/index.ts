@@ -42,8 +42,6 @@ export {
 
 export type {
   RoleDetailsProps,
-  RolePermission as RoleDetailsPermission,
-  RoleAssignedUser,
 } from "./RoleDetails";
 
 

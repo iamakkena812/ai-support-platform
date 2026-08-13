@@ -111,6 +111,12 @@ class UserService:
             limit=limit,
         )
 
+    def count_users(
+        self,
+    ) -> int:
+        """Return the total number of users."""
+        return self.user_repository.count()
+
     def update_user(
         self,
         user_id: UUID,

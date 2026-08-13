@@ -88,6 +88,12 @@ class OrganizationService:
             limit=limit,
         )
 
+    def count_organizations(
+        self,
+    ) -> int:
+        """Return the total number of organizations."""
+        return self._repository.count()
+
     def update_organization(
         self,
         organization_id: UUID,

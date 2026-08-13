@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.models.user import User
+from app.rbac.dependencies import require_permission
 from app.roles.dependencies import RoleServiceDependency
 from app.roles.exceptions import (
     RoleAlreadyExistsError,
@@ -27,16 +30,38 @@ router = APIRouter(
 )
 
 
+CreateRolePermission = Annotated[
+    User,
+    Depends(require_permission("role", "create")),
+]
+
+ReadRolePermission = Annotated[
+    User,
+    Depends(require_permission("role", "read")),
+]
+
+UpdateRolePermission = Annotated[
+    User,
+    Depends(require_permission("role", "update")),
+]
+
+DeleteRolePermission = Annotated[
+    User,
+    Depends(require_permission("role", "delete")),
+]
+
+
 @router.get(
     "",
     response_model=RoleListResponse,
 )
 def list_roles(
+    _: ReadRolePermission,
     service: RoleServiceDependency,
     page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
+    page_size: int = Query(default=20, ge=1, le=100, alias="pageSize"),
     search: str | None = Query(default=None),
-    is_system: bool | None = Query(default=None),
+    is_system: bool | None = Query(default=None, alias="isSystem"),
 ) -> RoleListResponse:
     """Return a paginated list of roles."""
     query = RoleListQuery(
@@ -54,6 +79,7 @@ def list_roles(
     response_model=RoleStatistics,
 )
 def get_role_statistics(
+    _: ReadRolePermission,
     service: RoleServiceDependency,
 ) -> RoleStatistics:
     """Return role statistics."""
@@ -66,6 +92,7 @@ def get_role_statistics(
 )
 def get_role(
     role_id: UUID,
+    _: ReadRolePermission,
     service: RoleServiceDependency,
 ) -> RoleResponse:
     """Return a role by identifier."""
@@ -85,6 +112,7 @@ def get_role(
 )
 def create_role(
     request: RoleCreate,
+    _: CreateRolePermission,
     service: RoleServiceDependency,
 ) -> RoleResponse:
     """Create a role."""
@@ -104,6 +132,7 @@ def create_role(
 def update_role(
     role_id: UUID,
     request: RoleUpdate,
+    _: UpdateRolePermission,
     service: RoleServiceDependency,
 ) -> RoleResponse:
     """Update a role."""
@@ -132,6 +161,7 @@ def update_role(
 )
 def delete_role(
     role_id: UUID,
+    _: DeleteRolePermission,
     service: RoleServiceDependency,
 ) -> None:
     """Delete a role."""

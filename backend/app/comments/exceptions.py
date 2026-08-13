@@ -24,7 +24,7 @@ class CommentError(AppException):
     ) -> None:
         super().__init__(
             message=message,
-            status_code=HTTPStatus.NOT_FOUND,
+            status_code=HTTPStatus(status_code),
         )
 
 
@@ -34,6 +34,16 @@ class CommentNotFoundError(CommentError):
     def __init__(self) -> None:
         super().__init__(
             message="Comment not found.",
+            status_code=HTTP_404_NOT_FOUND,
+        )
+
+
+class CommentTicketNotFoundError(CommentError):
+    """Raised when the parent ticket does not exist in the caller's organization."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            message="Ticket not found.",
             status_code=HTTP_404_NOT_FOUND,
         )
 

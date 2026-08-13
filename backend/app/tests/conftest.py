@@ -15,6 +15,7 @@ from app.ai.chat.constants import ConversationStatus, MessageStatus, MessageType
 from app.ai.chat.models import Conversation, ConversationMessage
 from app.ai.chat.repository import ConversationRepository
 from app.ai.chat.service import ConversationService
+from app.ai.constants import AIModel, AIProvider
 from app.ai.documents.models import Document
 from app.ai.documents.repository import DocumentRepository
 from app.ai.documents.service import DocumentService
@@ -86,6 +87,7 @@ from app.tests.database import (
     drop_database,
     get_db_session,
 )
+from app.tests.database import engine as test_engine
 from app.tickets.repository import TicketRepository
 
 # ---------------------------------------------------------------------
@@ -236,8 +238,24 @@ def ticket_repository(
 
 
 @pytest.fixture
-def client() -> Generator[TestClient]:
-    """Return FastAPI test client using the test database."""
+def client(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Generator[TestClient]:
+    """Return FastAPI test client using the test database.
+
+    The app's startup lifecycle runs ``Base.metadata.create_all()``
+    against ``app.core.lifespan.engine`` -- the production engine bound
+    to ``settings.DATABASE_URL`` -- regardless of the ``get_db``
+    dependency override below. Left unpatched, every test that spins up
+    a ``TestClient`` makes a real network round trip to the shared
+    Postgres instance on startup, which is both slow and pointless in
+    tests. Point it at the local test engine instead.
+    """
+    monkeypatch.setattr(
+        "app.core.lifespan.engine",
+        test_engine,
+    )
+
     app.dependency_overrides[get_db] = get_db_session
 
     with TestClient(app) as client:
@@ -675,9 +693,10 @@ def workflow_repository(
 @pytest.fixture
 def workflow_service(
     workflow_repository: WorkflowRepository,
+    ticket_repository: TicketRepository,
 ) -> WorkflowService:
     """Create a workflow service."""
-    return WorkflowService(workflow_repository)
+    return WorkflowService(workflow_repository, ticket_repository)
 
 
 @pytest.fixture
@@ -727,8 +746,8 @@ def conversation(
         ticket_id=ticket.id,
         created_by=user.id,
         title="Test Conversation",
-        provider="openai",
-        model="gpt-5.5",
+        provider=AIProvider.MOCK.value,
+        model=AIModel.GPT_4_1.value,
         status=ConversationStatus.ACTIVE,
     )
 
@@ -950,9 +969,10 @@ def document_repository(
 @pytest.fixture
 def document_service(
     document_repository: DocumentRepository,
+    ai_knowledge_repository: AIKnowledgeRepository,
 ) -> DocumentService:
     """Return a document service."""
-    return DocumentService(document_repository)
+    return DocumentService(document_repository, ai_knowledge_repository)
 
 
 @pytest.fixture

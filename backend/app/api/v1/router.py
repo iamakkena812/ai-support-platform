@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from app.ai.chat.router import router as ai_chat_router
 from app.ai.documents.router import router as document_router
 from app.ai.embeddings.router import router as embeddings_router
 from app.ai.ingestion.router import router as ingestion_router
@@ -23,14 +24,14 @@ from app.email.router import router as email_router
 from app.files.router import router as file_router
 from app.notifications.router import router as notification_router
 from app.organizations.router import router as organization_router
+from app.permissions.router import router as permissions_router
 from app.projects.router import router as project_router
+from app.roles.router import router as roles_router
 from app.sla.router import router as sla_router
 from app.teams.router import router as teams_router
 from app.tickets.router import router as ticket_router
 from app.users.router import router as user_router
 from app.workflows.router import router as workflows_router
-from app.permissions.router import router as permissions_router
-from app.roles.router import router as roles_router
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -73,6 +74,7 @@ api_router.include_router(analytics_router)
 # ============================================================================
 
 api_router.include_router(ai_router)
+api_router.include_router(ai_chat_router)
 api_router.include_router(ai_knowledge_router)
 api_router.include_router(embeddings_router)
 api_router.include_router(vectorstore_router)

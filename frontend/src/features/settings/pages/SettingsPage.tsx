@@ -1,11 +1,17 @@
 /**
  * Settings page.
+ *
+ * Composes real, existing capabilities rather than a fictional
+ * unified "settings" resource: profile via the Users module,
+ * organization via the Organizations module (superusers only, matching
+ * the backend's `CurrentSuperuserDependency`), and theme via the
+ * application's real theme provider. Sections with no backend support
+ * (notifications preferences, security policy, AI configuration, API
+ * keys) are shown as honestly unavailable instead of being wired to
+ * endpoints that do not exist.
  */
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import { AISettings } from "../components/AISettings";
 import { APIKeySettings } from "../components/APIKeySettings";
@@ -14,17 +20,16 @@ import { OrganizationSettings } from "../components/OrganizationSettings";
 import { ProfileSettings } from "../components/ProfileSettings";
 import { SecuritySettings } from "../components/SecuritySettings";
 import { ThemeSettings } from "../components/ThemeSettings";
-import {
-  useResetSettings,
-  useSettings,
-  useTestAIConnection,
-  useUpdateSettings,
-} from "../hooks/useSettings";
 
-import type {
-  SettingsResponse,
-  UpdateSettingsRequest,
-} from "../types/settings.types";
+import type { ProfileFormValues } from "../components/ProfileSettings";
+
+import { useAuth } from "../../../app/providers/auth/useAuth";
+import { useTheme } from "../../../app/providers/theme/useTheme";
+import { useOrganization } from "../../organizations/hooks/useOrganization";
+import { useUpdateOrganization } from "../../organizations/hooks/useOrganizations";
+import { useUpdateUser } from "../../users/hooks/useUser";
+
+import type { UpdateOrganizationRequest } from "../../organizations/types/organization.types";
 
 /**
  * Settings page.
@@ -32,86 +37,79 @@ import type {
  * @returns Settings page component.
  */
 export function SettingsPage(): React.JSX.Element {
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const { theme, setTheme } = useTheme();
+
+  const isSuperuser = user?.isSuperuser ?? false;
+
   const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useSettings();
+    data: organization,
+    isLoading: isOrganizationLoading,
+    isError: isOrganizationError,
+    error: organizationError,
+  } = useOrganization(isSuperuser ? (user?.organizationId ?? "") : "");
 
-  const updateMutation =
-    useUpdateSettings();
+  const updateUserMutation = useUpdateUser();
+  const updateOrganizationMutation = useUpdateOrganization();
 
-  const resetMutation =
-    useResetSettings();
+  const [profileValues, setProfileValues] = useState<ProfileFormValues>({
+    fullName: "",
+    email: "",
+    username: "",
+  });
 
-  const testMutation =
-    useTestAIConnection();
-
-  const [
-    settings,
-    setSettings,
-  ] = useState<
-    SettingsResponse | null
-  >(null);
+  const [organizationValues, setOrganizationValues] =
+    useState<UpdateOrganizationRequest>({});
 
   useEffect(() => {
-    if (data) {
-      setSettings(
-        data,
-      );
+    if (user) {
+      setProfileValues({
+        fullName: user.fullName,
+        email: user.email,
+        username: user.username,
+      });
     }
-  }, [data]);
+  }, [user]);
+
+  useEffect(() => {
+    if (organization) {
+      setOrganizationValues({
+        name: organization.name,
+        code: organization.code,
+        email: organization.email,
+        phone: organization.phone,
+        website: organization.website,
+        timezone: organization.timezone,
+      });
+    }
+  }, [organization]);
 
   /**
-   * Saves settings.
+   * Saves profile and (if applicable) organization changes.
    */
-  const handleSave =
-    async (): Promise<void> => {
-      if (
-        settings == null
-      ) {
-        return;
+  const handleSave = async (): Promise<void> => {
+    if (user == null) {
+      return;
+    }
+
+    try {
+      await updateUserMutation.mutateAsync({
+        id: user.id,
+        payload: profileValues,
+      });
+
+      if (isSuperuser && organization) {
+        await updateOrganizationMutation.mutateAsync({
+          id: organization.id,
+          payload: organizationValues,
+        });
       }
+    } catch (saveError) {
+      console.error("Failed to save settings.", saveError);
+    }
+  };
 
-      const request: UpdateSettingsRequest =
-        {
-          profile:
-            settings.profile,
-          organization:
-            settings.organization,
-          notifications:
-            settings.notifications,
-          security:
-            settings.security,
-          ai:
-            settings.ai,
-          theme:
-            settings.theme,
-          apiKeys:
-            settings.apiKeys,
-        };
-
-      try {
-        const response =
-          await updateMutation.mutateAsync(
-            request,
-          );
-
-        setSettings(
-          response,
-        );
-      } catch (
-        saveError
-      ) {
-        console.error(
-          "Failed to save settings.",
-          saveError,
-        );
-      }
-    };
-
-  if (isLoading) {
+  if (isAuthLoading) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500">
         Loading settings...
@@ -119,19 +117,7 @@ export function SettingsPage(): React.JSX.Element {
     );
   }
 
-  if (isError) {
-    return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-        {error instanceof Error
-          ? error.message
-          : "Failed to load settings."}
-      </div>
-    );
-  }
-
-  if (
-    settings == null
-  ) {
+  if (user == null) {
     return (
       <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-700">
         Settings not found.
@@ -139,151 +125,85 @@ export function SettingsPage(): React.JSX.Element {
     );
   }
 
+  const isSaving =
+    updateUserMutation.isPending || updateOrganizationMutation.isPending;
+
+  const saveError = updateUserMutation.error ?? updateOrganizationMutation.error;
+
+  const isSaved =
+    updateUserMutation.isSuccess &&
+    (!isSuperuser || updateOrganizationMutation.isSuccess || !organization);
+
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Settings
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
 
           <p className="mt-2 text-gray-600">
-            Manage your application
-            configuration.
+            Manage your profile{isSuperuser ? " and organization" : ""}.
           </p>
         </div>
 
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              void resetMutation.mutateAsync();
-            }}
-            disabled={
-              resetMutation.isPending
-            }
-            className="rounded border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-          >
-            Reset
-          </button>
+        <div className="flex items-center gap-3">
+          {isSaved ? (
+            <span className="text-sm text-green-700">Saved.</span>
+          ) : null}
 
           <button
             type="button"
             onClick={() => {
               void handleSave();
             }}
-            disabled={
-              updateMutation.isPending
-            }
+            disabled={isSaving}
             className="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {updateMutation.isPending
-              ? "Saving..."
-              : "Save Changes"}
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </header>
 
+      {saveError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+          {saveError instanceof Error
+            ? saveError.message
+            : "Failed to save settings."}
+        </div>
+      ) : null}
+
       <ProfileSettings
-        profile={
-          settings.profile
-        }
-        onChange={(
-          profile,
-        ) =>
-          setSettings({
-            ...settings,
-            profile,
-          })
-        }
+        profile={user}
+        values={profileValues}
+        disabled={isSaving}
+        onChange={setProfileValues}
       />
 
-      <OrganizationSettings
-        organization={
-          settings.organization
-        }
-        onChange={(
-          organization,
-        ) =>
-          setSettings({
-            ...settings,
-            organization,
-          })
-        }
-      />
+      {isSuperuser ? (
+        isOrganizationLoading ? (
+          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500">
+            Loading organization...
+          </div>
+        ) : isOrganizationError ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+            {organizationError instanceof Error
+              ? organizationError.message
+              : "Failed to load organization."}
+          </div>
+        ) : (
+          <OrganizationSettings
+            values={organizationValues}
+            disabled={isSaving}
+            onChange={setOrganizationValues}
+          />
+        )
+      ) : null}
 
-      <NotificationSettings
-        notifications={
-          settings.notifications
-        }
-        onChange={(
-          notifications,
-        ) =>
-          setSettings({
-            ...settings,
-            notifications,
-          })
-        }
-      />
+      <ThemeSettings theme={theme} onChange={setTheme} />
 
-      <SecuritySettings
-        security={
-          settings.security
-        }
-        onChange={(
-          security,
-        ) =>
-          setSettings({
-            ...settings,
-            security,
-          })
-        }
-      />
-
-      <AISettings
-        settings={
-          settings.ai
-        }
-        onChange={(
-          ai,
-        ) =>
-          setSettings({
-            ...settings,
-            ai,
-          })
-        }
-        onTestConnection={() => {
-          void testMutation.mutateAsync();
-        }}
-      />
-
-      <ThemeSettings
-        settings={
-          settings.theme
-        }
-        onChange={(
-          theme,
-        ) =>
-          setSettings({
-            ...settings,
-            theme,
-          })
-        }
-      />
-
-      <APIKeySettings
-        apiKeys={
-          settings.apiKeys
-        }
-        onChange={(
-          apiKeys,
-        ) =>
-          setSettings({
-            ...settings,
-            apiKeys,
-          })
-        }
-      />
+      <NotificationSettings />
+      <SecuritySettings />
+      <AISettings />
+      <APIKeySettings />
     </div>
   );
 }

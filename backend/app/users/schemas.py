@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import (
-    BaseModel,
     ConfigDict,
     EmailStr,
     Field,
 )
 
+from app.core.schemas import CamelModel
 
-class CreateUserRequest(BaseModel):
+
+class CreateUserRequest(CamelModel):
     """Request model for creating a user."""
 
     email: EmailStr
@@ -39,7 +41,7 @@ class CreateUserRequest(BaseModel):
     is_superuser: bool = False
 
 
-class UpdateUserRequest(BaseModel):
+class UpdateUserRequest(CamelModel):
     """Request model for updating a user."""
 
     username: str | None = Field(
@@ -61,7 +63,7 @@ class UpdateUserRequest(BaseModel):
     is_superuser: bool | None = None
 
 
-class UserResponse(BaseModel):
+class UserResponse(CamelModel):
     """User response model."""
 
     model_config = ConfigDict(
@@ -82,10 +84,20 @@ class UserResponse(BaseModel):
 
     is_superuser: bool
 
+    created_at: datetime
 
-class UserListResponse(BaseModel):
+    updated_at: datetime
+
+
+class UserListResponse(CamelModel):
     """User list response."""
 
     users: list[UserResponse]
 
     total: int
+
+    page: int
+
+    page_size: int
+
+    total_pages: int

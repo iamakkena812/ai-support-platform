@@ -12,13 +12,10 @@ import {
 import type {
   CreatePermissionRequest,
   Permission,
-  PermissionGroupListResponse,
   PermissionListQuery,
   PermissionListResponse,
   PermissionStatistics,
-  RolePermissionMapping,
   UpdatePermissionRequest,
-  UpdateRolePermissionMappingRequest,
 } from "../types/permission.types";
 
 /**
@@ -87,49 +84,11 @@ export const PermissionService = {
   },
 
   /**
-   * Retrieves permission groups.
-   *
-   * @returns Permission groups.
-   */
-  async getPermissionGroups(): Promise<PermissionGroupListResponse> {
-    return PermissionApi.getPermissionGroups();
-  },
-
-  /**
    * Retrieves permission statistics.
    *
    * @returns Permission statistics.
    */
   async getPermissionStatistics(): Promise<PermissionStatistics> {
     return PermissionApi.getPermissionStatistics();
-  },
-
-  /**
-   * Retrieves permissions assigned to a role.
-   *
-   * @param roleId - Role identifier.
-   * @returns Role permission mapping.
-   */
-  async getRolePermissions(
-    roleId: string,
-  ): Promise<RolePermissionMapping> {
-    return PermissionApi.getRolePermissions(roleId);
-  },
-
-  /**
-   * Updates permissions assigned to a role.
-   *
-   * @param roleId - Role identifier.
-   * @param payload - Permission mapping payload.
-   * @returns Updated role permission mapping.
-   */
-  async updateRolePermissions(
-    roleId: string,
-    payload: UpdateRolePermissionMappingRequest,
-  ): Promise<RolePermissionMapping> {
-    return PermissionApi.updateRolePermissions(
-      roleId,
-      payload,
-    );
   },
 };

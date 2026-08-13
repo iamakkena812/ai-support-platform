@@ -10,9 +10,13 @@ import {
   deleteUser,
   getUser,
   getUsers,
-  getUserStatistics,
   updateUser,
 } from "../api/user.api";
+
+import {
+  userListResponseSchema,
+  UserSchema,
+} from "../schemas/user.schema";
 
 import type {
   CreateUserRequest,
@@ -20,7 +24,6 @@ import type {
   User,
   UserListQuery,
   UserListResponse,
-  UserStatistics,
 } from "../types/user.types";
 
 
@@ -38,8 +41,12 @@ export const userService = {
   async getUsers(
     query?: UserListQuery,
   ): Promise<UserListResponse> {
-    return getUsers(
+    const response = await getUsers(
       query,
+    );
+
+    return userListResponseSchema.parse(
+      response,
     );
   },
 
@@ -53,8 +60,12 @@ export const userService = {
   async getUser(
     userId: string,
   ): Promise<User> {
-    return getUser(
+    const response = await getUser(
       userId,
+    );
+
+    return UserSchema.parse(
+      response,
     );
   },
 
@@ -68,8 +79,12 @@ export const userService = {
   async createUser(
     payload: CreateUserRequest,
   ): Promise<User> {
-    return createUser(
+    const response = await createUser(
       payload,
+    );
+
+    return UserSchema.parse(
+      response,
     );
   },
 
@@ -85,9 +100,13 @@ export const userService = {
     userId: string,
     payload: UpdateUserRequest,
   ): Promise<User> {
-    return updateUser(
+    const response = await updateUser(
       userId,
       payload,
+    );
+
+    return UserSchema.parse(
+      response,
     );
   },
 
@@ -103,15 +122,5 @@ export const userService = {
     return deleteUser(
       userId,
     );
-  },
-
-
-  /**
-   * Retrieves user statistics.
-   *
-   * @returns User statistics.
-   */
-  async getUserStatistics(): Promise<UserStatistics> {
-    return getUserStatistics();
   },
 };

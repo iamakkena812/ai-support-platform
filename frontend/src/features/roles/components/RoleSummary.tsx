@@ -6,14 +6,8 @@
 
 import {
   Calendar,
-  KeyRound,
   ShieldCheck,
-  Users,
 } from "lucide-react";
-
-import {
-  RoleStatusBadge,
-} from "./RoleStatusBadge";
 
 
 
@@ -38,13 +32,6 @@ export interface RoleSummaryProps {
 
 
   /**
-   * Role status.
-   */
-  readonly status: string;
-
-
-
-  /**
    * System role indicator.
    */
   readonly isSystem: boolean;
@@ -52,23 +39,16 @@ export interface RoleSummaryProps {
 
 
   /**
-   * Permission count.
-   */
-  readonly permissionCount: number;
-
-
-
-  /**
-   * User count.
-   */
-  readonly userCount: number;
-
-
-
-  /**
    * Created date.
    */
   readonly createdAt: string | Date;
+
+
+
+  /**
+   * Updated date.
+   */
+  readonly updatedAt: string | Date;
 
 }
 
@@ -83,11 +63,9 @@ export interface RoleSummaryProps {
 export function RoleSummary({
   name,
   description,
-  status,
   isSystem,
-  permissionCount,
-  userCount,
   createdAt,
+  updatedAt,
 }: RoleSummaryProps): React.JSX.Element {
 
 
@@ -96,6 +74,13 @@ export function RoleSummary({
       ? createdAt
       : new Date(
           createdAt,
+        );
+
+  const updated =
+    updatedAt instanceof Date
+      ? updatedAt
+      : new Date(
+          updatedAt,
         );
 
 
@@ -152,16 +137,6 @@ export function RoleSummary({
 
 
 
-            <RoleStatusBadge
-
-              status={
-                status
-              }
-
-            />
-
-
-
             {
               isSystem ? (
 
@@ -175,7 +150,19 @@ export function RoleSummary({
 
                 </span>
 
-              ) : null
+              ) : (
+
+                <span
+
+                  className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700"
+
+                >
+
+                  Custom Role
+
+                </span>
+
+              )
             }
 
 
@@ -206,7 +193,7 @@ export function RoleSummary({
 
       <div
 
-        className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4"
+        className="mt-8 grid gap-6 md:grid-cols-3"
 
       >
 
@@ -219,48 +206,10 @@ export function RoleSummary({
             />
           }
 
-          label="Status"
+          label="Type"
 
           value={
-            status
-          }
-
-        />
-
-
-
-        <SummaryItem
-
-          icon={
-            <KeyRound
-              size={18}
-              className="text-green-600"
-            />
-          }
-
-          label="Permissions"
-
-          value={
-            permissionCount.toString()
-          }
-
-        />
-
-
-
-        <SummaryItem
-
-          icon={
-            <Users
-              size={18}
-              className="text-purple-600"
-            />
-          }
-
-          label="Users"
-
-          value={
-            userCount.toString()
+            isSystem ? "System" : "Custom"
           }
 
         />
@@ -280,6 +229,25 @@ export function RoleSummary({
 
           value={
             created.toLocaleDateString()
+          }
+
+        />
+
+
+
+        <SummaryItem
+
+          icon={
+            <Calendar
+              size={18}
+              className="text-orange-600"
+            />
+          }
+
+          label="Updated"
+
+          value={
+            updated.toLocaleDateString()
           }
 
         />

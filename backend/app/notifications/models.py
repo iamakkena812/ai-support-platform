@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, Enum, ForeignKey, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 from app.models.mixins import TimestampMixin
@@ -14,6 +15,9 @@ from app.notifications.constants import (
     NotificationPriority,
     NotificationType,
 )
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class Notification(TimestampMixin, Base):
@@ -81,6 +85,12 @@ class Notification(TimestampMixin, Base):
         Boolean,
         default=False,
         nullable=False,
+    )
+
+    recipient: Mapped[User] = relationship(
+        "User",
+        foreign_keys=[recipient_id],
+        lazy="select",
     )
 
     def mark_as_read(self) -> None:

@@ -17,77 +17,36 @@ import type {
   CreatePermissionRequest,
   PermissionListQuery,
   UpdatePermissionRequest,
-  UpdateRolePermissionMappingRequest,
 } from "../types/permission.types";
 
 /**
  * Query key factory for the Permissions feature.
  */
 export const permissionQueryKeys = {
-  /**
-   * Root permissions query key.
-   */
   all: ["permissions"] as const,
 
-  /**
-   * Permission list query keys.
-   */
   lists: () =>
     [...permissionQueryKeys.all, "list"] as const,
 
-  /**
-   * Specific permission list query key.
-   *
-   * @param query - Permission list query.
-   */
   list: (query?: PermissionListQuery) =>
     [
       ...permissionQueryKeys.lists(),
       query,
     ] as const,
 
-  /**
-   * Permission detail query keys.
-   */
   details: () =>
     [...permissionQueryKeys.all, "detail"] as const,
 
-  /**
-   * Specific permission detail query key.
-   *
-   * @param id - Permission identifier.
-   */
   detail: (id: string) =>
     [
       ...permissionQueryKeys.details(),
       id,
     ] as const,
 
-  /**
-   * Permission group query key.
-   */
-  groups: () =>
-    [...permissionQueryKeys.all, "groups"] as const,
-
-  /**
-   * Permission statistics query key.
-   */
   statistics: () =>
     [
       ...permissionQueryKeys.all,
       "statistics",
-    ] as const,
-
-  /**
-   * Role permission query key.
-   *
-   * @param roleId - Role identifier.
-   */
-  rolePermissions: (roleId: string) =>
-    [
-      ...permissionQueryKeys.all,
-      "role",
-      roleId,
     ] as const,
 };
 
@@ -125,9 +84,6 @@ export function usePermission(id: string) {
 /**
  * Creates a permission.
  *
- * Invalidates permission lists, groups, and statistics
- * after successful creation.
- *
  * @returns Permission creation mutation.
  */
 export function useCreatePermission() {
@@ -144,10 +100,6 @@ export function useCreatePermission() {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: permissionQueryKeys.lists(),
-      });
-
-      void queryClient.invalidateQueries({
-        queryKey: permissionQueryKeys.groups(),
       });
 
       void queryClient.invalidateQueries({
@@ -191,10 +143,6 @@ export function useUpdatePermission() {
       });
 
       void queryClient.invalidateQueries({
-        queryKey: permissionQueryKeys.groups(),
-      });
-
-      void queryClient.invalidateQueries({
         queryKey:
           permissionQueryKeys.statistics(),
       });
@@ -231,24 +179,7 @@ export function useDeletePermission() {
         queryKey:
           permissionQueryKeys.statistics(),
       });
-
-      void queryClient.invalidateQueries({
-        queryKey: permissionQueryKeys.groups(),
-      });
     },
-  });
-}
-
-/**
- * Retrieves permission groups.
- *
- * @returns TanStack Query result.
- */
-export function usePermissionGroups() {
-  return useQuery({
-    queryKey: permissionQueryKeys.groups(),
-    queryFn: () =>
-      PermissionService.getPermissionGroups(),
   });
 }
 
@@ -263,67 +194,5 @@ export function usePermissionStatistics() {
       permissionQueryKeys.statistics(),
     queryFn: () =>
       PermissionService.getPermissionStatistics(),
-  });
-}
-
-/**
- * Retrieves permissions assigned to a role.
- *
- * @param roleId - Role identifier.
- * @returns TanStack Query result.
- */
-export function useRolePermissions(
-  roleId: string,
-) {
-  return useQuery({
-    queryKey:
-      permissionQueryKeys.rolePermissions(
-        roleId,
-      ),
-    queryFn: () =>
-      PermissionService.getRolePermissions(
-        roleId,
-      ),
-    enabled: roleId.length > 0,
-  });
-}
-
-/**
- * Updates permissions assigned to a role.
- *
- * Invalidates the role permission mapping after
- * a successful update.
- *
- * @returns Role permission update mutation.
- */
-export function useUpdateRolePermissions() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      roleId,
-      payload,
-    }: {
-      readonly roleId: string;
-      readonly payload:
-        UpdateRolePermissionMappingRequest;
-    }) =>
-      PermissionService.updateRolePermissions(
-        roleId,
-        payload,
-      ),
-
-    onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey:
-          permissionQueryKeys.rolePermissions(
-            variables.roleId,
-          ),
-      });
-
-      void queryClient.invalidateQueries({
-        queryKey: ["roles"],
-      });
-    },
   });
 }

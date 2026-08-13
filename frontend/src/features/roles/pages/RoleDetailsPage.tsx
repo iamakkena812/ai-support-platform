@@ -240,30 +240,18 @@ export function RoleDetailsPage(): React.JSX.Element {
         }
 
 
-        status={
-          role.status
-        }
-
-
         isSystem={
           role.isSystem
         }
 
 
-        permissionCount={
-          role.permissions?.length ??
-          0
-        }
-
-
-        userCount={
-          role.users?.length ??
-          0
-        }
-
-
         createdAt={
           role.createdAt
+        }
+
+
+        updatedAt={
+          role.updatedAt
         }
 
       />
@@ -289,23 +277,8 @@ export function RoleDetailsPage(): React.JSX.Element {
           }
 
 
-          status={
-            role.status
-          }
-
-
           isSystem={
             role.isSystem
-          }
-
-
-          permissions={
-            role.permissions ?? []
-          }
-
-
-          users={
-            role.users ?? []
           }
 
 

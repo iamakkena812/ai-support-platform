@@ -9,6 +9,7 @@ from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
+from app.teams.constants import DEFAULT_STATUS
 
 if TYPE_CHECKING:
     from app.models.organization import Organization
@@ -54,6 +55,14 @@ class Team(BaseModel):
         Boolean,
         default=True,
         nullable=False,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default=DEFAULT_STATUS,
+        server_default=DEFAULT_STATUS,
+        nullable=False,
+        index=True,
     )
 
     organization: Mapped[Organization] = relationship()

@@ -70,14 +70,6 @@ export type {
 } from "./PermissionForm";
 
 export {
-  PermissionGroupCard,
-} from "./PermissionGroupCard";
-
-export type {
-  PermissionGroupCardProps,
-} from "./PermissionGroupCard";
-
-export {
   PermissionHeader,
 } from "./PermissionHeader";
 
@@ -125,19 +117,3 @@ export {
 export type {
   PermissionTableProps,
 } from "./PermissionTable";
-
-export {
-  PermissionTree,
-} from "./PermissionTree";
-
-export type {
-  PermissionTreeProps,
-} from "./PermissionTree";
-
-export {
- RolePermissionMatrix,
-} from "./RolePermissionMatrix";
-
-export type {
-  RolePermissionMatrixProps,
-} from "./RolePermissionMatrix";

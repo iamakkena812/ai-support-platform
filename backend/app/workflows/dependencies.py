@@ -8,6 +8,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
+from app.tickets.repository import TicketRepository
 
 from .repository import WorkflowRepository
 from .service import WorkflowService
@@ -50,7 +51,8 @@ def get_workflow_service(
         Workflow service.
     """
     repository = WorkflowRepository(session)
-    return WorkflowService(repository)
+    ticket_repository = TicketRepository(session)
+    return WorkflowService(repository, ticket_repository)
 
 
 WorkflowServiceDependency = Annotated[

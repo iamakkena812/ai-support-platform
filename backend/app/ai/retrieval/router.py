@@ -44,10 +44,8 @@ def retrieve(
     Returns:
         Retrieval response.
     """
-    _ = current_user
-
     try:
-        return service.retrieve(request)
+        return service.retrieve(current_user.organization_id, request)
     except UnsupportedRetrievalProviderError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -75,10 +73,8 @@ def hybrid(
     Returns:
         Retrieval response.
     """
-    _ = current_user
-
     try:
-        return service.hybrid_retrieve(request)
+        return service.hybrid_retrieve(current_user.organization_id, request)
     except UnsupportedRetrievalProviderError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -106,8 +102,7 @@ def metadata_search(
     Returns:
         Retrieval response.
     """
-    _ = current_user
-    return service.metadata_search(request)
+    return service.metadata_search(current_user.organization_id, request)
 
 
 @router.get(
@@ -150,5 +145,4 @@ def statistics(
     Returns:
         Retrieval statistics.
     """
-    _ = current_user
-    return service.statistics()
+    return service.statistics(current_user.organization_id)

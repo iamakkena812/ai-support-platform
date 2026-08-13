@@ -6,10 +6,13 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useNavigate } from "react-router-dom";
 
+import { DeleteNotificationDialog } from "../components/DeleteNotificationDialog";
 import { NotificationFilters } from "../components/NotificationFilters";
 import { NotificationList } from "../components/NotificationList";
 import {
+  useDeleteNotification,
   useMarkNotificationAsRead,
   useNotifications,
 } from "../hooks/useNotifications";
@@ -23,10 +26,15 @@ import type {
  * Notifications page.
  */
 export function NotificationsPage(): React.JSX.Element {
+  const navigate = useNavigate();
+
   const [filters, setFilters] =
     useState<NotificationFilterValues>(
       {},
     );
+
+  const [notificationToDelete, setNotificationToDelete] =
+    useState<Notification | null>(null);
 
   const query = useMemo(
     () => ({
@@ -47,6 +55,9 @@ export function NotificationsPage(): React.JSX.Element {
   const markAsReadMutation =
     useMarkNotificationAsRead();
 
+  const deleteNotificationMutation =
+    useDeleteNotification();
+
   /**
    * Handles viewing a notification.
    *
@@ -55,10 +66,7 @@ export function NotificationsPage(): React.JSX.Element {
   const handleView = (
     notification: Notification,
   ): void => {
-    console.info(
-      "View notification",
-      notification.id,
-    );
+    navigate(`/notifications/${notification.id}`);
   };
 
   /**
@@ -69,10 +77,7 @@ export function NotificationsPage(): React.JSX.Element {
   const handleEdit = (
     notification: Notification,
   ): void => {
-    console.info(
-      "Edit notification",
-      notification.id,
-    );
+    navigate(`/notifications/${notification.id}/edit`);
   };
 
   /**
@@ -83,10 +88,19 @@ export function NotificationsPage(): React.JSX.Element {
   const handleDelete = (
     notification: Notification,
   ): void => {
-    console.info(
-      "Delete notification",
-      notification.id,
-    );
+    setNotificationToDelete(notification);
+  };
+
+  /**
+   * Confirms deletion of the selected notification.
+   *
+   * @param notification - Notification to delete.
+   */
+  const handleConfirmDelete = async (
+    notification: Notification,
+  ): Promise<void> => {
+    await deleteNotificationMutation.mutateAsync(notification.id);
+    setNotificationToDelete(null);
   };
 
   /**
@@ -125,6 +139,7 @@ export function NotificationsPage(): React.JSX.Element {
 
         <button
           type="button"
+          onClick={() => navigate("/notifications/create")}
           className="rounded bg-blue-600 px-5 py-2 text-white transition-colors hover:bg-blue-700"
         >
           Create Notification
@@ -162,6 +177,16 @@ export function NotificationsPage(): React.JSX.Element {
           onMarkAsRead={
             handleMarkAsRead
           }
+        />
+      ) : null}
+
+      {notificationToDelete ? (
+        <DeleteNotificationDialog
+          notification={notificationToDelete}
+          isOpen
+          isDeleting={deleteNotificationMutation.isPending}
+          onClose={() => setNotificationToDelete(null)}
+          onConfirm={handleConfirmDelete}
         />
       ) : null}
     </div>

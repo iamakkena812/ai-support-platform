@@ -6,12 +6,10 @@
  */
 
 import {
-  Building2,
   Edit,
   Eye,
   MoreVertical,
   Trash2,
-  FolderKanban,
 } from "lucide-react";
 
 import {
@@ -33,16 +31,6 @@ export interface CustomerActionsProps {
   readonly onEdit?: () => void;
 
   /**
-   * Manage organizations callback.
-   */
-  readonly onManageOrganizations?: () => void;
-
-  /**
-   * View projects callback.
-   */
-  readonly onViewProjects?: () => void;
-
-  /**
    * Delete callback.
    */
   readonly onDelete?: () => void;
@@ -57,8 +45,6 @@ export interface CustomerActionsProps {
 export function CustomerActions({
   onView,
   onEdit,
-  onManageOrganizations,
-  onViewProjects,
   onDelete,
 }: CustomerActionsProps): React.JSX.Element {
   const [
@@ -108,34 +94,6 @@ export function CustomerActions({
               onClick={() => {
                 setOpen(false);
                 onEdit();
-              }}
-            />
-          ) : null}
-
-          {onManageOrganizations ? (
-            <ActionButton
-              icon={
-                <Building2 size={18} />
-              }
-              label="Manage Organizations"
-              onClick={() => {
-                setOpen(false);
-                onManageOrganizations();
-              }}
-            />
-          ) : null}
-
-          {onViewProjects ? (
-            <ActionButton
-              icon={
-                <FolderKanban
-                  size={18}
-                />
-              }
-              label="View Projects"
-              onClick={() => {
-                setOpen(false);
-                onViewProjects();
               }}
             />
           ) : null}

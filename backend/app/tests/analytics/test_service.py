@@ -1,12 +1,15 @@
-"""Tests for analytics service."""
+"""Tests for the analytics service."""
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from datetime import date, timedelta
+from uuid import uuid4
 
-from app.analytics.repository import AnalyticsRepository
+import pytest
+from sqlalchemy.orm import Session
+
+from app.analytics.exceptions import InvalidDateRangeError
 from app.analytics.schemas import (
-    AnalyticsHealth,
     DashboardSummary,
     OrganizationMetrics,
     SLAMetrics,
@@ -15,115 +18,160 @@ from app.analytics.schemas import (
     WorkflowMetrics,
 )
 from app.analytics.service import AnalyticsService
+from app.models.organization import Organization
+from app.models.ticket import Ticket
+from app.models.user import User
 
 
-def create_service() -> tuple[
-    AnalyticsService,
-    MagicMock,
-]:
-    """Create analytics service with mocked repository."""
-    repository = MagicMock(spec=AnalyticsRepository)
-
-    repository.count_organizations.return_value = 5
-    repository.count_users.return_value = 20
-    repository.count_projects.return_value = 8
-    repository.count_tickets.return_value = 100
-    repository.count_open_tickets.return_value = 25
-    repository.count_pending_tickets.return_value = 10
-    repository.count_resolved_tickets.return_value = 40
-    repository.count_closed_tickets.return_value = 25
-    repository.count_sla_breaches.return_value = 3
-    repository.count_workflows.return_value = 12
-    repository.count_active_users.return_value = 18
-    repository.count_active_organizations.return_value = 4
-    repository.count_active_workflows.return_value = 10
-    repository.count_sla_policies.return_value = 15
-
-    return AnalyticsService(repository), repository
-
-
-def test_get_dashboard() -> None:
-    """Test dashboard summary."""
-    service, _ = create_service()
-
-    result = service.get_dashboard()
-
-    assert isinstance(result, DashboardSummary)
-    assert result.organizations == 5
-    assert result.users == 20
-    assert result.projects == 8
-    assert result.tickets == 100
-
-
-def test_get_ticket_metrics() -> None:
-    """Test ticket metrics."""
-    service, _ = create_service()
-
-    result = service.get_ticket_metrics()
+def test_get_ticket_metrics(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+    ticket: Ticket,
+) -> None:
+    """Return ticket metrics for the organization."""
+    result = analytics_service.get_ticket_metrics(organization.id)
 
     assert isinstance(result, TicketMetrics)
-    assert result.total == 100
-    assert result.open == 25
-    assert result.pending == 10
-    assert result.resolved == 40
-    assert result.closed == 25
+    assert result.total == 1
+    assert result.by_status == {"open": 1}
+    assert result.by_priority == {"medium": 1}
 
 
-def test_get_user_metrics() -> None:
-    """Test user metrics."""
-    service, _ = create_service()
+def test_get_ticket_metrics_rejects_invalid_range(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+) -> None:
+    """Reject a start date after the end date."""
+    today = date.today()
 
-    result = service.get_user_metrics()
+    with pytest.raises(InvalidDateRangeError):
+        analytics_service.get_ticket_metrics(
+            organization.id,
+            start_date=today,
+            end_date=today - timedelta(days=1),
+        )
+
+
+def test_get_user_metrics(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+    user: User,
+) -> None:
+    """Return user metrics for the organization."""
+    result = analytics_service.get_user_metrics(organization.id)
 
     assert isinstance(result, UserMetrics)
-    assert result.total == 20
-    assert result.active == 18
-    assert result.inactive == 2
+    assert result.total >= 1
+    assert result.active + result.inactive == result.total
 
 
-def test_get_organization_metrics() -> None:
-    """Test organization metrics."""
-    service, _ = create_service()
-
-    result = service.get_organization_metrics()
+def test_get_organization_metrics(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+) -> None:
+    """Return platform-wide organization metrics."""
+    result = analytics_service.get_organization_metrics()
 
     assert isinstance(result, OrganizationMetrics)
-    assert result.total == 5
-    assert result.active == 4
+    assert result.total >= 1
 
 
-def test_get_workflow_metrics() -> None:
-    """Test workflow metrics."""
-    service, _ = create_service()
-
-    result = service.get_workflow_metrics()
+def test_get_workflow_metrics_with_none_created(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+) -> None:
+    """Return workflow metrics for an organization with none created."""
+    result = analytics_service.get_workflow_metrics(organization.id)
 
     assert isinstance(result, WorkflowMetrics)
-    assert result.total == 12
-    assert result.active == 10
-    assert result.inactive == 2
+    assert result.total == 0
+    assert result.active == 0
+    assert result.inactive == 0
 
 
-def test_get_sla_metrics() -> None:
-    """Test SLA metrics."""
-    service, _ = create_service()
-
-    result = service.get_sla_metrics()
+def test_get_sla_metrics_with_no_policies(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+) -> None:
+    """Return full compliance when there are no SLA policies."""
+    result = analytics_service.get_sla_metrics(organization.id)
 
     assert isinstance(result, SLAMetrics)
-    assert result.policies == 15
-    assert result.breaches == 3
-    assert result.compliance_percentage == 80.0
+    assert result.policies == 0
+    assert result.breaches == 0
+    assert result.compliance_percentage == 100.0
 
 
-def test_get_health() -> None:
-    """Test analytics health."""
-    service, _ = create_service()
+def test_get_sla_metrics_rejects_invalid_range(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+) -> None:
+    """Reject a start date after the end date."""
+    today = date.today()
 
-    result = service.get_health()
+    with pytest.raises(InvalidDateRangeError):
+        analytics_service.get_sla_metrics(
+            organization.id,
+            start_date=today,
+            end_date=today - timedelta(days=1),
+        )
 
-    assert isinstance(result, AnalyticsHealth)
-    assert result.database is True
-    assert result.dashboard is True
-    assert result.metrics is True
-    assert result.reports is True
+
+def test_get_dashboard(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+    ticket: Ticket,
+) -> None:
+    """Return the full dashboard summary for the organization."""
+    result = analytics_service.get_dashboard(organization.id)
+
+    assert isinstance(result, DashboardSummary)
+    assert result.tickets.total == 1
+    assert result.projects == 0
+    assert result.users >= 1
+
+
+def test_get_dashboard_rejects_invalid_range(
+    analytics_service: AnalyticsService,
+    organization: Organization,
+) -> None:
+    """Reject a start date after the end date."""
+    today = date.today()
+
+    with pytest.raises(InvalidDateRangeError):
+        analytics_service.get_dashboard(
+            organization.id,
+            start_date=today,
+            end_date=today - timedelta(days=1),
+        )
+
+
+def test_dashboard_isolated_from_other_organization(
+    analytics_service: AnalyticsService,
+    db_session: Session,
+    ticket: Ticket,
+) -> None:
+    """An organization's dashboard excludes another organization's data."""
+    other_organization = Organization(
+        name="Other Org",
+        code=f"OTHER-{uuid4().hex[:8]}",
+        email=f"{uuid4().hex[:8]}@other-example.com",
+        phone="+919999999998",
+        website="https://other-example.com",
+        logo_url="https://other-example.com/logo.png",
+        address="1 Other Street",
+        city="Hyderabad",
+        state="Telangana",
+        country="India",
+        postal_code="500002",
+        timezone="Asia/Kolkata",
+        is_active=True,
+    )
+    db_session.add(other_organization)
+    db_session.commit()
+    db_session.refresh(other_organization)
+
+    result = analytics_service.get_dashboard(other_organization.id)
+
+    assert result.tickets.total == 0
+    assert result.users == 0

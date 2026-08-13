@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.organization import Organization
@@ -104,6 +104,16 @@ class OrganizationRepository:
         return list(
             self._session.scalars(statement).all(),
         )
+
+    def count(
+        self,
+    ) -> int:
+        """Return the number of active organizations."""
+        statement = select(func.count()).select_from(Organization).where(
+            Organization.deleted_at.is_(None),
+        )
+
+        return int(self._session.scalar(statement) or 0)
 
     def update(
         self,

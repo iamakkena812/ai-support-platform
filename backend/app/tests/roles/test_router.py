@@ -31,8 +31,8 @@ def test_list_roles(
 
     assert body["total"] == 1
     assert body["page"] == 1
-    assert body["page_size"] == 20
-    assert body["total_pages"] == 1
+    assert body["pageSize"] == 20
+    assert body["totalPages"] == 1
     assert len(body["items"]) == 1
     assert body["items"][0]["name"] == "Support Agent"
 
@@ -78,7 +78,7 @@ def test_list_roles_with_system_filter(
 
     response = client.get(
         "/api/v1/roles",
-        params={"is_system": True},
+        params={"isSystem": True},
         headers=auth_headers,
     )
 
@@ -87,7 +87,7 @@ def test_list_roles_with_system_filter(
     body = response.json()
 
     assert body["total"] == 1
-    assert body["items"][0]["is_system"] is True
+    assert body["items"][0]["isSystem"] is True
 
 
 def test_get_role_success(
@@ -109,7 +109,7 @@ def test_get_role_success(
 
     assert body["id"] == str(role.id)
     assert body["name"] == "Support Agent"
-    assert body["is_system"] is False
+    assert body["isSystem"] is False
 
 
 def test_get_role_not_found(
@@ -148,7 +148,7 @@ def test_create_role_success(
 
     assert body["name"] == "Support Agent"
     assert body["description"] == "Handles customer support."
-    assert body["is_system"] is False
+    assert body["isSystem"] is False
     assert "id" in body
 
 

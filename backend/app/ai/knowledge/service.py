@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from app.ai.knowledge.constants import KnowledgeVisibility
 from app.ai.knowledge.exceptions import (
     KnowledgeAlreadyExistsError,
     KnowledgeNotFoundError,
@@ -17,6 +18,7 @@ from app.ai.knowledge.schemas import (
     KnowledgeResponse,
     KnowledgeUpdate,
 )
+from app.core.exceptions import AuthorizationException
 
 
 class AIKnowledgeService:
@@ -64,8 +66,16 @@ class AIKnowledgeService:
         self,
         knowledge_id: UUID,
         organization_id: UUID,
+        user_id: UUID,
     ) -> KnowledgeResponse:
-        """Get a knowledge base."""
+        """Get a knowledge base.
+
+        Raises:
+            KnowledgeNotFoundError: If the knowledge base does not exist
+                in the caller's organization.
+            AuthorizationException: If the knowledge base is private and
+                the caller is not its creator.
+        """
         knowledge = self._repository.get_by_id(
             knowledge_id=knowledge_id,
             organization_id=organization_id,
@@ -74,24 +84,29 @@ class AIKnowledgeService:
         if knowledge is None:
             raise KnowledgeNotFoundError()
 
+        self._ensure_visible(knowledge, user_id)
+
         return KnowledgeMapper.to_response(knowledge)
 
     def list_knowledge(
         self,
         organization_id: UUID,
+        user_id: UUID,
         *,
         offset: int = 0,
         limit: int = 20,
     ) -> KnowledgeListResponse:
-        """List knowledge bases."""
+        """List knowledge bases visible to the caller."""
         items = self._repository.list(
             organization_id=organization_id,
+            user_id=user_id,
             offset=offset,
             limit=limit,
         )
 
         total = self._repository.count(
             organization_id=organization_id,
+            user_id=user_id,
         )
 
         return KnowledgeMapper.to_list_response(
@@ -108,7 +123,13 @@ class AIKnowledgeService:
         user_id: UUID,
         request: KnowledgeUpdate,
     ) -> KnowledgeResponse:
-        """Update a knowledge base."""
+        """Update a knowledge base.
+
+        Raises:
+            KnowledgeNotFoundError: If the knowledge base does not exist
+                in the caller's organization.
+            AuthorizationException: If the caller is not its creator.
+        """
         knowledge = self._repository.get_by_id(
             knowledge_id=knowledge_id,
             organization_id=organization_id,
@@ -116,6 +137,8 @@ class AIKnowledgeService:
 
         if knowledge is None:
             raise KnowledgeNotFoundError()
+
+        self._ensure_owner(knowledge, user_id)
 
         update_data = request.model_dump(
             exclude_unset=True,
@@ -143,8 +166,15 @@ class AIKnowledgeService:
         self,
         knowledge_id: UUID,
         organization_id: UUID,
+        user_id: UUID,
     ) -> None:
-        """Delete a knowledge base."""
+        """Delete a knowledge base.
+
+        Raises:
+            KnowledgeNotFoundError: If the knowledge base does not exist
+                in the caller's organization.
+            AuthorizationException: If the caller is not its creator.
+        """
         knowledge = self._repository.get_by_id(
             knowledge_id=knowledge_id,
             organization_id=organization_id,
@@ -153,6 +183,33 @@ class AIKnowledgeService:
         if knowledge is None:
             raise KnowledgeNotFoundError()
 
+        self._ensure_owner(knowledge, user_id)
+
         self._repository.delete(
             knowledge,
         )
+
+    @staticmethod
+    def _ensure_visible(
+        knowledge: KnowledgeBase,
+        user_id: UUID,
+    ) -> None:
+        """Ensure a private knowledge base is only visible to its creator."""
+        if (
+            knowledge.visibility == KnowledgeVisibility.PRIVATE
+            and knowledge.created_by != user_id
+        ):
+            raise AuthorizationException(
+                "You do not have access to this knowledge base.",
+            )
+
+    @staticmethod
+    def _ensure_owner(
+        knowledge: KnowledgeBase,
+        user_id: UUID,
+    ) -> None:
+        """Ensure only the creator may modify a knowledge base."""
+        if knowledge.created_by != user_id:
+            raise AuthorizationException(
+                "Only the creator may modify this knowledge base.",
+            )
